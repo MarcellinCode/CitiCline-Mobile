@@ -30,7 +30,8 @@ export default function AppelsDOffresScreen() {
       const matchSearch = w.waste_types?.name?.toLowerCase().includes(search.toLowerCase()) || 
                           w.location.toLowerCase().includes(search.toLowerCase());
       const matchCategory = activeCategory === 'all' || w.type_id.toString() === activeCategory;
-      return matchSearch && matchCategory;
+      const isPublished = w.status === 'published';
+      return matchSearch && matchCategory && isPublished;
     });
   }, [wastes, search, activeCategory]);
 

@@ -87,20 +87,20 @@ export default function EspaceDashboard() {
             route: '/(tabs)/missions'
           },
           {
+            id: 'bourse',
+            title: 'Appels d\'Offres',
+            subtitle: 'Gros volumes (B2B)',
+            icon: ShieldCheck,
+            color: '#10b981',
+            route: '/(tabs)/espace/offres'
+          },
+          {
             id: 'history',
             title: 'Collectes',
             subtitle: 'Historique des ramassages',
             icon: History,
             color: '#3b82f6',
             route: '/(tabs)/mes-dechets'
-          },
-          {
-            id: 'map',
-            title: 'Navigation',
-            subtitle: 'Carte des bacs pleins',
-            icon: MapIcon,
-            color: '#0ea5e9',
-            route: '/(tabs)/map'
           }
         ];
       case 'organisation_admin':
