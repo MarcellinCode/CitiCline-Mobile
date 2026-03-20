@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator, Linking } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
@@ -12,6 +12,7 @@ const ROLE_LABELS: Record<string, string> = {
   organisation_admin: 'Admin Organisation',
   agent_collecteur: 'Agent Collecteur',
   mairie: 'Mairie',
+  super_admin: 'Super Admin',
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -21,6 +22,7 @@ const ROLE_COLORS: Record<string, string> = {
   organisation_admin: '#8b5cf6',
   agent_collecteur: '#f59e0b',
   mairie: '#020617',
+  super_admin: '#ef4444',
 };
 
 export default function ProfileScreen() {
@@ -123,6 +125,22 @@ export default function ProfileScreen() {
         {/* Menu paramètres */}
         <Text className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-4">Paramètres</Text>
         <View className="mb-8">
+          {profile?.role === 'super_admin' && (
+            <TouchableOpacity 
+              onPress={() => Linking.openURL('https://recycla-admin.vercel.app/admin')} // URL à adapter si nécessaire
+              className="flex-row items-center justify-between py-6 bg-slate-900 px-6 rounded-3xl mb-4 shadow-xl shadow-slate-900/20"
+            >
+              <View className="flex-row items-center">
+                <Shield size={20} color="#ef4444" />
+                <View className="ml-4">
+                  <Text className="text-[11px] font-black text-white uppercase tracking-widest">Dashboard Super Admin</Text>
+                  <Text className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic">Contrôle Total Plateforme</Text>
+                </View>
+              </View>
+              <ChevronRight size={16} color="white" />
+            </TouchableOpacity>
+          )}
+
           {[
             { icon: Crown, label: 'Abonnement', value: profile?.subscription_tier || 'Starter', route: '/(tabs)/abonnements', color: '#eab308' },
             { icon: Settings, label: 'Paramètres', route: '/(tabs)/settings', color: '#64748b' },
