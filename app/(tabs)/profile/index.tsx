@@ -36,7 +36,7 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View style={styles.loadingContainer}>
         <ActivityIndicator color="#2aa275" />
       </View>
     );
@@ -46,38 +46,38 @@ export default function ProfileScreen() {
   const roleLabel = ROLE_LABELS[profile?.role || 'vendeur'] || 'Membre';
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View className="px-8 pt-6 flex-row items-center justify-between mb-8">
-        <Text className="text-sm font-black text-[#020617] uppercase tracking-widest">Mon Compte</Text>
-        <TouchableOpacity className="w-10 h-10 bg-slate-50 rounded-xl items-center justify-center border border-slate-100">
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Mon Compte</Text>
+        <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/notifications')}>
           <Bell size={20} color="#020617" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 px-8 pb-20" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Avatar & Identité */}
         <MotiView
           from={{ opacity: 0, translateY: -20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          className="items-center mb-10"
+          style={styles.avatarSection}
         >
-          <View className="relative">
-            <View className="w-28 h-28 bg-slate-50 rounded-full items-center justify-center border border-slate-100 overflow-hidden mb-4">
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatarCircle}>
               <User size={50} color="#cbd5e1" />
             </View>
-            <TouchableOpacity className="absolute bottom-2 right-0 w-9 h-9 bg-[#020617] rounded-full items-center justify-center border-4 border-white shadow-sm">
+            <TouchableOpacity style={styles.cameraBtn}>
               <Camera size={14} color="white" />
             </TouchableOpacity>
           </View>
-          <Text className="text-xl font-black text-[#020617] uppercase italic tracking-tighter mb-1">
+          <Text style={styles.userName}>
             {profile?.full_name || 'Utilisateur CITICLINE'}
           </Text>
           
           {/* Badge rôle */}
-          <View className="px-4 py-1 rounded-full mt-1" style={{ backgroundColor: `${roleColor}15` }}>
-            <Text className="text-[9px] font-black uppercase tracking-widest" style={{ color: roleColor }}>
+          <View style={[styles.roleBadge, { backgroundColor: `${roleColor}15` }]}>
+            <Text style={[styles.roleBadgeText, { color: roleColor }]}>
               {roleLabel}
             </Text>
           </View>
@@ -88,53 +88,53 @@ export default function ProfileScreen() {
           from={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 100 }}
-          className="flex-row gap-3 mb-10"
+          style={styles.statsRow}
         >
-          <View className="flex-1 bg-slate-900 p-5 rounded-[2rem] items-center">
+          <View style={styles.statBoxDark}>
             <Wallet size={20} color="#2aa275" />
-            <Text className="text-white text-lg font-black italic tracking-tighter mt-2">
+            <Text style={styles.statValueWhite}>
               {profile?.wallet_balance?.toLocaleString('fr-FR') || '0'}
             </Text>
-            <Text className="text-slate-400 text-[8px] font-black uppercase tracking-widest">FCFA</Text>
+            <Text style={styles.statLabelMuted}>FCFA</Text>
           </View>
-          <View className="flex-1 bg-emerald-50 border border-emerald-100 p-5 rounded-[2rem] items-center">
+          <View style={styles.statBoxGreen}>
             <Leaf size={20} color="#2aa275" />
-            <Text className="text-[#020617] text-lg font-black italic tracking-tighter mt-2">
+            <Text style={styles.statValueDark}>
               {profile?.eco_points || 0}
             </Text>
-            <Text className="text-slate-400 text-[8px] font-black uppercase tracking-widest">ECO-PTS</Text>
+            <Text style={styles.statLabelMuted}>ECO-PTS</Text>
           </View>
-          <View className="flex-1 bg-slate-50 border border-slate-100 p-5 rounded-[2rem] items-center">
+          <View style={styles.statBoxLight}>
             <Crown size={20} color="#eab308" />
-            <Text className="text-[#020617] text-[10px] font-black italic tracking-tighter mt-2 uppercase">
+            <Text style={styles.statValueSmallDark}>
               {profile?.subscription_tier || 'Starter'}
             </Text>
-            <Text className="text-slate-400 text-[8px] font-black uppercase tracking-widest">Plan</Text>
+            <Text style={styles.statLabelMuted}>Plan</Text>
           </View>
         </MotiView>
 
         {/* Info Ville */}
         {profile?.city && (
-          <View className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex-row items-center mb-8">
-            <View className="w-2 h-2 rounded-full bg-primary mr-3" />
-            <Text className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Zone : </Text>
-            <Text className="text-[10px] font-black text-[#020617] uppercase tracking-widest">{profile.city}</Text>
+          <View style={styles.cityInfo}>
+            <View style={styles.cityDot} />
+            <Text style={styles.cityLabel}>Zone : </Text>
+            <Text style={styles.cityValue}>{profile.city}</Text>
           </View>
         )}
 
         {/* Menu paramètres */}
-        <Text className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em] mb-4">Paramètres</Text>
-        <View className="mb-8">
+        <Text style={styles.menuSectionTitle}>Paramètres</Text>
+        <View style={styles.menuContainer}>
           {profile?.role === 'super_admin' && (
             <TouchableOpacity 
-              onPress={() => Linking.openURL('https://recycla-admin.vercel.app/admin')} // URL à adapter si nécessaire
-              className="flex-row items-center justify-between py-6 bg-slate-900 px-6 rounded-3xl mb-4 shadow-xl shadow-slate-900/20"
+              onPress={() => Linking.openURL('https://recycla-admin.vercel.app/admin')}
+              style={styles.adminBtn}
             >
-              <View className="flex-row items-center">
+              <View style={styles.adminBtnLeft}>
                 <Shield size={20} color="#ef4444" />
-                <View className="ml-4">
-                  <Text className="text-[11px] font-black text-white uppercase tracking-widest">Dashboard Super Admin</Text>
-                  <Text className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic">Contrôle Total Plateforme</Text>
+                <View style={styles.adminBtnTexts}>
+                  <Text style={styles.adminBtnTitle}>Dashboard Super Admin</Text>
+                  <Text style={styles.adminBtnSubtitle}>Contrôle Total Plateforme</Text>
                 </View>
               </View>
               <ChevronRight size={16} color="white" />
@@ -150,14 +150,14 @@ export default function ProfileScreen() {
             <TouchableOpacity 
               key={i}
               onPress={() => item.route && router.push(item.route as any)}
-              className="flex-row items-center justify-between py-5 border-b border-slate-50"
+              style={styles.menuItem}
             >
-              <View className="flex-row items-center">
+              <View style={styles.menuItemLeft}>
                 <item.icon size={18} color={item.color} />
-                <Text className="ml-4 text-[11px] font-bold text-[#020617] uppercase tracking-widest">{item.label}</Text>
+                <Text style={styles.menuItemLabel}>{item.label}</Text>
               </View>
-              <View className="flex-row items-center">
-                {item.value && <Text className="text-[9px] font-black text-amber-600 mr-2 uppercase">{item.value}</Text>}
+              <View style={styles.menuItemRight}>
+                {item.value && <Text style={styles.menuItemValue}>{item.value}</Text>}
                 <ChevronRight size={14} color="#cbd5e1" />
               </View>
             </TouchableOpacity>
@@ -166,14 +166,59 @@ export default function ProfileScreen() {
 
         <TouchableOpacity 
           onPress={handleLogout}
-          className="w-full py-6 mt-4 flex-row items-center justify-center bg-red-50 rounded-2xl"
+          style={styles.logoutBtn}
         >
           <LogOut size={16} color="#ef4444" />
-          <Text className="text-[#ef4444] font-black uppercase tracking-widest text-[10px] ml-2">Déconnexion</Text>
+          <Text style={styles.logoutText}>Déconnexion</Text>
         </TouchableOpacity>
 
-        <View className="h-10" />
+        <View style={styles.bottomSpace} />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  loadingContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
+  safeArea: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  notificationBtn: { width: 40, height: 40, backgroundColor: '#f8fafc', borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
+  avatarSection: { alignItems: 'center', marginBottom: 40 },
+  avatarWrapper: { position: 'relative' },
+  avatarCircle: { width: 112, height: 112, backgroundColor: '#f8fafc', borderRadius: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9', overflow: 'hidden', marginBottom: 16 },
+  cameraBtn: { position: 'absolute', bottom: 8, right: 0, width: 36, height: 36, backgroundColor: '#020617', borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  userName: { fontSize: 20, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 4 },
+  roleBadge: { paddingHorizontal: 16, paddingVertical: 4, borderRadius: 9999, marginTop: 4 },
+  roleBadgeText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 40 },
+  statBoxDark: { flex: 1, backgroundColor: '#0f172a', padding: 20, borderRadius: 32, alignItems: 'center' },
+  statBoxGreen: { flex: 1, backgroundColor: '#ecfdf5', borderWidth: 1, borderColor: '#d1fae5', padding: 20, borderRadius: 32, alignItems: 'center' },
+  statBoxLight: { flex: 1, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 20, borderRadius: 32, alignItems: 'center' },
+  statValueWhite: { color: 'white', fontSize: 18, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1, marginTop: 8 },
+  statValueDark: { color: '#020617', fontSize: 18, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1, marginTop: 8 },
+  statValueSmallDark: { color: '#020617', fontSize: 10, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1, marginTop: 8, textTransform: 'uppercase' },
+  statLabelMuted: { color: '#94a3b8', fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  cityInfo: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 16, borderRadius: 16, flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
+  cityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 12 },
+  cityLabel: { fontSize: 10, fontWeight: '900', color: '#64748b', textTransform: 'uppercase', letterSpacing: 2 },
+  cityValue: { fontSize: 10, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  menuSectionTitle: { fontSize: 10, fontWeight: '900', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 16 },
+  menuContainer: { marginBottom: 32 },
+  adminBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 24, backgroundColor: '#0f172a', paddingHorizontal: 24, borderRadius: 24, marginBottom: 16, shadowColor: '#0f172a', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
+  adminBtnLeft: { flexDirection: 'row', alignItems: 'center' },
+  adminBtnTexts: { marginLeft: 16 },
+  adminBtnTitle: { fontSize: 11, fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: 2 },
+  adminBtnSubtitle: { fontSize: 8, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4, fontStyle: 'italic' },
+  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+  menuItemLeft: { flexDirection: 'row', alignItems: 'center' },
+  menuItemLabel: { marginLeft: 16, fontSize: 11, fontWeight: 'bold', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  menuItemRight: { flexDirection: 'row', alignItems: 'center' },
+  menuItemValue: { fontSize: 9, fontWeight: '900', color: '#d97706', marginRight: 8, textTransform: 'uppercase' },
+  logoutBtn: { width: '100%', paddingVertical: 24, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fef2f2', borderRadius: 16 },
+  logoutText: { color: '#ef4444', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginLeft: 8 },
+  bottomSpace: { height: 40 }
+});

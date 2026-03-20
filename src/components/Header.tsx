@@ -1,31 +1,38 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { cn } from '@/lib/utils';
+import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
-  className?: string;
+  style?: StyleProp<ViewStyle>;
   rightAction?: React.ReactNode;
 }
 
-export function Header({ title, subtitle, className, rightAction }: HeaderProps) {
+export function Header({ title, subtitle, style, rightAction }: HeaderProps) {
   return (
-    <View className={cn("px-8 pt-16 pb-6 bg-white flex-row items-center justify-between", className)}>
-      <View className="flex-1">
-        <Text className="text-3xl font-black text-[#020617] uppercase italic tracking-tighter leading-none mb-1">
+    <View style={[styles.container, style]}>
+      <View style={styles.textContainer}>
+        <Text style={styles.titleText}>
           {title}
         </Text>
         {subtitle && (
-          <Text className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
+          <Text style={styles.subtitleText}>
             {subtitle}
           </Text>
         )}
       </View>
       {rightAction && (
-        <View className="ml-4">
+        <View style={styles.rightActionContainer}>
           {rightAction}
         </View>
       )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { paddingHorizontal: 32, paddingTop: 64, paddingBottom: 24, backgroundColor: 'white', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  textContainer: { flex: 1 },
+  titleText: { fontSize: 30, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, lineHeight: 30, marginBottom: 4 },
+  subtitleText: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2 },
+  rightActionContainer: { marginLeft: 16 }
+});

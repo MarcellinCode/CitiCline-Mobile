@@ -19,11 +19,11 @@ export default function MapScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <Header title="Radar CITICLINE" subtitle="Déchets à proximité de vous" />
       
-      <View className="flex-1 overflow-hidden rounded-t-[3rem]">
+      <View style={styles.mapContainer}>
         <MapView
           provider={PROVIDER_GOOGLE}
           style={StyleSheet.absoluteFill}
@@ -39,18 +39,18 @@ export default function MapScreen() {
                 coordinate={{ latitude: Number(waste.latitude), longitude: Number(waste.longitude) }}
                 title={waste.waste_types?.name}
               >
-                <View className="w-12 h-12 bg-white rounded-2xl items-center justify-center border-2 border-teal-500 shadow-lg">
-                  <Text className="text-xl">{waste.waste_types?.emoji}</Text>
+                <View style={styles.markerContainer}>
+                  <Text style={styles.markerEmoji}>{waste.waste_types?.emoji}</Text>
                 </View>
                 <Callout 
                     onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } })}
                     tooltip
                 >
-                    <View className="bg-white p-4 rounded-3xl border border-slate-100 min-w-[200]">
-                        <Text className="text-lg font-black text-slate-900 uppercase italic tracking-tighter mb-1">
+                    <View style={styles.calloutContainer}>
+                        <Text style={styles.calloutTitle}>
                             {waste.waste_types?.name}
                         </Text>
-                        <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        <Text style={styles.calloutSubtitle}>
                             {waste.estimated_weight} KG • {waste.location}
                         </Text>
                     </View>
@@ -63,6 +63,16 @@ export default function MapScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'white' },
+  mapContainer: { flex: 1, overflow: 'hidden', borderTopLeftRadius: 48, borderTopRightRadius: 48 },
+  markerContainer: { width: 48, height: 48, backgroundColor: 'white', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#14b8a6', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 15, elevation: 5 },
+  markerEmoji: { fontSize: 20 },
+  calloutContainer: { backgroundColor: 'white', padding: 16, borderRadius: 24, borderWidth: 1, borderColor: '#f1f5f9', minWidth: 200 },
+  calloutTitle: { fontSize: 18, fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 4 },
+  calloutSubtitle: { fontSize: 12, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2 }
+});
 
 const mapStyle = [
   {

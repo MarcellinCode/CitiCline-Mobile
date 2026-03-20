@@ -1,8 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Dimensions } from 'react-native';
+import * as React from 'react';
+import { useState, useMemo } from 'react';
+import { View, Text, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Dimensions, StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useWastes } from '@/hooks/useWastes';
 import { useProfile } from '@/hooks/useProfile';
+import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 import { WasteCard } from '@/components/WasteCard';
 import { FeaturedWasteCard } from '@/components/FeaturedWasteCard';
 import { Waste } from '@/lib/types';
@@ -18,20 +20,13 @@ const CATEGORIES = [
 export default function Marketplace() {
   const { wastes, loading: wastesLoading, refreshing, onRefresh } = useWastes();
   const { profile, loading: profileLoading } = useProfile();
+  const unreadCount = useUnreadNotifications();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
   const filteredWastes = useMemo(() => {
     let list = wastes;
-    
-    // Role-based filtering
-    if (profile?.role === 'vendeur') {
-      // For Vendeur, we might show their own or a specialized feed
-      // For now, let's keep the full feed but add a "Your listings" filter potentially in the future
-      // Or simply filter based on a new logic
-    }
-
     return list.filter(w => {
       const matchSearch = w.waste_types?.name?.toLowerCase().includes(search.toLowerCase()) || 
                           w.location.toLowerCase().includes(search.toLowerCase());
@@ -43,63 +38,62 @@ export default function Marketplace() {
   const loading = wastesLoading || profileLoading;
 
   const featuredWastes = useMemo(() => {
-    return wastes.slice(0, 3); // Mocking features as the first 3 items
+    return wastes.slice(0, 3);
   }, [wastes]);
 
   if (loading && !refreshing) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View style={styles.loadingContainer}>
         <ActivityIndicator color="#2aa275" />
       </View>
     );
   }
 
   const renderHeader = () => (
-    <View className="pt-16 pb-6 px-6">
-      <View className="flex-row items-center justify-between mb-8">
-        <View className="w-10" />
-        <Text className="text-2xl font-black text-primary uppercase italic tracking-tighter">CITIC<Text className="text-[#020617]">LINE</Text></Text>
-        <TouchableOpacity className="w-10 h-10 bg-slate-50 rounded-xl items-center justify-center border border-slate-100">
+    <View style={styles.headerContainer}>
+      <View style={styles.topRow}>
+        <View style={styles.emptyBox} />
+        <Text style={styles.mainTitle}>CITIC<Text style={styles.mainTitleSub}>LINE</Text></Text>
+        <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/notifications')}>
           <Bell size={20} color="#020617" />
-          <View className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white" />
+          {unreadCount > 0 && <View style={styles.notificationBadge} />}
         </TouchableOpacity>
       </View>
 
-      <View className="bg-slate-50 border border-slate-100 rounded-2xl flex-row items-center px-4 py-3 mb-6 shadow-sm">
+      <View style={styles.searchBar}>
         <Search size={20} color="#94a3b8" />
         <TextInput 
           placeholder="Rechercher des produits recyclables..."
           placeholderTextColor="#94a3b8"
-          className="flex-1 ml-3 text-sm font-semibold text-[#020617]"
+          style={styles.searchInput}
           value={search}
           onChangeText={setSearch}
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-8">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
         {CATEGORIES.map((cat) => (
           <TouchableOpacity 
-            key={cat.id}
+            key={cat.id.toString()}
             onPress={() => setActiveCategory(cat.id.toString())}
-            className={`flex-row items-center px-5 py-2.5 rounded-full mr-3 border ${
-              activeCategory === cat.id.toString() 
-                ? 'bg-primary/10 border-primary' 
-                : 'bg-white border-slate-100'
-            }`}
+            style={[
+              styles.categoryBtn,
+              activeCategory === cat.id.toString() ? styles.categoryBtnActive : styles.categoryBtnInactive
+            ] as any}
           >
             <cat.icon size={14} color={activeCategory === cat.id.toString() ? '#2aa275' : '#64748b'} />
-            <Text className={`ml-2 text-[11px] font-black uppercase tracking-wider ${
-              activeCategory === cat.id.toString() ? 'text-primary' : 'text-slate-500'
-            }`}>
+            <Text style={[
+              styles.categoryText,
+              activeCategory === cat.id.toString() ? styles.categoryTextActive : styles.categoryTextInactive
+            ]}>
               {cat.name}
             </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
 
-      {/* Featured Lots - Only for Collecteurs/Entreprises or showing Vendeur's best deals */}
-      <View className="mb-8">
-        <Text className="text-lg font-black text-[#020617] mb-4">
+      <View style={styles.featuredSection}>
+        <Text style={styles.sectionTitle}>
           {profile?.role === 'vendeur' ? 'Opportunités Locales' : 'Lots en Vedette'}
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -109,14 +103,14 @@ export default function Marketplace() {
         </ScrollView>
       </View>
 
-      <Text className="text-lg font-black text-[#020617] mb-4">
+      <Text style={styles.sectionTitle}>
         {profile?.role === 'vendeur' ? 'Vos Publications' : 'Nouveaux Arrivages'}
       </Text>
     </View>
   );
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
       <FlatList
@@ -132,8 +126,8 @@ export default function Marketplace() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2aa275" />
         }
         ListEmptyComponent={() => (
-          <View className="py-20 items-center">
-            <Text className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+          <View style={styles.emptyList}>
+            <Text style={styles.emptyListText}>
               Aucun lot correspondant trouvé
             </Text>
           </View>
@@ -142,3 +136,28 @@ export default function Marketplace() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'white' },
+  loadingContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
+  headerContainer: { paddingTop: 64, paddingBottom: 24, paddingHorizontal: 24 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  emptyBox: { width: 40 },
+  mainTitle: { fontSize: 24, fontWeight: '900', color: '#10b981', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1 },
+  mainTitleSub: { color: '#020617' },
+  notificationBtn: { width: 40, height: 40, backgroundColor: '#f8fafc', borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  notificationBadge: { position: 'absolute', top: 8, right: 8, width: 8, height: 8, backgroundColor: '#10b981', borderRadius: 4, borderWidth: 2, borderColor: 'white' },
+  searchBar: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 16, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
+  searchInput: { flex: 1, marginLeft: 12, fontSize: 14, fontWeight: '600', color: '#020617' },
+  categoriesScroll: { marginBottom: 32 },
+  categoryBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 9999, marginRight: 12, borderWidth: 1 },
+  categoryBtnActive: { backgroundColor: 'rgba(16, 185, 129, 0.1)', borderColor: '#10b981' },
+  categoryBtnInactive: { backgroundColor: 'white', borderColor: '#f1f5f9' },
+  categoryText: { marginLeft: 8, fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
+  categoryTextActive: { color: '#10b981' },
+  categoryTextInactive: { color: '#64748b' },
+  featuredSection: { marginBottom: 32 },
+  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#020617', marginBottom: 16 },
+  emptyList: { paddingVertical: 80, alignItems: 'center' },
+  emptyListText: { color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 }
+});

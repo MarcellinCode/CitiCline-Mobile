@@ -50,78 +50,81 @@ export default function AgentsManagement() {
   }, [profile]);
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ 
         headerShown: true,
         headerTitle: "NOS AGENTS",
-        headerTitleStyle: { fontFamily: 'System', fontWeight: '900', letterSpacing: -0.5 },
+        headerTitleStyle: { fontWeight: '900' },
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()} className="ml-4 p-2 bg-slate-50 rounded-xl">
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
             <ArrowLeft size={20} color="#020617" />
           </TouchableOpacity>
         ),
         headerShadowVisible: false
       }} />
 
-      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header Stats */}
-        <View className="flex-row gap-4 mb-8">
-          <View className="flex-1 bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100">
-            <Text className="text-indigo-600 font-black text-[10px] uppercase tracking-widest mb-1">Effectif</Text>
-            <Text className="text-2xl font-black text-indigo-950">{agents.length}</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statBoxBlue}>
+            <Text style={styles.statLabelBlue}>Effectif</Text>
+            <Text style={styles.statValueBlue}>{agents.length}</Text>
           </View>
-          <View className="flex-1 bg-emerald-50 p-6 rounded-[2rem] border border-emerald-100">
-            <Text className="text-emerald-600 font-black text-[10px] uppercase tracking-widest mb-1">Performance</Text>
-            <Text className="text-2xl font-black text-emerald-950">+12%</Text>
+          <View style={styles.statBoxGreen}>
+            <Text style={styles.statLabelGreen}>Performance</Text>
+            <Text style={styles.statValueGreen}>+12%</Text>
           </View>
         </View>
 
         {/* Search & Actions */}
-        <View className="flex-row items-center gap-3 mb-8">
-          <View className="flex-1 flex-row items-center bg-slate-50 px-5 py-4 rounded-3xl border border-slate-100">
+        <View style={styles.searchSection}>
+          <View style={styles.searchBar}>
             <Search size={18} color="#94a3b8" />
-            <Text className="ml-3 text-slate-400 font-bold text-xs uppercase tracking-tight">Chercher un agent...</Text>
+            <Text style={styles.searchPlaceholder}>Chercher un agent...</Text>
           </View>
-          <TouchableOpacity className="w-14 h-14 bg-slate-900 rounded-2xl items-center justify-center shadow-lg shadow-slate-900/20">
+          <TouchableOpacity 
+            style={styles.addBtn}
+            onPress={() => alert("Pour des raisons de sécurité, l'ajout et la gestion de vos agents se fait directement sur le Portail Web B2B (Mairie/Entreprise).")}
+          >
             <Plus size={24} color="#fff" />
           </TouchableOpacity>
         </View>
 
         {/* Agents List */}
-        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Liste des Collaborateurs</Text>
+        <Text style={styles.sectionTitle}>Liste des Collaborateurs</Text>
         
         {loading ? (
-          <ActivityIndicator color="#6366f1" className="mt-20" />
+          <ActivityIndicator color="#6366f1" style={{ marginTop: 80 }} />
         ) : agents.length === 0 ? (
-          <View className="py-20 items-center justify-center">
+          <View style={styles.emptyContainer}>
             <User size={48} color="#f1f5f9" />
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-tight mt-4">Aucun agent trouvé</p>
+            <Text style={styles.emptyText}>Aucun agent trouvé</Text>
           </View>
         ) : (
-          <View className="space-y-4">
+          <View style={styles.listContainer}>
             {agents.map((agent, index) => (
               <MotiView
                 key={agent.id}
                 from={{ opacity: 0, translateX: -20 }}
                 animate={{ opacity: 1, translateX: 0 }}
                 transition={{ delay: 100 * index }}
-                className="bg-white border border-slate-100 p-5 rounded-[2rem] shadow-sm flex-row items-center"
+                style={styles.agentCard}
               >
-                <View className="w-14 h-14 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+                <View style={styles.agentAvatarBg}>
                   <User size={24} color="#64748b" />
                 </View>
                 
-                <View className="flex-1 ml-4">
-                  <View className="flex-row items-center gap-2">
-                    <Text className="font-black text-[#020617] text-sm uppercase">{agent.full_name}</Text>
-                    <View className="w-2 h-2 rounded-full bg-emerald-500" />
+                <View style={styles.agentInfo}>
+                  <View style={styles.agentNameRow}>
+                    <Text style={styles.agentName}>{agent.full_name}</Text>
+                    <View style={styles.statusDot} />
                   </View>
-                  <Text className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mt-0.5">{agent.phone}</Text>
+                  <Text style={styles.agentPhone}>{agent.phone}</Text>
                 </View>
 
-                <View className="items-end">
-                   <Text className="text-[10px] font-black text-emerald-600 uppercase tracking-tight mb-1">{agent.wallet_balance.toLocaleString()} $</Text>
-                   <TouchableOpacity className="p-2 bg-slate-50 rounded-lg">
+                <View style={styles.agentRight}>
+                   <Text style={styles.agentBalance}>{agent.wallet_balance?.toLocaleString() || '0'} $</Text>
+                   <TouchableOpacity style={styles.moreBtn}>
                       <MoreVertical size={16} color="#94a3b8" />
                    </TouchableOpacity>
                 </View>
@@ -130,8 +133,41 @@ export default function AgentsManagement() {
           </View>
         )}
 
-        <View className="h-20" />
+        <View style={{ height: 80 }} />
       </ScrollView>
     </View>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'white' },
+  headerBackBtn: { marginLeft: 16, padding: 8, backgroundColor: '#f8fafc', borderRadius: 12 },
+  scrollView: { flex: 1, paddingHorizontal: 24, paddingTop: 16 },
+  statsContainer: { flexDirection: 'row', gap: 16, marginBottom: 32 },
+  statBoxBlue: { flex: 1, backgroundColor: '#eef2ff', padding: 24, borderRadius: 32, borderWidth: 1, borderColor: '#e0e7ff' },
+  statLabelBlue: { color: '#4f46e5', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  statValueBlue: { fontSize: 24, fontWeight: '900', color: '#1e1b4b' },
+  statBoxGreen: { flex: 1, backgroundColor: '#ecfdf5', padding: 24, borderRadius: 32, borderWidth: 1, borderColor: '#d1fae5' },
+  statLabelGreen: { color: '#059669', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  statValueGreen: { fontSize: 24, fontWeight: '900', color: '#022c22' },
+  searchSection: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 32 },
+  searchBar: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#f8fafc', paddingHorizontal: 20, paddingVertical: 16, borderRadius: 24, borderWidth: 1, borderColor: '#f1f5f9' },
+  searchPlaceholder: { marginLeft: 12, color: '#94a3b8', fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: -0.5 },
+  addBtn: { width: 56, height: 56, backgroundColor: '#0f172a', borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: 'rgba(15, 23, 42, 0.2)', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 1, shadowRadius: 15, elevation: 8 },
+  sectionTitle: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16 },
+  emptyContainer: { paddingVertical: 80, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { color: '#94a3b8', fontWeight: 'bold', fontSize: 12, textTransform: 'uppercase', letterSpacing: -0.5, marginTop: 16 },
+  listContainer: { flexDirection: 'column', gap: 16 },
+  agentCard: { backgroundColor: 'white', borderWidth: 1, borderColor: '#f1f5f9', padding: 20, borderRadius: 32, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  agentAvatarBg: { width: 56, height: 56, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  agentInfo: { flex: 1, marginLeft: 16 },
+  agentNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  agentName: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase' },
+  statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981' },
+  agentPhone: { fontSize: 10, color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: -0.5, marginTop: 2 },
+  agentRight: { alignItems: 'flex-end' },
+  agentBalance: { fontSize: 10, fontWeight: '900', color: '#059669', textTransform: 'uppercase', letterSpacing: -0.5, marginBottom: 4 },
+  moreBtn: { padding: 8, backgroundColor: '#f8fafc', borderRadius: 8 }
+});

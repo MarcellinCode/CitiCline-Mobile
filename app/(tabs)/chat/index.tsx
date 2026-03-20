@@ -45,17 +45,17 @@ export default function ChatScreen() {
   }, []);
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <Header title="Messages" subtitle="Discutez avec vos partenaires" />
 
       {/* Sleek Search Bar */}
-      <View className="px-8 pb-6">
-          <View className="bg-slate-50 border border-slate-100 rounded-[1.5rem] px-6 py-4 flex-row items-center">
+      <View style={styles.searchSection}>
+          <View style={styles.searchBar}>
               <TextInput 
                 placeholder="Rechercher une discussion..." 
                 placeholderTextColor="#94a3b8"
-                className="flex-1 text-sm font-semibold text-[#020617]"
+                style={styles.searchInput}
               />
           </View>
       </View>
@@ -63,7 +63,7 @@ export default function ChatScreen() {
       <FlatList
         data={conversations}
         keyExtractor={(item) => item.otherUser.id.toString()}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity 
@@ -71,43 +71,69 @@ export default function ChatScreen() {
               pathname: '/(tabs)/chat/[id]',
               params: { id: item.otherUser.id, name: item.otherUser.full_name }
             })}
-            className="flex-row items-center py-5 border-b border-slate-50"
+            style={styles.chatItem}
           >
-            <View className="relative">
-                <View className="w-14 h-14 bg-slate-100 rounded-full items-center justify-center border border-slate-50 mr-4">
+            <View style={styles.avatarContainer}>
+                <View style={styles.avatarBg}>
                     <User size={24} color="#94a3b8" />
                 </View>
-                <View className="absolute bottom-0 right-4 w-3.5 h-3.5 bg-[#2aa275] rounded-full border-2 border-white" />
+                <View style={styles.statusDot} />
             </View>
-            <View className="flex-1">
-                <View className="flex-row justify-between items-baseline mb-1">
-                  <Text className="text-[13px] font-black text-[#020617] uppercase tracking-wider">
+            <View style={styles.chatContent}>
+                <View style={styles.chatHeader}>
+                  <Text style={styles.chatName}>
                       {item.otherUser?.full_name || 'Utilisateur CITICLINE'}
                   </Text>
-                  <Text className="text-[9px] font-bold text-slate-400">
+                  <Text style={styles.chatTime}>
                     {new Date(item.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
                   </Text>
                 </View>
-                <View className="flex-row justify-between items-center">
-                    <Text className={`text-xs font-medium flex-1 ${!item.isRead ? 'text-[#020617] font-black' : 'text-slate-500'}`} numberOfLines={1}>
+                <View style={styles.chatFooter}>
+                    <Text style={[styles.chatPreview, !item.isRead ? styles.chatPreviewUnread : styles.chatPreviewRead]} numberOfLines={1}>
                         {item.lastMessage}
                     </Text>
                     {!item.isRead && (
-                        <View className="w-2 h-2 bg-primary rounded-full ml-3" />
+                        <View style={styles.unreadDot} />
                     )}
                 </View>
             </View>
           </TouchableOpacity>
         )}
         ListEmptyComponent={() => (
-            <View className="py-20 items-center">
-                <View className="w-20 h-20 bg-slate-50 rounded-full items-center justify-center mb-4">
+            <View style={styles.emptyContainer}>
+                <View style={styles.emptyIconBg}>
                   <MessageSquare size={32} color="#cbd5e1" />
                 </View>
-                <Text className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Aucune discussion active</Text>
+                <Text style={styles.emptyText}>Aucune discussion active</Text>
             </View>
         )}
       />
     </View>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'white' },
+  searchSection: { paddingHorizontal: 32, paddingBottom: 24 },
+  searchBar: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 24, paddingHorizontal: 24, paddingVertical: 16, flexDirection: 'row', alignItems: 'center' },
+  searchInput: { flex: 1, fontSize: 14, fontWeight: '600', color: '#020617' },
+  listContent: { paddingHorizontal: 24, paddingBottom: 120 },
+  chatItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+  avatarContainer: { position: 'relative' },
+  avatarBg: { width: 56, height: 56, backgroundColor: '#f1f5f9', borderRadius: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f8fafc', marginRight: 16 },
+  statusDot: { position: 'absolute', bottom: 0, right: 16, width: 14, height: 14, backgroundColor: '#2aa275', borderRadius: 7, borderWidth: 2, borderColor: 'white' },
+  chatContent: { flex: 1 },
+  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 },
+  chatName: { fontSize: 13, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1 },
+  chatTime: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8' },
+  chatFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  chatPreview: { fontSize: 12, flex: 1 },
+  chatPreviewUnread: { color: '#020617', fontWeight: '900' },
+  chatPreviewRead: { color: '#64748b', fontWeight: '500' },
+  unreadDot: { width: 8, height: 8, backgroundColor: '#2aa275', borderRadius: 4, marginLeft: 12 },
+  emptyContainer: { paddingVertical: 80, alignItems: 'center' },
+  emptyIconBg: { width: 80, height: 80, backgroundColor: '#f8fafc', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  emptyText: { color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 }
+});

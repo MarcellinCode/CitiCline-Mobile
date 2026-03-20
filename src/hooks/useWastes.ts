@@ -16,6 +16,7 @@ export function useWastes() {
           waste_types (*),
           profiles:seller_id (*)
         `)
+        .eq('status', 'published')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

@@ -2,10 +2,12 @@ import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search } from 'l
 import { View, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { useProfile } from '@/hooks/useProfile';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 export default function TabsLayout() {
   const router = useRouter();
   const { profile, loading } = useProfile();
+  const unreadMessagesCount = useUnreadMessages();
 
   if (loading) {
     return (
@@ -41,7 +43,7 @@ export default function TabsLayout() {
         name="marketplace/index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Home size={24} color={color} />,
         }}
       />
 
@@ -50,7 +52,7 @@ export default function TabsLayout() {
         name="espace/index"
         options={{
           title: 'Espace',
-          tabBarIcon: ({ color }) => <LayoutDashboard size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <LayoutDashboard size={24} color={color} />,
         }}
       />
 
@@ -101,7 +103,9 @@ export default function TabsLayout() {
         name="chat/index"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <MessageSquare size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <MessageSquare size={24} color={color} />,
+          tabBarBadge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#ef4444', fontSize: 10, fontWeight: 'bold' }
         }}
       />
 
@@ -110,7 +114,7 @@ export default function TabsLayout() {
         name="profile/index"
         options={{
           title: 'Compte',
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <User size={24} color={color} />,
         }}
       />
 
@@ -124,6 +128,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="missions/[id]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="abonnements/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="espace/agents/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="espace/offres" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="espace/analytics" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="settings/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>

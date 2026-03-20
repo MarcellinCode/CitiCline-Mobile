@@ -6,31 +6,35 @@ export default function SettingsScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View className="px-8 pt-6 flex-row items-center justify-between mb-8">
-        <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
-        <Text className="text-sm font-black text-[#020617] uppercase tracking-widest">Paramètres</Text>
-        <View className="w-12" />
+        <Text style={styles.headerTitle}>Paramètres</Text>
+        <View style={{ width: 48 }} />
       </View>
 
-      <ScrollView className="flex-1 px-8 pb-20">
-        <View className="space-y-6">
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.listContainer}>
           {[
-            { icon: Bell, title: "Notifications" },
+            { icon: Bell, title: "Notifications", route: '/notifications' },
             { icon: Lock, title: "Sécurité" },
             { icon: Shield, title: "Confidentialité" },
             { icon: CircleHelp, title: "Aide & Support" },
           ].map((item, i) => (
-            <TouchableOpacity key={i} className="flex-row items-center justify-between py-6 border-b border-slate-50">
-              <View className="flex-row items-center">
+            <TouchableOpacity 
+              key={i} 
+              style={styles.listItem}
+              onPress={() => item.route ? router.push(item.route as any) : null}
+            >
+              <View style={styles.listItemLeft}>
                 <item.icon size={20} color="#64748b" />
-                <Text className="ml-4 text-sm font-bold text-slate-600 uppercase tracking-widest">{item.title}</Text>
+                <Text style={styles.listItemText}>{item.title}</Text>
               </View>
-              <ChevronLeft size={16} color="#cbd5e1" className="rotate-180" />
+              <ChevronLeft size={16} color="#cbd5e1" style={styles.chevronIcon} />
             </TouchableOpacity>
           ))}
         </View>
@@ -38,3 +42,18 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
+  listContainer: { flexDirection: 'column', gap: 24 },
+  listItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 24, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+  listItemLeft: { flexDirection: 'row', alignItems: 'center' },
+  listItemText: { marginLeft: 16, fontSize: 14, fontWeight: 'bold', color: '#475569', textTransform: 'uppercase', letterSpacing: 2 },
+  chevronIcon: { transform: [{ rotate: '180deg' }] }
+});

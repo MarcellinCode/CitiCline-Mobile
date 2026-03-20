@@ -35,15 +35,14 @@ export default function MissionsScreen() {
     setLoading(false);
   };
 
-  // Guard : seuls les collecteurs/agents voient cet écran
   if (!profileLoading && profile?.role === 'vendeur') {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-10">
+      <SafeAreaView style={styles.guardContainer}>
         <Stack.Screen options={{ headerShown: false }} />
-        <View className="w-20 h-20 bg-slate-50 rounded-full items-center justify-center mb-6">
+        <View style={styles.guardIconBg}>
           <ShieldCheck size={32} color="#cbd5e1" />
         </View>
-        <Text className="text-center text-slate-400 font-black uppercase tracking-widest text-[10px]">
+        <Text style={styles.guardText}>
           Cet espace est réservé aux agents de collecte officiels.
         </Text>
       </SafeAreaView>
@@ -54,55 +53,55 @@ export default function MissionsScreen() {
   const remaining = missions.filter(m => m.status === 'reserved' || m.status === 'published').length;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View className="px-8 pt-6 flex-row items-center justify-between mb-8">
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
-        <Text className="text-sm font-black text-[#020617] uppercase tracking-widest">Ma Feuille de Route</Text>
-        <TouchableOpacity onPress={loadMissions} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+        <Text style={styles.headerTitle}>Ma Feuille de Route</Text>
+        <TouchableOpacity onPress={loadMissions} style={styles.iconBtn}>
           <RefreshCw size={18} color="#020617" />
         </TouchableOpacity>
       </View>
 
       {(profileLoading || loading) ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.centerContainer}>
           <ActivityIndicator color="#2aa275" />
         </View>
       ) : (
-        <ScrollView className="flex-1 px-8 pb-32" showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Stats Summary */}
-          <View className="flex-row gap-4 mb-10">
-            <View className="flex-1 bg-slate-900 p-6 rounded-[2rem]">
-              <Text className="text-primary font-black text-[9px] uppercase tracking-widest mb-1">Total</Text>
-              <Text className="text-white text-2xl font-black italic tracking-tighter">
-                {missions.length} <Text className="text-slate-400 text-sm not-italic">missions</Text>
+          <View style={styles.statsContainer}>
+            <View style={styles.statBoxDark}>
+              <Text style={styles.statLabelDark}>Total</Text>
+              <Text style={styles.statValueDark}>
+                {missions.length} <Text style={styles.statUnitDark}>missions</Text>
               </Text>
             </View>
-            <View className="flex-1 bg-slate-50 border border-slate-100 p-6 rounded-[2rem]">
-              <Text className="text-slate-400 font-black text-[9px] uppercase tracking-widest mb-1">Restant</Text>
-              <Text className="text-[#020617] text-2xl font-black italic tracking-tighter">{remaining}</Text>
+            <View style={styles.statBoxLight}>
+              <Text style={styles.statLabelLight}>Restant</Text>
+              <Text style={styles.statValueLight}>{remaining}</Text>
             </View>
           </View>
 
           {missions.length === 0 ? (
-            <View className="items-center py-20">
-              <View className="w-20 h-20 bg-slate-50 rounded-full items-center justify-center mb-6">
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconBg}>
                 <Target size={32} color="#cbd5e1" />
               </View>
-              <Text className="text-slate-400 font-black uppercase tracking-widest text-[10px] text-center">
+              <Text style={styles.emptyText}>
                 Aucune mission assignée pour le moment
               </Text>
             </View>
           ) : (
             <>
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">
+              <Text style={styles.sectionTitle}>
                 Missions Actives ({remaining})
               </Text>
               
-              <View className="space-y-4 mb-10">
+              <View style={styles.listContainer}>
                 {missions.map((mission, i) => (
                   <MotiView
                     key={mission.id}
@@ -120,28 +119,28 @@ export default function MissionsScreen() {
                           color: '#2aa275' 
                         } 
                       })}
-                      className="bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100 flex-row items-center justify-between"
+                      style={styles.missionCard}
                     >
-                      <View className="flex-row items-center flex-1">
-                        <View className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-sm">
+                      <View style={styles.missionLeft}>
+                        <View style={styles.missionIconBg}>
                           <Text style={{ fontSize: 20 }}>{mission.waste_types?.emoji || '♻️'}</Text>
                         </View>
-                        <View className="ml-4 flex-1">
-                          <Text className="text-xs font-black text-[#020617] uppercase tracking-wider" numberOfLines={1}>
+                        <View style={styles.missionInfo}>
+                          <Text style={styles.missionName} numberOfLines={1}>
                             {(mission.profiles as any)?.full_name || 'Client'}
                           </Text>
-                          <Text className="text-[8px] font-bold text-slate-400 uppercase" numberOfLines={1}>
+                          <Text style={styles.missionType} numberOfLines={1}>
                             {mission.waste_types?.name || 'Recyclables'} · {mission.estimated_weight} kg
                           </Text>
                           {mission.location ? (
-                            <Text className="text-[8px] font-bold text-slate-300 uppercase mt-0.5" numberOfLines={1}>
+                            <Text style={styles.missionLocation} numberOfLines={1}>
                               📍 {mission.location}
                             </Text>
                           ) : null}
                         </View>
                       </View>
-                      <View className="px-3 py-1 bg-primary/10 rounded-full ml-2">
-                        <Text className="text-primary font-black text-[8px] uppercase">Scanner</Text>
+                      <View style={styles.scanBadge}>
+                        <Text style={styles.scanBadgeText}>Scanner</Text>
                       </View>
                     </TouchableOpacity>
                   </MotiView>
@@ -153,18 +152,60 @@ export default function MissionsScreen() {
       )}
 
       {/* Action Bar */}
-      <View className="absolute bottom-10 left-8 right-8 bg-[#020617] p-4 rounded-3xl flex-row items-center justify-between shadow-2xl">
-        <View className="flex-row items-center ml-2">
-          <View className="w-2 h-2 bg-primary rounded-full animate-pulse mr-2" />
-          <Text className="text-white font-black text-[9px] uppercase tracking-widest">GPS Actif</Text>
+      <View style={styles.actionBar}>
+        <View style={styles.gpsContainer}>
+          <View style={styles.gpsDot} />
+          <Text style={styles.gpsText}>GPS Actif</Text>
         </View>
         <TouchableOpacity 
           onPress={loadMissions}
-          className="bg-primary px-8 py-3 rounded-2xl"
+          style={styles.refreshBtn}
         >
-          <Text className="text-white font-black text-[10px] uppercase tracking-widest">Actualiser</Text>
+          <Text style={styles.refreshBtnText}>Actualiser</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 128 },
+  statsContainer: { flexDirection: 'row', gap: 16, marginBottom: 40 },
+  statBoxDark: { flex: 1, backgroundColor: '#0f172a', padding: 24, borderRadius: 32 },
+  statLabelDark: { color: '#2aa275', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  statValueDark: { color: 'white', fontSize: 24, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
+  statUnitDark: { color: '#94a3b8', fontSize: 14, fontStyle: 'normal' },
+  statBoxLight: { flex: 1, backgroundColor: '#f8fafc', borderStyle: 'solid', borderWidth: 1, borderColor: '#f1f5f9', padding: 24, borderRadius: 32 },
+  statLabelLight: { color: '#94a3b8', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  statValueLight: { color: '#020617', fontSize: 24, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
+  emptyContainer: { alignItems: 'center', paddingVertical: 80 },
+  emptyIconBg: { width: 80, height: 80, backgroundColor: '#f8fafc', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  emptyText: { color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, textAlign: 'center' },
+  sectionTitle: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 24 },
+  listContainer: { flexDirection: 'column', gap: 16, marginBottom: 40 },
+  missionCard: { backgroundColor: '#f8fafc', padding: 24, borderRadius: 40, borderWidth: 1, borderColor: '#f1f5f9', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  missionLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  missionIconBg: { width: 48, height: 48, backgroundColor: 'white', borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  missionInfo: { marginLeft: 16, flex: 1 },
+  missionName: { fontSize: 12, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1 },
+  missionType: { fontSize: 8, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' },
+  missionLocation: { fontSize: 8, fontWeight: 'bold', color: '#cbd5e1', textTransform: 'uppercase', marginTop: 2 },
+  scanBadge: { paddingHorizontal: 12, paddingVertical: 4, backgroundColor: 'rgba(42, 162, 117, 0.1)', borderRadius: 9999, marginLeft: 8 },
+  scanBadgeText: { color: '#2aa275', fontWeight: '900', fontSize: 8, textTransform: 'uppercase' },
+  actionBar: { position: 'absolute', bottom: 40, left: 32, right: 32, backgroundColor: '#020617', padding: 16, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
+  gpsContainer: { flexDirection: 'row', alignItems: 'center', marginLeft: 8 },
+  gpsDot: { width: 8, height: 8, backgroundColor: '#2aa275', borderRadius: 4, marginRight: 8 },
+  gpsText: { color: 'white', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 2 },
+  refreshBtn: { backgroundColor: '#2aa275', paddingHorizontal: 32, paddingVertical: 12, borderRadius: 16 },
+  refreshBtnText: { color: 'white', fontWeight: '900', fontSize: 10, textTransform: 'uppercase', letterSpacing: 2 },
+  guardContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  guardIconBg: { width: 80, height: 80, backgroundColor: '#f8fafc', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  guardText: { textAlign: 'center', color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 }
+});

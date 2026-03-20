@@ -1,9 +1,12 @@
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image as RNImage } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { useState } from 'react';
 import { useRouter, Stack } from 'expo-router';
 import { Mail, Lock, User, ArrowRight, Truck, Building2, ChevronLeft, Phone, MapPin, Briefcase, FileText, Users } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { StatusBar } from 'expo-status-bar';
+import Logo from '@/components/ui/Logo';
+
+const { width } = Dimensions.get('window');
 
 export default function Signup() {
   const router = useRouter();
@@ -31,233 +34,363 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
 
   async function signUpWithEmail() {
+    if (!email || !password) {
+        alert("Veuillez remplir les champs obligatoires");
+        return;
+    }
     setLoading(true);
-    const { data: { session }, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: role === 'organisation_admin' ? orgName : fullName,
-          role: role,
-          phone: phone,
-          district: district,
-          vehicle_type: vehicleType,
-          id_number: idNumber,
-          rccm: rccm,
-          contact_person: contactPerson,
-          agent_count: agentCount
-        },
-      },
-    });
+    try {
+        const { data: { session }, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: role === 'organisation_admin' ? orgName : fullName,
+              role: role,
+              phone: phone,
+              district: district,
+              vehicle_type: vehicleType,
+              id_number: idNumber,
+              rccm: rccm,
+              contact_person: contactPerson,
+              agent_count: agentCount
+            },
+          },
+        });
 
-    if (error) alert(error.message);
-    else if (!session) alert("Vérifiez votre boîte mail pour confirmer l'inscription !");
-    else router.replace('/(tabs)/marketplace/index');
-    
-    setLoading(false);
+        if (error) {
+            alert(error.message);
+        } else if (!session) {
+            alert("Vérifiez votre boîte mail pour confirmer l'inscription !");
+            router.replace('/(auth)/login');
+        } else {
+            router.replace('/(tabs)/marketplace');
+        }
+    } catch (err: any) {
+        alert(err.message || "Une erreur est survenue");
+    } finally {
+        setLoading(false);
+    }
   }
+
+  const RoleCard = ({ type, title, desc, icon: Icon, color }: any) => (
+    <TouchableOpacity 
+      onPress={() => { setRole(type); setStep(2); }}
+      activeOpacity={0.9}
+      style={styles.roleCard}
+    >
+      <View style={[styles.roleIconContainer, { backgroundColor: color }]}>
+        <Icon color="white" size={28} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.roleTitle}>{title}</Text>
+        <Text style={styles.roleDesc}>{desc}</Text>
+      </View>
+      <ChevronLeft size={20} color="#cbd5e1" style={{ transform: [{ rotate: '180deg' }] }} />
+    </TouchableOpacity>
+  );
 
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      className="flex-1 bg-white"
+      style={{ flex: 1, backgroundColor: 'white' }}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-8 pb-12">
-        {step === 2 && (
-            <TouchableOpacity onPress={() => setStep(1)} className="absolute top-16 left-0 z-10 w-12 h-12 items-center justify-center bg-slate-50 rounded-full border border-slate-100">
-                <ChevronLeft size={24} color="#020617" />
-            </TouchableOpacity>
-        )}
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ padding: 32 }}>
+        <TouchableOpacity 
+          onPress={() => step === 1 ? router.back() : setStep(1)} 
+          style={styles.backButton}
+        >
+          <ChevronLeft size={24} color="#020617" />
+        </TouchableOpacity>
 
-        <View className="mt-20 mb-8 items-center">
-          <View className="w-16 h-16 bg-emerald-50 rounded-3xl items-center justify-center border border-emerald-100 mb-6">
-            <RNImage source={require('../../assets/icon.png')} className="w-10 h-10 rounded-xl" resizeMode="contain" />
-          </View>
-          <Text className="text-3xl font-black text-[#020617] tracking-tight mb-2 text-center leading-none">
-            Créer un compte
-          </Text>
-          <Text className="font-medium text-slate-400 text-center">
-            Rejoignez l'aventure CITICLINE
+        <View style={styles.header}>
+          <Logo size="large" />
+          <Text style={styles.headerSubtitle}>
+            {step === 1 ? 'Créer votre compte' : 'Complétez votre profil'}
           </Text>
         </View>
 
         {step === 1 ? (
-          <View className="space-y-4">
-            <Text className="text-center font-black text-slate-500 uppercase tracking-widest mb-4">
-              VOUS ÊTES :
-            </Text>
-            
-            {/* Citoyen Card */}
-            <TouchableOpacity 
-              onPress={() => { setRole('vendeur'); setStep(2); }}
-              className="bg-white border border-slate-100 rounded-[2rem] p-6 flex-row items-center shadow-sm"
-            >
-              <View className="w-12 h-12 rounded-2xl bg-emerald-50 items-center justify-center mr-4">
-                <User color="#10b981" size={24} strokeWidth={2.5} />
-              </View>
-              <View className="flex-1">
-                <Text className="font-black text-[#020617] uppercase tracking-tight mb-1 text-sm">CITOYEN (FOYER)</Text>
-                <Text className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-tight">Je vends mes déchets & je gère mes ordures.</Text>
-              </View>
-              <ArrowRight color="#cbd5e1" size={20} />
-            </TouchableOpacity>
+          <View style={styles.roleSection}>
+            <Text style={styles.sectionLabel}>Choisissez votre rôle</Text>
+            <RoleCard 
+              type="vendeur"
+              title="CITOYEN"
+              desc="Recyclez et gagnez des récompenses"
+              icon={User}
+              color="#10b981"
+            />
+            <RoleCard 
+              type="collecteur"
+              title="COLLECTEUR"
+              desc="Gérez vos tournées de collecte"
+              icon={Truck}
+              color="#f59e0b"
+            />
+            <RoleCard 
+              type="organisation_admin"
+              title="ORGANISATION"
+              desc="Gérez une zone ou une équipe"
+              icon={Building2}
+              color="#6366f1"
+            />
 
-            {/* Collecteur Card */}
-            <TouchableOpacity 
-              onPress={() => { setRole('collecteur'); setStep(2); }}
-              className="bg-white border border-slate-100 rounded-[2rem] p-6 flex-row items-center shadow-sm"
-            >
-              <View className="w-12 h-12 rounded-2xl bg-amber-50 items-center justify-center mr-4">
-                <Truck color="#f59e0b" size={24} strokeWidth={2.5} />
-              </View>
-              <View className="flex-1">
-                <Text className="font-black text-[#020617] uppercase tracking-tight mb-1 text-sm">Collecteur Indépendant</Text>
-                <Text className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-tight">Je souhaite acheter des lots recyclables.</Text>
-              </View>
-              <ArrowRight color="#cbd5e1" size={20} />
-            </TouchableOpacity>
-
-            {/* Organisation Card */}
-            <TouchableOpacity 
-              onPress={() => { setRole('organisation_admin'); setStep(2); }}
-              className="bg-white border border-slate-100 rounded-[2rem] p-6 flex-row items-center shadow-sm"
-            >
-              <View className="w-12 h-12 rounded-2xl bg-indigo-50 items-center justify-center mr-4">
-                <Building2 color="#6366f1" size={24} strokeWidth={2.5} />
-              </View>
-              <View className="flex-1">
-                <Text className="font-black text-[#020617] uppercase tracking-tight mb-1 text-sm">Organisation</Text>
-                <Text className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-tight">Je gère une zone et ma flotte d'agents.</Text>
-              </View>
-              <ArrowRight color="#cbd5e1" size={20} />
-            </TouchableOpacity>
-            
-            <View className="mt-8 pt-8 border-t border-slate-100 border-dashed">
-                <Text className="text-center font-black text-slate-400 uppercase tracking-widest text-[10px] mb-1">
-                    Accès Officiel Mairie
-                </Text>
-                <Text className="text-center font-bold text-slate-400 italic text-[9px] uppercase tracking-widest leading-relaxed">
-                    L'inscription Mairie se fait exclusivement via lien d'invitation sécurisé.
+            <View style={styles.mairieNote}>
+                <Text style={styles.mairieNoteText}>
+                    🏢 Un accès Administrateur Mairie ? Contactez l'assistance technique Citicline.
                 </Text>
             </View>
           </View>
         ) : (
-          <View className="space-y-4">
+          <View style={styles.formContainer}>
+            <Text style={styles.sectionLabel}>Informations {role === 'vendeur' ? 'Personnelles' : 'Professionnelles'}</Text>
             
             {role === 'vendeur' && (
-                <>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <User size={20} color="#94a3b8" />
-                    <TextInput placeholder="Nom complet" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={fullName} onChangeText={setFullName}/>
+              <>
+                <View style={styles.inputBox}>
+                    <User size={18} color="#94a3b8" />
+                    <TextInput placeholder="Nom complet" placeholderTextColor="#cbd5e1" style={styles.input} value={fullName} onChangeText={setFullName}/>
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Phone size={20} color="#94a3b8" />
-                    <TextInput placeholder="Numéro de téléphone" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+                <View style={styles.inputBox}>
+                    <Phone size={18} color="#94a3b8" />
+                    <TextInput placeholder="Téléphone" placeholderTextColor="#cbd5e1" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <MapPin size={20} color="#94a3b8" />
-                    <TextInput placeholder="Quartier / Adresse" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={district} onChangeText={setDistrict} />
+                <View style={styles.inputBox}>
+                    <MapPin size={18} color="#94a3b8" />
+                    <TextInput placeholder="Quartier / Adresse" placeholderTextColor="#cbd5e1" style={styles.input} value={district} onChangeText={setDistrict} />
                 </View>
-                </>
+              </>
             )}
 
             {role === 'collecteur' && (
-                <>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <User size={20} color="#94a3b8" />
-                    <TextInput placeholder="Nom complet" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={fullName} onChangeText={setFullName}/>
+              <>
+                <View style={styles.inputBox}>
+                    <User size={18} color="#94a3b8" />
+                    <TextInput placeholder="Nom complet" placeholderTextColor="#cbd5e1" style={styles.input} value={fullName} onChangeText={setFullName}/>
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Phone size={20} color="#94a3b8" />
-                    <TextInput placeholder="Numéro de téléphone" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+                <View style={styles.inputBox}>
+                    <Phone size={18} color="#94a3b8" />
+                    <TextInput placeholder="Téléphone" placeholderTextColor="#cbd5e1" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Truck size={20} color="#94a3b8" />
-                    <TextInput placeholder="Type de véhicule (ex: Tricycle)" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={vehicleType} onChangeText={setVehicleType} />
+                <View style={styles.inputBox}>
+                    <Truck size={18} color="#94a3b8" />
+                    <TextInput placeholder="Type de véhicule" placeholderTextColor="#cbd5e1" style={styles.input} value={vehicleType} onChangeText={setVehicleType} />
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <FileText size={20} color="#94a3b8" />
-                    <TextInput placeholder="N° CNI ou Passeport" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={idNumber} onChangeText={setIdNumber} />
+                <View style={styles.inputBox}>
+                    <FileText size={18} color="#94a3b8" />
+                    <TextInput placeholder="N° Pièce d'identité" placeholderTextColor="#cbd5e1" style={styles.input} value={idNumber} onChangeText={setIdNumber} />
                 </View>
-                </>
+              </>
             )}
 
             {role === 'organisation_admin' && (
-                <>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Building2 size={20} color="#94a3b8" />
-                    <TextInput placeholder="Nom de l'Organisation" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={orgName} onChangeText={setOrgName}/>
+              <>
+                <View style={styles.inputBox}>
+                    <Building2 size={18} color="#94a3b8" />
+                    <TextInput placeholder="Nom de l'Organisation" placeholderTextColor="#cbd5e1" style={styles.input} value={orgName} onChangeText={setOrgName}/>
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Briefcase size={20} color="#94a3b8" />
-                    <TextInput placeholder="Nom du Responsable" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={contactPerson} onChangeText={setContactPerson}/>
+                <View style={styles.inputBox}>
+                    <Briefcase size={18} color="#94a3b8" />
+                    <TextInput placeholder="Nom du Responsable" placeholderTextColor="#cbd5e1" style={styles.input} value={contactPerson} onChangeText={setContactPerson}/>
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <FileText size={20} color="#94a3b8" />
-                    <TextInput placeholder="N° RCCM ou IFU" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={rccm} onChangeText={setRccm} />
+                <View style={styles.inputBox}>
+                    <FileText size={18} color="#94a3b8" />
+                    <TextInput placeholder="N° RCCM / IFU" placeholderTextColor="#cbd5e1" style={styles.input} value={rccm} onChangeText={setRccm} />
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Users size={20} color="#94a3b8" />
-                    <TextInput placeholder="Nombre d'agents estimé" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={agentCount} onChangeText={setAgentCount} keyboardType="numeric" />
+                <View style={styles.inputBox}>
+                    <Phone size={18} color="#94a3b8" />
+                    <TextInput placeholder="Téléphone du siège" placeholderTextColor="#cbd5e1" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                 </View>
-                <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-                    <Phone size={20} color="#94a3b8" />
-                    <TextInput placeholder="Téléphone du siège" placeholderTextColor="#cbd5e1" className="flex-1 ml-4 font-bold text-[#020617]" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-                </View>
-                </>
+              </>
             )}
 
-            {/* Champs communs (Email & Password) */}
-            <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-              <Mail size={20} color="#94a3b8" />
-              <TextInput 
-                placeholder={role === 'organisation_admin' ? "Email professionnel" : "Email"}
-                placeholderTextColor="#cbd5e1"
-                className="flex-1 ml-4 font-bold text-[#020617]"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-              />
+            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Identifiants</Text>
+            <View style={styles.inputBox}>
+                <Mail size={18} color="#94a3b8" />
+                <TextInput placeholder="Email" placeholderTextColor="#cbd5e1" style={styles.input} value={email} onChangeText={setEmail} autoCapitalize="none"/>
             </View>
-
-            <View className="bg-slate-50 border border-slate-100 rounded-[2rem] flex-row items-center px-6 h-16">
-              <Lock size={20} color="#94a3b8" />
-              <TextInput 
-                placeholder="Mot de passe sécurisé" 
-                placeholderTextColor="#cbd5e1"
-                className="flex-1 ml-4 font-bold text-[#020617]"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
+            <View style={styles.inputBox}>
+                <Lock size={18} color="#94a3b8" />
+                <TextInput placeholder="Mot de passe" placeholderTextColor="#cbd5e1" style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
             </View>
 
             <TouchableOpacity 
               onPress={signUpWithEmail}
               disabled={loading}
-              className="w-full bg-primary h-16 rounded-[2rem] flex-row items-center justify-center shadow-xl shadow-primary/30 mt-8"
+              style={styles.submitBtn}
+              activeOpacity={0.8}
             >
-              <Text className="text-white font-black uppercase tracking-widest text-xs mr-3">
-                {loading ? 'Création...' : "Confirmer l'inscription"}
+              <Text style={styles.submitBtnText}>
+                {loading ? 'Création...' : 'Créer mon compte'}
               </Text>
-              <ArrowRight size={18} color="white" />
+              <ArrowRight size={20} color="white" />
             </TouchableOpacity>
           </View>
         )}
 
         {step === 1 && (
-            <View className="mt-12 items-center">
-            <TouchableOpacity onPress={() => router.back()}>
-                <Text className="text-slate-500 font-bold text-xs uppercase tracking-widest">
-                Vous avez déjà un compte ? <Text className="text-primary">Connectez-vous</Text>
-                </Text>
-            </TouchableOpacity>
-            </View>
+          <TouchableOpacity onPress={() => router.push('/(auth)/login')} style={styles.footer}>
+            <Text style={styles.footerText}>
+                Déjà inscrit ? <Text style={styles.footerLink}>Se connecter</Text>
+            </Text>
+          </TouchableOpacity>
         )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  backButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#f8fafc',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  header: {
+    marginTop: 40,
+    marginBottom: 40,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 60,
+    marginBottom: 12,
+  },
+  headerSubtitle: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#020617',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 16,
+    marginLeft: 4,
+  },
+  roleSection: {
+    gap: 16,
+  },
+  roleCard: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    borderRadius: 24,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  roleIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  roleTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#020617',
+    textTransform: 'uppercase',
+    fontStyle: 'italic',
+    marginBottom: 2,
+  },
+  roleDesc: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#94a3b8',
+  },
+  mairieNote: {
+    marginTop: 24,
+    padding: 16,
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  mairieNoteText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  formContainer: {
+    gap: 12,
+  },
+  inputBox: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    height: 64,
+  },
+  input: {
+    flex: 1,
+    marginLeft: 12,
+    fontWeight: '700',
+    color: '#020617',
+    fontSize: 14,
+  },
+  submitBtn: {
+    backgroundColor: '#020617',
+    height: 72,
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  submitBtnText: {
+    color: 'white',
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontSize: 12,
+    marginRight: 12,
+    fontStyle: 'italic',
+  },
+  footer: {
+    marginTop: 40,
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+  footerText: {
+    color: '#94a3b8',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  footerLink: {
+    color: '#10b981',
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    fontSize: 11,
+  }
+});

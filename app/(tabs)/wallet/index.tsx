@@ -36,83 +36,83 @@ export default function WalletScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View className="px-8 pt-6 flex-row items-center justify-between mb-8">
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
-        <Text className="text-sm font-black text-[#020617] uppercase tracking-widest">Portefeuille</Text>
-        <TouchableOpacity onPress={loadTransactions} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+        <Text style={styles.headerTitle}>Portefeuille</Text>
+        <TouchableOpacity onPress={loadTransactions} style={styles.iconBtn}>
           <RefreshCw size={18} color="#020617" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Solde Principal */}
-        <View className="px-8 mb-12 items-center">
+        <View style={styles.balanceSection}>
           <MotiView
             from={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="items-center"
+            style={styles.balanceContainer}
           >
-            <View className="w-16 h-16 bg-[#2aa27510] rounded-full items-center justify-center mb-4">
+            <View style={styles.walletIconBg}>
               <WalletIcon size={32} color="#2aa275" />
             </View>
-            <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-2">Solde Disponible</Text>
+            <Text style={styles.balanceLabel}>Solde Disponible</Text>
             {profileLoading ? (
               <ActivityIndicator color="#2aa275" />
             ) : (
-              <View className="flex-row items-baseline">
-                <Text className="text-6xl font-black text-[#020617] italic tracking-tighter">
+              <View style={styles.balanceRow}>
+                <Text style={styles.balanceAmount}>
                   {profile?.wallet_balance?.toLocaleString('fr-FR') || '0'}
                 </Text>
-                <Text className="text-xl font-bold text-primary ml-2 uppercase italic">FCFA</Text>
+                <Text style={styles.balanceCurrency}>FCFA</Text>
               </View>
             )}
 
             {/* Eco-Points */}
-            <View className="flex-row items-center mt-4 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100">
+            <View style={styles.ecoPointsBadge}>
               <Leaf size={14} color="#2aa275" />
-              <Text className="ml-2 text-[10px] font-black text-primary uppercase tracking-widest">
+              <Text style={styles.ecoPointsText}>
                 {profile?.eco_points || 0} ECO-POINTS
               </Text>
             </View>
           </MotiView>
 
           {/* Actions */}
-          <View className="flex-row gap-4 mt-10 w-full">
-            <TouchableOpacity className="flex-1 bg-[#020617] py-5 rounded-[2rem] items-center justify-center shadow-xl shadow-slate-900/20">
-              <Text className="text-white font-black uppercase tracking-widest text-[10px]">Retirer Fonds</Text>
+          <View style={styles.actionsRow}>
+            <TouchableOpacity style={styles.primaryActionBtn}>
+              <Text style={styles.primaryActionText}>Retirer Fonds</Text>
             </TouchableOpacity>
-            <TouchableOpacity className="w-16 h-16 bg-slate-50 border border-slate-100 rounded-[2rem] items-center justify-center">
+            <TouchableOpacity style={styles.secondaryActionBtn}>
               <ArrowUpRight size={24} color="#64748b" />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Historique des transactions */}
-        <View className="bg-slate-50/50 rounded-t-[3rem] px-8 pt-10 pb-20 border-t border-slate-100">
-          <View className="flex-row justify-between items-center mb-8">
-            <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Historique</Text>
+        <View style={styles.historySection}>
+          <View style={styles.historyHeaderRow}>
+            <Text style={styles.historyTitle}>Historique</Text>
             <TouchableOpacity>
-              <Text className="text-[10px] font-black text-primary uppercase tracking-widest">Voir Tout</Text>
+              <Text style={styles.historyViewAll}>Voir Tout</Text>
             </TouchableOpacity>
           </View>
           
           {loading ? (
-            <View className="items-center py-10">
+            <View style={styles.centerPad}>
               <ActivityIndicator color="#2aa275" />
             </View>
           ) : transactions.length === 0 ? (
-            <View className="items-center py-10">
-              <Text className="text-slate-400 font-black uppercase tracking-widest text-[10px]">
+            <View style={styles.centerPad}>
+              <Text style={styles.emptyText}>
                 Aucune transaction
               </Text>
             </View>
           ) : (
-            <View className="space-y-4">
+            <View style={styles.listContainer}>
               {transactions.map((tx, i) => {
                 const isIncome = !!tx.seller_id && tx.status === 'collected';
                 const amount = (tx.final_weight || tx.estimated_weight) * (tx.waste_types?.price_per_kg || 0);
@@ -122,20 +122,20 @@ export default function WalletScreen() {
                     from={{ opacity: 0, translateX: -20 }}
                     animate={{ opacity: 1, translateX: 0 }}
                     transition={{ delay: 100 * i }}
-                    className="bg-white p-5 rounded-[2rem] flex-row items-center shadow-sm border border-slate-50"
+                    style={styles.txCard}
                   >
-                    <View className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center mr-4">
+                    <View style={styles.txIconBg}>
                       <ArrowDownLeft size={20} color={isIncome ? '#2aa275' : '#ef4444'} />
                     </View>
-                    <View className="flex-1">
-                      <Text className="text-[11px] font-black text-[#020617] uppercase tracking-wider mb-0.5">
+                    <View style={styles.txContent}>
+                      <Text style={styles.txTitle}>
                         {tx.waste_types?.name || 'Recyclage'}
                       </Text>
-                      <Text className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                      <Text style={styles.txSubtitle}>
                         {tx.final_weight || tx.estimated_weight} kg · {new Date(tx.created_at).toLocaleDateString('fr-FR')}
                       </Text>
                     </View>
-                    <Text className="text-sm font-black" style={{ color: isIncome ? '#2aa275' : '#ef4444' }}>
+                    <Text style={[styles.txAmount, { color: isIncome ? '#2aa275' : '#ef4444' }]}>
                       {isIncome ? '+' : '-'}{amount.toLocaleString('fr-FR')} FCFA
                     </Text>
                   </MotiView>
@@ -148,3 +148,39 @@ export default function WalletScreen() {
     </SafeAreaView>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  scrollView: { flex: 1 },
+  balanceSection: { paddingHorizontal: 32, marginBottom: 48, alignItems: 'center' },
+  balanceContainer: { alignItems: 'center' },
+  walletIconBg: { width: 64, height: 64, backgroundColor: 'rgba(42, 162, 117, 0.1)', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  balanceLabel: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 8 },
+  balanceRow: { flexDirection: 'row', alignItems: 'baseline' },
+  balanceAmount: { fontSize: 60, fontWeight: '900', color: '#020617', fontStyle: 'italic', letterSpacing: -2 },
+  balanceCurrency: { fontSize: 20, fontWeight: 'bold', color: '#10b981', marginLeft: 8, textTransform: 'uppercase', fontStyle: 'italic' },
+  ecoPointsBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 16, backgroundColor: '#ecfdf5', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, borderWidth: 1, borderColor: '#d1fae5' },
+  ecoPointsText: { marginLeft: 8, fontSize: 10, fontWeight: '900', color: '#10b981', textTransform: 'uppercase', letterSpacing: 2 },
+  actionsRow: { flexDirection: 'row', gap: 16, marginTop: 40, width: '100%' },
+  primaryActionBtn: { flex: 1, backgroundColor: '#020617', paddingVertical: 20, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: '#0f172a', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
+  primaryActionText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 },
+  secondaryActionBtn: { width: 64, height: 64, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+  historySection: { backgroundColor: 'rgba(248, 250, 252, 0.5)', borderTopLeftRadius: 48, borderTopRightRadius: 48, paddingHorizontal: 32, paddingTop: 40, paddingBottom: 80, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  historyHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 },
+  historyTitle: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3 },
+  historyViewAll: { fontSize: 10, fontWeight: '900', color: '#10b981', textTransform: 'uppercase', letterSpacing: 2 },
+  centerPad: { alignItems: 'center', paddingVertical: 40 },
+  emptyText: { color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 },
+  listContainer: { flexDirection: 'column', gap: 16 },
+  txCard: { backgroundColor: 'white', padding: 20, borderRadius: 32, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2, borderWidth: 1, borderColor: '#f8fafc', marginBottom: 16 },
+  txIconBg: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  txContent: { flex: 1 },
+  txTitle: { fontSize: 11, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 },
+  txSubtitle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1 },
+  txAmount: { fontSize: 14, fontWeight: '900' }
+});

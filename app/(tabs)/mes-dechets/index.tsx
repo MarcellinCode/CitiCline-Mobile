@@ -54,63 +54,63 @@ export default function MesDechetsScreen() {
   const isLoad = profileLoading || loading;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View className="px-8 pt-6 flex-row items-center justify-between mb-8">
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
-        <Text className="text-sm font-black text-[#020617] uppercase tracking-widest">{title}</Text>
-        <TouchableOpacity onPress={loadWastes} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+        <Text style={styles.headerTitle}>{title}</Text>
+        <TouchableOpacity onPress={loadWastes} style={styles.iconBtn}>
           <RefreshCw size={18} color="#020617" />
         </TouchableOpacity>
       </View>
 
       {isLoad ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.centerContainer}>
           <ActivityIndicator color="#2aa275" />
         </View>
       ) : wastes.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-10">
-          <View className="w-20 h-20 bg-slate-50 rounded-full items-center justify-center mb-6">
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyIconBg}>
             <Package size={32} color="#cbd5e1" />
           </View>
-          <Text className="text-slate-400 font-black uppercase tracking-widest text-xs text-center">{emptyLabel}</Text>
+          <Text style={styles.emptyText}>{emptyLabel}</Text>
           {profile?.role === 'vendeur' && (
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/marketplace/publish')}
-              className="mt-8 bg-primary px-8 py-4 rounded-2xl"
+              style={styles.actionBtn}
             >
-              <Text className="text-white font-black uppercase tracking-widest text-[10px]">Publier un lot</Text>
+              <Text style={styles.actionBtnText}>Publier un lot</Text>
             </TouchableOpacity>
           )}
         </View>
       ) : (
-        <ScrollView className="flex-1 px-8 pb-32" showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Stats rapides */}
-          <View className="flex-row gap-3 mb-8">
-            <View className="flex-1 bg-slate-900 p-4 rounded-[1.5rem] items-center">
-              <Text className="text-primary font-black text-[8px] uppercase tracking-widest mb-1">Total</Text>
-              <Text className="text-white text-xl font-black italic">{wastes.length}</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statBoxDark}>
+              <Text style={styles.statLabelPrimary}>Total</Text>
+              <Text style={styles.statValueWhite}>{wastes.length}</Text>
             </View>
-            <View className="flex-1 bg-slate-50 border border-slate-100 p-4 rounded-[1.5rem] items-center">
-              <Text className="text-slate-400 font-black text-[8px] uppercase tracking-widest mb-1">Actifs</Text>
-              <Text className="text-[#020617] text-xl font-black italic">
+            <View style={styles.statBoxLight}>
+              <Text style={styles.statLabelMuted}>Actifs</Text>
+              <Text style={styles.statValueDark}>
                 {wastes.filter(w => w.status === 'published' || w.status === 'reserved').length}
               </Text>
             </View>
-            <View className="flex-1 bg-emerald-50 border border-emerald-100 p-4 rounded-[1.5rem] items-center">
-              <Text className="text-primary font-black text-[8px] uppercase tracking-widest mb-1">Collectés</Text>
-              <Text className="text-primary text-xl font-black italic">
+            <View style={styles.statBoxGreen}>
+              <Text style={styles.statLabelPrimary}>Collectés</Text>
+              <Text style={styles.statValuePrimary}>
                 {wastes.filter(w => w.status === 'collected').length}
               </Text>
             </View>
           </View>
 
-          <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Historique</Text>
+          <Text style={styles.historyTitle}>Historique</Text>
 
-          <View className="space-y-4">
+          <View style={styles.listContainer}>
             {wastes.map((waste, i) => {
               const statusCfg = STATUS_CONFIG[waste.status];
               const wasteType = waste.waste_types;
@@ -121,20 +121,20 @@ export default function MesDechetsScreen() {
                   animate={{ opacity: 1, translateX: 0 }}
                   transition={{ delay: 50 * i }}
                 >
-                  <TouchableOpacity className="bg-slate-50 border border-slate-100 p-5 rounded-[2rem] flex-row items-center">
-                    <View className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-sm mr-4">
-                      <Text style={{ fontSize: 22 }}>{wasteType?.emoji || '♻️'}</Text>
+                  <TouchableOpacity style={styles.cardItem}>
+                    <View style={styles.cardIconBg}>
+                      <Text style={styles.cardEmoji}>{wasteType?.emoji || '♻️'}</Text>
                     </View>
-                    <View className="flex-1">
-                      <Text className="text-[11px] font-black text-[#020617] uppercase tracking-wider mb-1">
+                    <View style={styles.cardContent}>
+                      <Text style={styles.cardTitle}>
                         {wasteType?.name || 'Déchets recyclables'}
                       </Text>
-                      <Text className="text-[9px] font-bold text-slate-400 uppercase">
+                      <Text style={styles.cardSubtitle}>
                         {waste.estimated_weight} kg · {waste.location || 'Localisation non définie'}
                       </Text>
                     </View>
-                    <View className="px-3 py-1 rounded-full" style={{ backgroundColor: statusCfg.bg }}>
-                      <Text className="text-[8px] font-black uppercase tracking-widest" style={{ color: statusCfg.color }}>
+                    <View style={[styles.statusBadge, { backgroundColor: statusCfg.bg }]}>
+                      <Text style={[styles.statusBadgeText, { color: statusCfg.color }]}>
                         {statusCfg.label}
                       </Text>
                     </View>
@@ -144,9 +144,45 @@ export default function MesDechetsScreen() {
             })}
           </View>
 
-          <View className="h-20" />
+          <View style={styles.bottomSpace} />
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  emptyIconBg: { width: 80, height: 80, backgroundColor: '#f8fafc', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
+  emptyText: { color: '#94a3b8', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 12, textAlign: 'center' },
+  actionBtn: { marginTop: 32, backgroundColor: '#10b981', paddingHorizontal: 32, paddingVertical: 16, borderRadius: 16 },
+  actionBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10 },
+  scrollView: { flex: 1, paddingHorizontal: 32 },
+  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 32 },
+  statBoxDark: { flex: 1, backgroundColor: '#0f172a', padding: 16, borderRadius: 24, alignItems: 'center' },
+  statBoxLight: { flex: 1, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 16, borderRadius: 24, alignItems: 'center' },
+  statBoxGreen: { flex: 1, backgroundColor: '#ecfdf5', borderWidth: 1, borderColor: '#d1fae5', padding: 16, borderRadius: 24, alignItems: 'center' },
+  statLabelPrimary: { color: '#10b981', fontWeight: '900', fontSize: 8, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  statLabelMuted: { color: '#94a3b8', fontWeight: '900', fontSize: 8, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  statValueWhite: { color: 'white', fontSize: 20, fontWeight: '900', fontStyle: 'italic' },
+  statValueDark: { color: '#020617', fontSize: 20, fontWeight: '900', fontStyle: 'italic' },
+  statValuePrimary: { color: '#10b981', fontSize: 20, fontWeight: '900', fontStyle: 'italic' },
+  historyTitle: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 24 },
+  listContainer: { flexDirection: 'column', gap: 16 },
+  cardItem: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 20, borderRadius: 32, flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  cardIconBg: { width: 48, height: 48, backgroundColor: 'white', borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2, marginRight: 16 },
+  cardEmoji: { fontSize: 22 },
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: 11, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+  cardSubtitle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
+  statusBadgeText: { fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  bottomSpace: { height: 128 }
+});

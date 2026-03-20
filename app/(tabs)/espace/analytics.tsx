@@ -15,54 +15,72 @@ export default function AnalyticsScreen() {
   ];
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ 
         headerShown: true,
         headerTitle: "ANALYTIQUE",
         headerTitleStyle: { fontWeight: '900' },
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()} className="ml-4 p-2 bg-slate-50 rounded-xl">
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
             <ArrowLeft size={20} color="#020617" />
           </TouchableOpacity>
         ),
         headerShadowVisible: false
       }} />
 
-      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <MotiView 
           from={{ opacity: 0, translateY: 10 }}
           animate={{ opacity: 1, translateY: 0 }}
-          className="mb-8"
+          style={styles.headerMoti}
         >
-          <Text className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-1">Rapport de Performance</Text>
-          <Text className="text-3xl font-black text-[#020617] italic tracking-tighter uppercase">Impact Zone</Text>
+          <Text style={styles.reportSubtitle}>Rapport de Performance</Text>
+          <Text style={styles.reportTitle}>Impact Zone</Text>
         </MotiView>
 
-        <View className="flex-row flex-wrap justify-between gap-y-4">
+        <View style={styles.statsGrid}>
           {stats.map((stat, i) => (
             <View 
               key={i} 
-              style={{ width: '47%' }}
-              className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 items-center"
+              style={styles.statCard}
             >
-              <View className="mb-4 w-12 h-12 rounded-2xl items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
+              <View style={[styles.statIconBg, { backgroundColor: `${stat.color}15` }]}>
                 <stat.icon size={24} color={stat.color} />
               </View>
-              <Text className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</Text>
-              <Text className="text-xl font-black text-[#020617]">{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+              <Text style={styles.statValue}>{stat.value}</Text>
             </View>
           ))}
         </View>
 
-        <View className="mt-8 p-8 bg-slate-900 rounded-[2.5rem] overflow-hidden">
-             <Text className="text-primary font-black uppercase text-[10px] tracking-widest mb-2">Note B2B</Text>
-             <Text className="text-white font-bold leading-5 italic">
-               "Les rapports détaillés par concession et les exports CSV sont disponibles uniquement sur le tableau de bord Web CitrixLine."
+        <View style={styles.noteContainer}>
+             <Text style={styles.noteTitle}>Note B2B</Text>
+             <Text style={styles.noteText}>
+               "Les rapports détaillés par concession et les exports CSV sont disponibles uniquement sur le tableau de bord Web CITICLINE."
              </Text>
         </View>
 
-        <View className="h-20" />
+        <View style={{ height: 80 }} />
       </ScrollView>
     </View>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'white' },
+  headerBackBtn: { marginLeft: 16, padding: 8, backgroundColor: '#f8fafc', borderRadius: 12 },
+  scrollView: { flex: 1, paddingHorizontal: 24, paddingTop: 16 },
+  headerMoti: { marginBottom: 32 },
+  reportSubtitle: { color: '#94a3b8', fontWeight: 'bold', fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  reportTitle: { fontSize: 32, fontWeight: '900', color: '#020617', fontStyle: 'italic', letterSpacing: -1, textTransform: 'uppercase' },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16 },
+  statCard: { width: '47%', backgroundColor: '#f8fafc', padding: 24, borderRadius: 32, borderWidth: 1, borderColor: '#f1f5f9', alignItems: 'center', marginBottom: 16 },
+  statIconBg: { marginBottom: 16, width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  statLabel: { fontSize: 9, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4, textAlign: 'center' },
+  statValue: { fontSize: 20, fontWeight: '900', color: '#020617', textAlign: 'center' },
+  noteContainer: { marginTop: 32, padding: 32, backgroundColor: '#0f172a', borderRadius: 40, overflow: 'hidden' },
+  noteTitle: { color: '#2aa275', fontWeight: '900', textTransform: 'uppercase', fontSize: 10, letterSpacing: 2, marginBottom: 8 },
+  noteText: { color: 'white', fontWeight: 'bold', lineHeight: 20, fontStyle: 'italic' }
+});

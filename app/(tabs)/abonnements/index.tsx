@@ -48,113 +48,113 @@ export default function AbonnementsScreen() {
   const isLoad = profileLoading || loading;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View className="px-8 pt-6 flex-row items-center justify-between mb-8">
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} className="w-12 h-12 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100">
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
-        <Text className="text-sm font-black text-[#020617] uppercase tracking-widest">{title}</Text>
-        <View className="w-12" />
+        <Text style={styles.headerTitle}>{title}</Text>
+        <View style={{ width: 48 }} />
       </View>
 
       {isLoad ? (
-        <View className="flex-1 items-center justify-center">
+        <View style={styles.centerContainer}>
           <ActivityIndicator color="#2aa275" />
         </View>
       ) : (
-        <ScrollView className="flex-1 px-8 pb-20">
+        <ScrollView style={styles.scrollView}>
           {profile?.role === 'vendeur' && subscription ? (
             /* ── ABONNÉ ACTIF ── */
             <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <View className="bg-primary/10 border border-primary/20 p-8 rounded-[3rem] items-center mb-10">
-                <View className="w-20 h-20 bg-white rounded-[2rem] items-center justify-center mb-4 shadow-sm">
+              <View style={styles.activeSubCard}>
+                <View style={styles.crownIconBg}>
                   <Crown size={40} color="#2aa275" />
                 </View>
-                <Text className="text-2xl font-black text-[#020617] uppercase italic tracking-tighter mb-1">
+                <Text style={styles.zoneNameTitle}>
                   {subscription.zone_name || 'Zone Assignée'}
                 </Text>
-                <Text className="text-slate-500 font-bold uppercase text-[10px] tracking-widest mb-4">
+                <Text style={styles.partnerSubtitle}>
                   Géré par : {subscription.company_name || 'Partenaire CITICLINE'}
                 </Text>
-                <View className="px-4 py-2 bg-primary rounded-full">
-                  <Text className="text-white font-black text-[9px] uppercase tracking-widest">Service Actif</Text>
+                <View style={styles.activeBadge}>
+                  <Text style={styles.activeBadgeText}>Service Actif</Text>
                 </View>
               </View>
 
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Jours de Passage</Text>
-              <View className="space-y-4 mb-10">
+              <Text style={styles.sectionHeading}>Jours de Passage</Text>
+              <View style={styles.daysContainer}>
                 {(subscription.pickup_days || ['Lundi', 'Mercredi', 'Vendredi']).map((day: string, i: number) => (
-                  <View key={i} className="flex-row items-center justify-between bg-slate-50 p-5 rounded-3xl border border-slate-100">
-                    <View className="flex-row items-center">
+                  <View key={i} style={styles.dayItem}>
+                    <View style={styles.dayItemLeft}>
                       <Calendar size={18} color="#2aa275" />
-                      <Text className="ml-3 text-sm font-black text-[#020617] uppercase tracking-widest">{day}</Text>
+                      <Text style={styles.dayItemText}>{day}</Text>
                     </View>
-                    <Text className="text-[10px] font-bold text-slate-400 uppercase">
+                    <Text style={styles.dayItemTime}>
                       {subscription.pickup_time || '08h - 10h'}
                     </Text>
                   </View>
                 ))}
               </View>
 
-              <TouchableOpacity className="w-full bg-[#ef4444] h-16 rounded-2xl items-center justify-center shadow-lg shadow-red-500/20">
+              <TouchableOpacity style={styles.reportBtn}>
                 <AlertCircle size={16} color="white" />
-                <Text className="text-white font-black uppercase tracking-widest text-xs mt-1">Signaler un Problème</Text>
+                <Text style={styles.reportBtnText}>Signaler un Problème</Text>
               </TouchableOpacity>
             </MotiView>
 
           ) : profile?.role === 'vendeur' && !subscription ? (
             /* ── PAS D'ABONNEMENT ── */
             <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <View className="bg-slate-50 border border-slate-100 p-8 rounded-[3rem] items-center mb-10">
-                <View className="w-20 h-20 bg-white rounded-[2rem] items-center justify-center mb-4 shadow-sm">
+              <View style={styles.noSubCard}>
+                <View style={styles.emptyCrownIconBg}>
                   <Crown size={40} color="#cbd5e1" />
                 </View>
-                <Text className="text-2xl font-black text-[#020617] uppercase italic tracking-tighter mb-2">Pas d'Abonnement</Text>
-                <Text className="text-slate-400 font-medium text-center text-sm">
+                <Text style={styles.noSubTitle}>Pas d'Abonnement</Text>
+                <Text style={styles.noSubDesc}>
                   Souscrivez à un service de collecte pour vos déchets ménagers.
                 </Text>
               </View>
 
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Avantages</Text>
-              <View className="space-y-4 mb-10">
+              <Text style={styles.sectionHeading}>Avantages</Text>
+              <View style={styles.perksContainer}>
                 {[
                   'Collecte régulière planifiée',
                   'Notification avant chaque passage',
                   'Historique de vos collectes',
                   'Support prioritaire 24/7',
                 ].map((item, i) => (
-                  <View key={i} className="flex-row items-center py-2">
+                  <View key={i} style={styles.perkItem}>
                     <CheckCircle2 size={18} color="#2aa275" />
-                    <Text className="ml-3 text-sm font-bold text-slate-600">{item}</Text>
+                    <Text style={styles.perkText}>{item}</Text>
                   </View>
                 ))}
               </View>
 
-              <TouchableOpacity className="w-full bg-[#020617] h-16 rounded-2xl items-center justify-center shadow-lg">
-                <Text className="text-white font-black uppercase tracking-widest text-xs">Contacter un Collecteur</Text>
+              <TouchableOpacity style={styles.contactBtn}>
+                <Text style={styles.contactBtnText}>Contacter un Collecteur</Text>
               </TouchableOpacity>
             </MotiView>
 
           ) : (
             /* ── COLLECTEUR / ENTREPRISE / AUTRES ── */
             <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <View className="bg-indigo-50 border border-indigo-100 p-8 rounded-[3rem] items-center mb-8">
-                <View className="w-20 h-20 bg-white rounded-[2rem] items-center justify-center mb-4 shadow-sm">
+              <View style={styles.proSubCard}>
+                <View style={styles.proCrownIconBg}>
                   <Crown size={40} color="#6366f1" />
                 </View>
-                <Text className="text-2xl font-black text-[#020617] uppercase italic tracking-tighter mb-2">
+                <Text style={styles.proSubTitle}>
                   {profile?.subscription_tier === 'pro' ? 'Plan Pro' : 
                    profile?.subscription_tier === 'business' ? 'Plan Business' : 'Plan Starter'}
                 </Text>
-                <View className="px-4 py-2 bg-indigo-600 rounded-full">
-                  <Text className="text-white font-black text-[9px] uppercase tracking-widest">Actif</Text>
+                <View style={styles.proBadge}>
+                  <Text style={styles.proBadgeText}>Actif</Text>
                 </View>
               </View>
 
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Avantages Premium</Text>
-              <View className="space-y-3 mb-10">
+              <Text style={styles.sectionHeading}>Avantages Premium</Text>
+              <View style={styles.perksContainer}>
                 {[
                   'Collectes prioritaires',
                   'Frais de service réduits',
@@ -162,9 +162,9 @@ export default function AbonnementsScreen() {
                   'Badge Partenaire Vérifié',
                   'Tableau de bord analytique',
                 ].map((item, i) => (
-                  <View key={i} className="flex-row items-center py-2">
+                  <View key={i} style={styles.perkItem}>
                     <CheckCircle2 size={18} color="#6366f1" />
-                    <Text className="ml-3 text-sm font-bold text-slate-600">{item}</Text>
+                    <Text style={styles.perkText}>{item}</Text>
                   </View>
                 ))}
               </View>
@@ -175,3 +175,42 @@ export default function AbonnementsScreen() {
     </SafeAreaView>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: 'white' },
+  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
+  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
+  activeSubCard: { backgroundColor: 'rgba(42, 162, 117, 0.1)', borderColor: 'rgba(42, 162, 117, 0.2)', borderWidth: 1, padding: 32, borderRadius: 48, alignItems: 'center', marginBottom: 40 },
+  crownIconBg: { width: 80, height: 80, backgroundColor: 'white', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  zoneNameTitle: { fontSize: 24, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 4 },
+  partnerSubtitle: { color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase', fontSize: 10, letterSpacing: 2, marginBottom: 16 },
+  activeBadge: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#2aa275', borderRadius: 9999 },
+  activeBadgeText: { color: 'white', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 2 },
+  sectionHeading: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 24 },
+  daysContainer: { flexDirection: 'column', gap: 16, marginBottom: 40 },
+  dayItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#f8fafc', padding: 20, borderRadius: 24, borderWidth: 1, borderColor: '#f1f5f9' },
+  dayItemLeft: { flexDirection: 'row', alignItems: 'center' },
+  dayItemText: { marginLeft: 12, fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
+  dayItemTime: { fontSize: 10, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' },
+  reportBtn: { width: '100%', backgroundColor: '#ef4444', height: 64, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', shadowColor: 'rgba(239, 68, 68, 0.2)', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 1, shadowRadius: 20, elevation: 10 },
+  reportBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 12, marginLeft: 8 },
+  noSubCard: { backgroundColor: '#f8fafc', borderColor: '#f1f5f9', borderWidth: 1, padding: 32, borderRadius: 48, alignItems: 'center', marginBottom: 40 },
+  emptyCrownIconBg: { width: 80, height: 80, backgroundColor: 'white', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  noSubTitle: { fontSize: 24, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 8 },
+  noSubDesc: { color: '#94a3b8', fontWeight: '500', textAlign: 'center', fontSize: 14 },
+  perksContainer: { flexDirection: 'column', gap: 12, marginBottom: 40 },
+  perkItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
+  perkText: { marginLeft: 12, fontSize: 14, fontWeight: 'bold', color: '#475569' },
+  contactBtn: { width: '100%', backgroundColor: '#020617', height: 64, borderRadius: 16, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10 },
+  contactBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 12 },
+  proSubCard: { backgroundColor: '#eef2ff', borderColor: '#e0e7ff', borderWidth: 1, padding: 32, borderRadius: 48, alignItems: 'center', marginBottom: 32 },
+  proCrownIconBg: { width: 80, height: 80, backgroundColor: 'white', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
+  proSubTitle: { fontSize: 24, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 8 },
+  proBadge: { paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#6366f1', borderRadius: 9999 },
+  proBadgeText: { color: 'white', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 2 }
+});

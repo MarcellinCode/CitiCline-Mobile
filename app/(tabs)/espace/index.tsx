@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import * as React from 'react';
+import { useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { 
@@ -102,7 +103,7 @@ export default function EspaceDashboard() {
             route: '/(tabs)/map'
           }
         ];
-      case 'entreprise':
+      case 'organisation_admin':
         return [
           {
             id: 'wallet',
@@ -118,7 +119,7 @@ export default function EspaceDashboard() {
             subtitle: 'Marché B2B / Gros volumes',
             icon: ShieldCheck,
             color: '#10b981',
-            route: '/(tabs)/marketplace' // A affiner si une route bourse existe
+            route: '/(tabs)/espace/offres' // Redirection vers le nouvel écran dédié des Appels d'Offres
           },
           {
             id: 'agents',
@@ -163,29 +164,29 @@ export default function EspaceDashboard() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
+      <View style={styles.loadingContainer}>
         <ActivityIndicator color="#2aa275" />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <ScrollView className="flex-1 pt-16 px-8" showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Profile Header */}
         <MotiView 
           from={{ opacity: 0, translateY: -20 }}
           animate={{ opacity: 1, translateY: 0 }}
-          className="mb-12"
+          style={styles.headerMoti}
         >
-          <Text className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Bienvenue sur votre</Text>
-          <Text className="text-4xl font-black text-[#020617] uppercase italic tracking-tighter">ESPACE</Text>
+          <Text style={styles.welcomeText}>Bienvenue sur votre</Text>
+          <Text style={styles.titleText}>ESPACE</Text>
         </MotiView>
 
         {/* Dashboard Grid */}
-        <View className="flex-row flex-wrap justify-between gap-y-4">
+        <View style={styles.gridContainer}>
           {gridItems.map((item, index) => (
             <MotiView
               key={item.id}
@@ -195,23 +196,21 @@ export default function EspaceDashboard() {
             >
               <TouchableOpacity 
                 onPress={() => item.route && router.push(item.route as any)}
-                style={{ width: CARD_WIDTH, height: 180 }}
-                className="bg-slate-50 border border-slate-100 p-6 rounded-[2.5rem] shadow-sm justify-between"
+                style={[styles.gridCard, { width: CARD_WIDTH }]}
               >
                 <View 
-                  className="w-14 h-14 rounded-2xl items-center justify-center"
-                  style={{ backgroundColor: `${item.color}10`, borderColor: `${item.color}20`, borderWidth: 1 }}
+                  style={[styles.iconContainer, { backgroundColor: `${item.color}10`, borderColor: `${item.color}20` }]}
                 >
                   <item.icon size={28} color={item.color} />
                 </View>
                 <View>
                   <Text 
-                    className="text-[11px] font-black text-[#020617] uppercase tracking-wider mb-2"
+                    style={styles.cardTitle}
                     numberOfLines={1}
                   >
                     {item.title}
                   </Text>
-                  <Text className="text-[9px] font-bold text-slate-400 uppercase tracking-tight leading-4" numberOfLines={2}>
+                  <Text style={styles.cardSubtitle} numberOfLines={2}>
                     {item.subtitle}
                   </Text>
                 </View>
@@ -225,17 +224,39 @@ export default function EspaceDashboard() {
           from={{ opacity: 0, translateY: 20 }}
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ delay: 500 }}
-          className="mt-12 w-full bg-slate-900 p-8 rounded-[3rem] relative overflow-hidden shadow-2xl shadow-slate-900/20"
+          style={styles.bannerContainer}
         >
-          <View className="absolute top-0 right-0 p-4">
+          <View style={styles.bannerLeaf}>
             <Leaf size={40} color="#2aa275" opacity={0.2} />
           </View>
-          <Text className="text-primary font-black uppercase tracking-widest text-[10px] mb-2">Impact Écologique</Text>
-          <Text className="text-white text-3xl font-black italic tracking-tighter">128 kg <Text className="text-slate-400 text-lg not-italic">recyclés</Text></Text>
+          <Text style={styles.bannerSubtitle}>Impact Écologique</Text>
+          <Text style={styles.bannerTitle}>128 kg <Text style={styles.bannerTitleNormal}>recyclés</Text></Text>
         </MotiView>
         
-        <View className="h-40" />
+        <View style={styles.bottomSpace} />
       </ScrollView>
     </View>
   );
 }
+
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+  loadingContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: 'white' },
+  scrollView: { flex: 1, paddingTop: 64, paddingHorizontal: 32 },
+  headerMoti: { marginBottom: 48 },
+  welcomeText: { fontSize: 14, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  titleText: { fontSize: 36, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1 },
+  gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16 },
+  gridCard: { height: 180, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 24, borderRadius: 40, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2, justifyContent: 'space-between', marginBottom: 16 },
+  iconContainer: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  cardTitle: { fontSize: 11, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
+  cardSubtitle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: -0.5, lineHeight: 16 },
+  bannerContainer: { marginTop: 48, width: '100%', backgroundColor: '#0f172a', padding: 32, borderRadius: 48, overflow: 'hidden', shadowColor: '#0f172a', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
+  bannerLeaf: { position: 'absolute', top: 0, right: 0, padding: 16 },
+  bannerSubtitle: { color: '#10b981', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginBottom: 8 },
+  bannerTitle: { color: 'white', fontSize: 30, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
+  bannerTitleNormal: { color: '#94a3b8', fontSize: 18, fontStyle: 'normal' },
+  bottomSpace: { height: 160 }
+});

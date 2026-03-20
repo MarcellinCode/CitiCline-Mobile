@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image as RNImage } from 'react-native';
+import { View, Text, TouchableOpacity, Image as RNImage, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MapPin, Scale, Clock } from 'lucide-react-native';
 import { Waste } from '../lib/types';
@@ -17,68 +17,210 @@ export function WasteCard({ waste }: WasteCardProps) {
   return (
     <TouchableOpacity 
       onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } })}
-      className="bg-white rounded-[2rem] mb-4 border border-slate-100 shadow-sm overflow-hidden"
-      style={{ width: '48%' }}
+      style={styles.card}
     >
-      <View className="relative">
-        <View className="w-full aspect-square bg-slate-50 items-center justify-center">
+      <View style={styles.imageContainer}>
+        <View style={styles.imageBox}>
           {hasImage ? (
             <RNImage 
               source={{ uri: waste.images[0] }} 
-              className="w-full h-full"
+              style={styles.image}
               resizeMode="cover"
             />
           ) : (
-            <Text className="text-4xl">{waste.waste_types?.emoji || '♻️'}</Text>
+            <Text style={styles.emojiText}>{waste.waste_types?.emoji || '♻️'}</Text>
           )}
         </View>
-        <TouchableOpacity 
-          className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full items-center justify-center shadow-sm"
-        >
-          <View className="w-4 h-4 rounded-full border border-slate-300" />
+        <TouchableOpacity style={styles.wishlistBtn}>
+          <View style={styles.wishlistIcon} />
         </TouchableOpacity>
       </View>
 
-      <View className="p-3">
-        <Text className="text-[13px] font-black text-[#020617] mb-0.5" numberOfLines={1}>
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={1}>
           {waste.waste_types?.name || 'Recyclables'}
         </Text>
-        <Text className="text-[9px] font-bold text-slate-400 uppercase mb-2" numberOfLines={1}>
+        <Text style={styles.subtitle} numberOfLines={1}>
           Matériau recyclable
         </Text>
 
-        <View className="flex-row justify-between items-center mb-3">
-          <View className="flex-row items-center">
+        <View style={styles.rowBetween}>
+          <View style={styles.rowCenter}>
             <Scale size={10} color="#64748b" />
-            <Text className="text-[10px] font-black text-slate-600 ml-1">{waste.estimated_weight} Tons</Text>
+            <Text style={styles.weightText}>{waste.estimated_weight} Tons</Text>
           </View>
-          <Text className="text-[10px] font-black text-[#020617]">${waste.waste_types?.price_per_kg || '0'}/kg</Text>
+          <Text style={styles.priceText}>${waste.waste_types?.price_per_kg || '0'}/kg</Text>
         </View>
 
-        <View className="flex-row items-center mb-3">
+        <View style={styles.locationRow}>
           <MapPin size={10} color="#94a3b8" />
-          <Text className="text-[9px] font-bold text-slate-400 uppercase truncate ml-1 flex-1" numberOfLines={1}>
+          <Text style={styles.locationText} numberOfLines={1}>
             {waste.location}
           </Text>
         </View>
 
-        <View className="flex-row items-center mb-4">
-           <View className="w-3.5 h-3.5 rounded-full bg-primary/20 items-center justify-center mr-1">
-             <View className="w-1.5 h-1.5 rounded-full bg-primary" />
+        <View style={styles.userRow}>
+           <View style={styles.userAvatarBg}>
+             <View style={styles.userAvatarDot} />
            </View>
-           <Text className="text-[9px] font-bold text-slate-500 truncate flex-1" numberOfLines={1}>
+           <Text style={styles.userName} numberOfLines={1}>
              {waste.profiles?.full_name || 'PowerCycle Ltd'}
            </Text>
-           <Text className="text-[8px] font-bold text-amber-500 ml-1">★ 4.9</Text>
+           <Text style={styles.ratingText}>★ 4.9</Text>
         </View>
 
         <TouchableOpacity 
           onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } })}
-          className="w-full bg-primary py-2.5 rounded-xl items-center justify-center"
+          style={styles.actionBtn}
         >
-          <Text className="text-white text-[10px] font-black uppercase tracking-widest">Voir Détails</Text>
+          <Text style={styles.actionBtnText}>Voir Détails</Text>
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 32,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
+    width: '48%',
+  },
+  imageContainer: {
+    // relative is implied in React Native
+  },
+  imageBox: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  emojiText: {
+    fontSize: 36,
+  },
+  wishlistBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 32,
+    height: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wishlistIcon: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+  },
+  content: {
+    padding: 12,
+  },
+  title: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#020617',
+    marginBottom: 2,
+  },
+  subtitle: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  weightText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#475569',
+    marginLeft: 4,
+  },
+  priceText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#020617',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  locationText: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    marginLeft: 4,
+    flex: 1,
+  },
+  userRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  userAvatarBg: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  userAvatarDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+  },
+  userName: {
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: '#64748b',
+    flex: 1,
+    letterSpacing: -0.2,
+  },
+  ratingText: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#f59e0b',
+    marginLeft: 4,
+  },
+  actionBtn: {
+    width: '100%',
+    backgroundColor: '#10b981',
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionBtnText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  }
+});
