@@ -16,10 +16,9 @@ export default function ChatScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Grouping logic would ideally be a SQL view, but we'll do it client-side for now
       const { data, error } = await supabase
         .from('messages')
-        .select(`*, sender:sender_id(*), receiver:receiver_id(*)`)
+        .select(`*, sender:sender_id(*), receiver:receiver_id(*), wastes:waste_id(waste_types(name))`)
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
       
@@ -27,14 +26,23 @@ export default function ChatScreen() {
         const uniqueConversations = new Map();
         data.forEach(msg => {
           const otherUser = msg.sender_id === user.id ? msg.receiver : msg.sender;
-          if (otherUser && !uniqueConversations.has(otherUser.id)) {
-            uniqueConversations.set(otherUser.id, {
-              id: msg.id,
-              otherUser,
-              lastMessage: msg.content,
-              timestamp: msg.created_at,
-              isRead: msg.is_read || msg.sender_id === user.id
-            });
+          if (otherUser) {
+            const key = `${otherUser.id}_${msg.waste_id || 'general'}`;
+            if (!uniqueConversations.has(key)) {
+              let wasteName = 'Discussion libre';
+              if (msg.wastes?.waste_types?.name) {
+                 wasteName = `Lot: ${msg.wastes.waste_types.name}`;
+              }
+              uniqueConversations.set(key, {
+                id: msg.id,
+                waste_id: msg.waste_id,
+                wasteName,
+                otherUser,
+                lastMessage: msg.content,
+                timestamp: msg.created_at,
+                isRead: msg.is_read || msg.sender_id === user.id
+              });
+            }
           }
         });
         setConversations(Array.from(uniqueConversations.values()));
@@ -62,14 +70,14 @@ export default function ChatScreen() {
 
       <FlatList
         data={conversations}
-        keyExtractor={(item) => item.otherUser.id.toString()}
+        keyExtractor={(item) => `${item.otherUser.id}_${item.waste_id || 'general'}`}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity 
             onPress={() => router.push({
               pathname: '/(tabs)/chat/[id]',
-              params: { id: item.otherUser.id, name: item.otherUser.full_name }
+              params: { id: item.otherUser.id, name: item.otherUser.full_name, waste_id: item.waste_id }
             })}
             style={styles.chatItem}
           >
@@ -88,6 +96,9 @@ export default function ChatScreen() {
                     {new Date(item.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
                   </Text>
                 </View>
+                {item.wasteName && (
+                  <Text style={{ fontSize: 10, color: '#10b981', fontWeight: 'bold', marginBottom: 2 }}>{item.wasteName}</Text>
+                )}
                 <View style={styles.chatFooter}>
                     <Text style={[styles.chatPreview, !item.isRead ? styles.chatPreviewUnread : styles.chatPreviewRead]} numberOfLines={1}>
                         {item.lastMessage}

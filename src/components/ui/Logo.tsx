@@ -5,7 +5,6 @@ interface LogoProps {
   size?: 'small' | 'medium' | 'large';
   color?: 'dark' | 'light';
 }
-
 export default function Logo({ size = 'medium', color = 'dark' }: LogoProps) {
   const isLight = color === 'light';
   const textColor = isLight ? '#ffffff' : '#020617';
@@ -36,7 +35,6 @@ export default function Logo({ size = 'medium', color = 'dark' }: LogoProps) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
