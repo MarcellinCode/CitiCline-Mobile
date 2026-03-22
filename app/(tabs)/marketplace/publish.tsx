@@ -3,6 +3,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Camera, Plus, Trash2, ArrowRight } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { supabase } from '@/lib/supabase';
 import { Header } from '@/components/Header';
 import { WasteType } from '@/lib/types';
@@ -51,14 +52,25 @@ export default function PublishWaste() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Get GPS location
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      let lat = null;
+      let lng = null;
+      if (status === 'granted') {
+          const pos = await Location.getCurrentPositionAsync({});
+          lat = pos.coords.latitude;
+          lng = pos.coords.longitude;
+      }
+
       // Upload images logic (simplified for now to save to public URL if needed, or just array)
-      // Real implementation would use supabase.storage.upload
       
       const { error } = await supabase.from('wastes').insert({
         seller_id: user.id,
         type_id: typeId,
         estimated_weight: parseFloat(weight),
         location: location,
+        latitude: lat,
+        longitude: lng,
         status: 'published',
         images: images, // In real app, these would be Supabase storage URLs
       });

@@ -12,6 +12,7 @@ import {
   AlertTriangle
 } from 'lucide-react-native';
 import { MotiView, AnimatePresence } from 'moti';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 export default function MissionDetail() {
   const router = useRouter();
@@ -19,8 +20,25 @@ export default function MissionDetail() {
   const [step, setStep] = useState<'info' | 'scan' | 'weight' | 'success'>('info');
   const [scanned, setScanned] = useState(false);
   const [weight, setWeight] = useState('');
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = React.useRef<any>(null);
 
   const isMarketplace = type?.toString().toLowerCase().includes('recyclage') || type?.toString().toLowerCase().includes('bac');
+
+  const takePicture = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+      // Photo prise, simulation d'upload/validation
+      setScanned(true);
+      setTimeout(() => {
+        if (isMarketplace) {
+          setStep('weight');
+        } else {
+          setStep('success');
+        }
+      }, 1500);
+    }
+  };
 
   const handleScan = () => {
     // Simulation de scan réussi
@@ -105,16 +123,37 @@ export default function MissionDetail() {
             >
               <View className="w-full aspect-square bg-slate-100 rounded-[3rem] overflow-hidden border-2 border-dashed border-slate-300 items-center justify-center relative">
                  {!scanned ? (
-                   <>
-                     <Camera size={48} color="#94a3b8" />
-                     <Text className="mt-4 text-slate-400 font-bold uppercase tracking-widest text-[10px]">Visez le QR Code</Text>
-                     
-                     {/* QR Viewfinder lines simulation */}
-                     <View className="absolute top-10 left-10 w-10 h-10 border-t-4 border-l-4 border-primary rounded-tl-2xl" />
-                     <View className="absolute top-10 right-10 w-10 h-10 border-t-4 border-r-4 border-primary rounded-tr-2xl" />
-                     <View className="absolute bottom-10 left-10 w-10 h-10 border-b-4 border-l-4 border-primary rounded-bl-2xl" />
-                     <View className="absolute bottom-10 right-10 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-2xl" />
-                   </>
+                   permission?.granted ? (
+                     <CameraView ref={cameraRef} style={{ flex: 1, width: '100%' }} facing="back">
+                       {/* Cadre de visée photo proof */}
+                       <View className="absolute top-10 left-10 w-10 h-10 border-t-4 border-l-4 border-white rounded-tl-2xl shadow-lg" />
+                       <View className="absolute top-10 right-10 w-10 h-10 border-t-4 border-r-4 border-white rounded-tr-2xl shadow-lg" />
+                       <View className="absolute bottom-10 left-10 w-10 h-10 border-b-4 border-l-4 border-white rounded-bl-2xl shadow-lg" />
+                       <View className="absolute bottom-10 right-10 w-10 h-10 border-b-4 border-r-4 border-white rounded-br-2xl shadow-lg" />
+
+                       <View className="absolute top-4 left-0 right-0 items-center">
+                         <View className="bg-black/50 px-4 py-2 rounded-full">
+                           <Text className="text-white font-black text-[10px] uppercase tracking-widest">Preuve de Travail 📸</Text>
+                         </View>
+                       </View>
+
+                       <TouchableOpacity 
+                         onPress={takePicture}
+                         className="absolute bottom-8 self-center bg-primary px-8 py-4 rounded-full shadow-xl flex-row items-center"
+                       >
+                         <Camera color="white" size={20} />
+                         <Text className="text-white font-black uppercase tracking-widest ml-3 text-xs">Capturer</Text>
+                       </TouchableOpacity>
+                     </CameraView>
+                   ) : (
+                     <View className="p-8 items-center">
+                       <Camera size={48} color="#94a3b8" />
+                       <Text className="mt-4 text-slate-500 font-bold text-center text-xs mb-6">L'accès à la caméra est requis pour la preuve de travail.</Text>
+                       <TouchableOpacity onPress={requestPermission} className="bg-slate-900 px-6 py-3 rounded-xl">
+                         <Text className="text-white font-black uppercase tracking-widest text-xs">Auteuriser la caméra</Text>
+                       </TouchableOpacity>
+                     </View>
+                   )
                  ) : (
                    <MotiView 
                      from={{ scale: 0.5, opacity: 0 }}

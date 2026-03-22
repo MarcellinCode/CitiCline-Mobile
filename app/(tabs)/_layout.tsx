@@ -3,11 +3,56 @@ import { View, Platform, TouchableOpacity, ActivityIndicator } from 'react-nativ
 import { Tabs, useRouter } from 'expo-router';
 import { useProfile } from '@/hooks/useProfile';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import * as Location from 'expo-location';
+import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
 
 export default function TabsLayout() {
   const router = useRouter();
   const { profile, loading } = useProfile();
   const unreadMessagesCount = useUnreadMessages();
+
+  useEffect(() => {
+    let locationSubscription: Location.LocationSubscription | null = null;
+
+    const startTracking = async () => {
+      // Seulement tracer les agents
+      if (profile?.role !== 'agent_collecteur') return;
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission de localisation refusée');
+        return;
+      }
+
+      locationSubscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          distanceInterval: 10, // Mise à jour tous les 10 mètres
+        },
+        async (loc) => {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('tracking_logs').insert({
+              agent_id: user.id,
+              latitude: loc.coords.latitude,
+              longitude: loc.coords.longitude,
+            });
+          }
+        }
+      );
+    };
+
+    if (!loading && profile) {
+      startTracking();
+    }
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
+  }, [profile, loading]);
 
   if (loading) {
     return (
