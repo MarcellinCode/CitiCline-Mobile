@@ -27,7 +27,27 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-        "expo-router"
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "CITICLINE a besoin de la caméra pour prendre en photo les preuves de travail et dépôts sauvages."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "CITICLINE nécessite votre position GPS pour l'itinéraire et les alertes environnement.",
+          "locationAlwaysPermission": "Position vitale pour le suivi des agents en arrière-plan.",
+          "locationWhenInUsePermission": "Position nécessaire pour géolocaliser les déchets signalés."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "CITICLINE doit accéder à la galerie pour charger les images de signalements."
+        }
+      ]
     ],
     "scheme": "citicline"
   }
