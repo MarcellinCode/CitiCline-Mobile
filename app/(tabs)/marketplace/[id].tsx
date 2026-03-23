@@ -1,10 +1,26 @@
 import { View, Text, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Waste } from '@/lib/types';
-import { ArrowLeft, MapPin, Scale, User, ShieldCheck } from 'lucide-react-native';
+import { 
+  ChevronLeft, 
+  MapPin, 
+  User, 
+  Zap, 
+  Calendar, 
+  History,
+  TrendingUp,
+  ShieldCheck,
+  Package,
+  ArrowRight,
+  MessageSquare,
+  ArrowLeft,
+  Scale
+} from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MotiView } from 'moti';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
@@ -67,14 +83,11 @@ export default function WasteDetail() {
       if (error) alert(error.message);
       else {
         alert("Félicitations ! Déchet réservé. Contactez le vendeur !");
-        router.push({ 
-          pathname: '/(tabs)/chat/[id]', 
-          params: { 
-            id: waste?.seller_id, 
-            name: waste?.profiles?.full_name || 'Vendeur',
-            waste_id: waste?.id 
-          } 
-        } as any);
+        navigateSafe(router, ROUTES.CHAT_DETAILS(waste?.seller_id || ''), { 
+          id: waste?.seller_id, 
+          otherUserName: waste?.profiles?.full_name || 'Vendeur',
+          wasteName: waste?.waste_types?.name 
+        });
       }
     } catch (err) {
       console.error(err);

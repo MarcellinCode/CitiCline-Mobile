@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter, Redirect } from 'expo-router';
+import { ROUTES } from "@/constants/routes";
 import { StatusBar } from 'expo-status-bar';
 import { ArrowRight } from 'lucide-react-native';
 import { CITICLINE_LOGO_BASE64 } from '@/components/ui/logoBase64';
@@ -38,7 +39,7 @@ export default function Home() {
 
   // Dès qu'on sait qu'il y a un compte, on "téléporte" l'utilisateur instantanément sans peindre l'écran
   if (session) {
-    return <Redirect href="/(tabs)/marketplace" />;
+    return <Redirect href={ROUTES.MARKETPLACE as any} />;
   }
 
   return (

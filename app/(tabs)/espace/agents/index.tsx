@@ -12,7 +12,9 @@ import {
   Clock,
   MoreVertical
 } from 'lucide-react-native';
-import { supabase } from '@/lib/supabase';
+import { useAgents } from '@/hooks/useAgents';
+import { navigateSafe } from '@/utils/navigation';
+import { ROUTES } from '@/constants/routes';
 import { useProfile } from '@/hooks/useProfile';
 import { MotiView } from 'moti';
 
@@ -27,29 +29,8 @@ interface Agent {
 
 export default function AgentsManagement() {
   const router = useRouter();
-  const { profile } = useProfile();
   const insets = useSafeAreaInsets();
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchAgents() {
-      if (!profile?.id) return;
-      
-      // Simulation pour l'instant ou requête réelle si organization_id existe
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('role', 'agent_collecteur'); // A affiner avec organization_id plus tard
-      
-      if (data) {
-        setAgents(data as Agent[]);
-      }
-      setLoading(false);
-    }
-
-    fetchAgents();
-  }, [profile]);
+  const { agents, loading } = useAgents();
 
   return (
     <View style={styles.container}>
@@ -58,7 +39,7 @@ export default function AgentsManagement() {
         headerTitle: "NOS AGENTS",
         headerTitleStyle: { fontWeight: '900' },
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
+          <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.headerBackBtn}>
             <ArrowLeft size={20} color="#020617" />
           </TouchableOpacity>
         ),

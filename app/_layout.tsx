@@ -1,4 +1,6 @@
 import { Stack, useRouter, useSegments } from "expo-router";
+import { ROUTES } from "@/constants/routes";
+import { navigateSafe } from "@/utils/navigation";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -10,6 +12,7 @@ import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
 import { ProfileProvider } from "../src/context/ProfileContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -21,23 +24,25 @@ export default function RootLayout() {
 // Auth logic is now handled in ProfileProvider via Context
 
   return (
-    <ProfileProvider>
-      <AuthNavigationWrapper loaded={loaded} error={error} segments={segments}>
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#ffffff' }}>
-          <Stack 
-            screenOptions={{ 
-              headerShown: false,
-              animation: 'fade_from_bottom',
-            }} 
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </GestureHandlerRootView>
-      </AuthNavigationWrapper>
-    </ProfileProvider>
+    <ErrorBoundary>
+      <ProfileProvider>
+        <AuthNavigationWrapper loaded={loaded} error={error} segments={segments}>
+          <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#ffffff' }}>
+            <Stack 
+              screenOptions={{ 
+                headerShown: false,
+                animation: 'fade_from_bottom',
+              }} 
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </GestureHandlerRootView>
+        </AuthNavigationWrapper>
+      </ProfileProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -55,7 +60,7 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
     const inIndex = segments.length === 0 || (segments.length === 1 && segments[0] === '');
 
     if (session && (inAuthGroup || inOnboarding || inIndex)) {
-      router.replace('/(tabs)/marketplace');
+      router.replace(ROUTES.MARKETPLACE);
     } else if (!session && !inAuthGroup && !inOnboarding && !inIndex) {
       router.replace('/');
     }
@@ -102,7 +107,7 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
               { 
                 text: "Répondre", 
                 onPress: () => router.push({
-                  pathname: '/(tabs)/chat/[id]',
+                  pathname: ROUTES.CHAT_DETAILS('[id]'),
                   params: { id: payload.new.sender_id, name: data?.full_name }
                 } as any)
               }

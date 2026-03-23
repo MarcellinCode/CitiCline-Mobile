@@ -6,6 +6,8 @@ import { ChevronLeft, Target, MapPin, Clock, ShieldCheck, Box, RefreshCw } from 
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { Waste } from '@/lib/types';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { MotiView } from 'moti';
 
 export default function MissionsScreen() {
@@ -63,7 +65,7 @@ export default function MissionsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
+        <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ma Feuille de Route</Text>
@@ -120,14 +122,11 @@ export default function MissionsScreen() {
                     transition={{ delay: 50 * i }}
                   >
                     <TouchableOpacity 
-                      onPress={() => router.push({ 
-                        pathname: '/(tabs)/missions/[id]', 
-                        params: { 
-                          id: mission.id, 
-                          name: (mission.profiles as any)?.full_name || 'Client', 
-                          type: mission.waste_types?.name || 'Recyclables', 
-                          color: '#2aa275' 
-                        } 
+                      onPress={() => navigateSafe(router, ROUTES.MISSION_DETAILS(mission.id), { 
+                        id: mission.id, 
+                        name: (mission.profiles as any)?.full_name || 'Client', 
+                        type: mission.waste_types?.name || 'Recyclables', 
+                        color: '#2aa275' 
                       })}
                       style={styles.missionCard}
                     >

@@ -2,7 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { ChevronLeft, Package, CheckCircle2, Clock, XCircle, RefreshCw, History } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
+import { 
+  ChevronLeft, 
+  Plus, 
+  History, 
+  Leaf, 
+  RefreshCw,
+  Package,
+  CheckCircle2,
+  Clock,
+  XCircle
+} from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { Waste } from '@/lib/types';
@@ -64,7 +76,7 @@ export default function MesDechetsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
+        <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{title}</Text>
@@ -85,7 +97,7 @@ export default function MesDechetsScreen() {
           <Text style={styles.emptyText}>{emptyLabel}</Text>
           {profile?.role === 'vendeur' && (
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/marketplace/publish')}
+              onPress={() => navigateSafe(router, '/marketplace/publish')}
               style={styles.actionBtn}
             >
               <Text style={styles.actionBtnText}>Publier un lot</Text>

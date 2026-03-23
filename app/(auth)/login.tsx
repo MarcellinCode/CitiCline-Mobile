@@ -1,7 +1,9 @@
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { useRouter, Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { StatusBar } from 'expo-status-bar';
@@ -31,7 +33,7 @@ export default function Login() {
       if (error) {
         alert(error.message);
       } else if (data.session) {
-        router.replace('/(tabs)/marketplace');
+        router.replace(ROUTES.MARKETPLACE);
       }
     } catch (err: any) {
       alert(err.message || "Une erreur est survenue");

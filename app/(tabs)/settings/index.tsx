@@ -1,7 +1,21 @@
 import { View, Text, TouchableOpacity, ScrollView, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { ChevronLeft, Bell, Lock, Shield, CircleHelp } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
+import { 
+  Settings, 
+  Bell, 
+  Lock, 
+  Shield, 
+  Globe, 
+  Smartphone, 
+  ChevronLeft, 
+  ChevronRight,
+  LogOut,
+  Info,
+  CircleHelp
+} from 'lucide-react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -12,7 +26,7 @@ export default function SettingsScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       
       <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} style={styles.iconBtn}>
+        <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Paramètres</Text>

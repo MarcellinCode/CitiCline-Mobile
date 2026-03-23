@@ -1,10 +1,23 @@
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { Stack } from 'expo-router';
+import { View, Text, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Stack, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
+import {
+  Search,
+  MapPin,
+  Navigation,
+  List,
+  Filter,
+  ChevronRight,
+  X,
+  Plus,
+  ArrowRight
+} from 'lucide-react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { useWastes } from '@/hooks/useWastes';
 import { useLocation } from '@/hooks/useLocation';
 import { Header } from '@/components/Header';
-import { useRouter } from 'expo-router';
 
 export default function MapScreen() {
   const { wastes } = useWastes();
@@ -43,7 +56,7 @@ export default function MapScreen() {
                   <Text style={styles.markerEmoji}>{waste.waste_types?.emoji}</Text>
                 </View>
                 <Callout 
-                    onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } })}
+                    onPress={() => navigateSafe(router, ROUTES.MARKETPLACE_DETAILS(waste.id), { id: waste.id })}
                     tooltip
                 >
                     <View style={styles.calloutContainer}>

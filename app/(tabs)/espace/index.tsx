@@ -20,6 +20,8 @@ import {
   BarChart3,
   Globe
 } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { useProfile } from '@/hooks/useProfile';
 import { MotiView } from 'moti';
 
@@ -43,7 +45,7 @@ export default function EspaceDashboard() {
             subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
             icon: Wallet,
             color: '#2aa275',
-            route: '/(tabs)/wallet'
+            route: ROUTES.WALLET
           },
           {
             id: 'membership',
@@ -51,7 +53,7 @@ export default function EspaceDashboard() {
             subtitle: 'Service de ramassage',
             icon: Crown,
             color: '#8b5cf6',
-            route: '/(tabs)/abonnements'
+            route: ROUTES.ABONNEMENTS
           },
           {
             id: 'history',
@@ -59,7 +61,7 @@ export default function EspaceDashboard() {
             subtitle: 'Suivi de vos recyclables',
             icon: History,
             color: '#f59e0b',
-            route: '/(tabs)/mes-dechets'
+            route: ROUTES.MES_DECHETS
           },
           {
             id: 'map',
@@ -67,7 +69,7 @@ export default function EspaceDashboard() {
             subtitle: 'Points de collecte',
             icon: MapIcon,
             color: '#0ea5e9',
-            route: '/(tabs)/map'
+            route: ROUTES.MAP
           }
         ];
       case 'collecteur':
@@ -78,7 +80,7 @@ export default function EspaceDashboard() {
             subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
             icon: TrendingUp,
             color: '#2aa275',
-            route: '/(tabs)/wallet'
+            route: ROUTES.WALLET
           },
           {
             id: 'missions',
@@ -86,7 +88,7 @@ export default function EspaceDashboard() {
             subtitle: 'Feuille de route active',
             icon: Target,
             color: '#ef4444',
-            route: '/(tabs)/missions'
+            route: ROUTES.MISSIONS
           },
           {
             id: 'bourse',
@@ -94,7 +96,7 @@ export default function EspaceDashboard() {
             subtitle: 'Gros volumes (B2B)',
             icon: ShieldCheck,
             color: '#10b981',
-            route: '/(tabs)/espace/offres'
+            route: ROUTES.ESPACE_OFFRES
           },
           {
             id: 'history',
@@ -102,7 +104,7 @@ export default function EspaceDashboard() {
             subtitle: 'Historique des ramassages',
             icon: History,
             color: '#3b82f6',
-            route: '/(tabs)/mes-dechets'
+            route: ROUTES.MES_DECHETS
           }
         ];
       case 'organisation_admin':
@@ -113,7 +115,7 @@ export default function EspaceDashboard() {
             subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
             icon: Wallet,
             color: '#2aa275',
-            route: '/(tabs)/wallet'
+            route: ROUTES.WALLET
           },
           {
             id: 'bourse',
@@ -121,7 +123,7 @@ export default function EspaceDashboard() {
             subtitle: 'Marché B2B / Gros volumes',
             icon: ShieldCheck,
             color: '#10b981',
-            route: '/(tabs)/espace/offres' // Redirection vers le nouvel écran dédié des Appels d'Offres
+            route: ROUTES.ESPACE_OFFRES // Redirection vers le nouvel écran dédié des Appels d'Offres
           },
           {
             id: 'agents',
@@ -129,7 +131,7 @@ export default function EspaceDashboard() {
             subtitle: 'Gestion du personnel',
             icon: User,
             color: '#6366f1',
-            route: '/(tabs)/espace/agents'
+            route: ROUTES.ESPACE_AGENTS
           },
           {
             id: 'analytics',
@@ -137,7 +139,7 @@ export default function EspaceDashboard() {
             subtitle: 'Rapport d\'impact zone',
             icon: BarChart3,
             color: '#6366f1',
-            route: '/(tabs)/espace/analytics'
+            route: ROUTES.ESPACE_ANALYTICS
           }
         ];
       case 'mairie':
@@ -156,7 +158,7 @@ export default function EspaceDashboard() {
             subtitle: 'Statistiques de collecte',
             icon: BarChart3,
             color: '#0ea5e9',
-            route: '/(tabs)/espace/analytics'
+            route: ROUTES.ESPACE_ANALYTICS
           }
         ];
       default:
@@ -206,7 +208,7 @@ export default function EspaceDashboard() {
             >
               <TouchableOpacity 
                 activeOpacity={0.7}
-                onPress={() => item.route && router.push(item.route as any)}
+                onPress={() => item.route && navigateSafe(router, item.route)}
                 style={[styles.gridCard, { width: CARD_WIDTH }]}
               >
                 <View 

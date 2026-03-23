@@ -1,6 +1,9 @@
 import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search } from 'lucide-react-native';
-import { View, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfile } from '@/hooks/useProfile';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import * as Location from 'expo-location';
@@ -116,9 +119,9 @@ export default function TabsLayout() {
               <TouchableOpacity 
                 onPress={() => {
                   if (profile?.role === 'vendeur') {
-                    router.push('/(tabs)/marketplace/publish');
+                    navigateSafe(router, '/marketplace/publish');
                   } else {
-                    router.push('/(tabs)/marketplace');
+                    navigateSafe(router, ROUTES.MARKETPLACE);
                   }
                 }}
                 style={{

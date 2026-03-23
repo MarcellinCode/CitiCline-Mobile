@@ -1,11 +1,23 @@
 import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Message } from '@/lib/types';
 import { Header } from '@/components/Header';
-import { Send, User, MessageSquare } from 'lucide-react-native';
+import { 
+  Search, 
+  MessageSquare, 
+  Clock, 
+  ChevronRight, 
+  User,
+  Trash2,
+  CheckCircle2,
+  Plus,
+  Send
+} from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 
 export default function ChatScreen() {
@@ -90,11 +102,11 @@ export default function ChatScreen() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            onPress={() => router.push({
-              pathname: '/(tabs)/chat/[id]',
-              params: { id: item.otherUser.id, name: item.otherUser.full_name, waste_id: item.waste_id }
-            })}
-            style={styles.chatItem}
+            onPress={() => navigateSafe(router, ROUTES.CHAT_DETAILS(item.id), { 
+              id: item.id, 
+              otherUserName: item.otherUser?.full_name || 'Utilisateur CITICLINE',
+              wasteName: item.wasteName 
+            })} style={styles.chatItem}
           >
             <View style={styles.avatarContainer}>
                 <View style={styles.avatarBg}>
@@ -108,7 +120,7 @@ export default function ChatScreen() {
                       {item.otherUser?.full_name || 'Utilisateur CITICLINE'}
                   </Text>
                   <Text style={styles.chatTime}>
-                    {new Date(item.timestamp).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                    {item.timestamp ? new Date(item.timestamp).toISOString().split('T')[0].split('-').reverse().slice(0, 2).join(' ') : '--'}
                   </Text>
                 </View>
                 {item.wasteName && (

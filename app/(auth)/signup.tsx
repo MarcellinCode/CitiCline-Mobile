@@ -1,7 +1,9 @@
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
-import { useRouter, Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { Mail, Lock, User, ArrowRight, Truck, Building2, ChevronLeft, Phone, MapPin, Briefcase, FileText, Users } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { StatusBar } from 'expo-status-bar';
@@ -66,7 +68,7 @@ export default function Signup() {
             alert("Vérifiez votre boîte mail pour confirmer l'inscription !");
             router.replace('/(auth)/login');
         } else {
-            router.replace('/(tabs)/marketplace');
+            router.replace(ROUTES.MARKETPLACE);
         }
     } catch (err: any) {
         alert(err.message || "Une erreur est survenue");

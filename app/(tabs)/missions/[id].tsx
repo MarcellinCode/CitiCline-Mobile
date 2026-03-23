@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -189,7 +191,7 @@ export default function MissionDetail() {
                <Text style={styles.successSubtitle}>Données transmises à City OS</Text>
 
                <TouchableOpacity 
-                onPress={() => router.push('/(tabs)/missions')}
+                onPress={() => navigateSafe(router, ROUTES.MISSIONS)}
                 style={styles.successBtn}
               >
                 <Text style={styles.successBtnText}>Retour à la route</Text>

@@ -2,6 +2,8 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Linking, P
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
 import { MotiView } from 'moti';
@@ -53,7 +55,7 @@ export default function ProfileScreen() {
       
       <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <Text style={styles.headerTitle}>Mon Compte</Text>
-        <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/notifications')}>
+        <TouchableOpacity style={styles.notificationBtn} onPress={() => navigateSafe(router, ROUTES.NOTIFICATIONS)}>
           <Bell size={20} color="#020617" />
         </TouchableOpacity>
       </View>
@@ -149,14 +151,14 @@ export default function ProfileScreen() {
           )}
 
           {[
-            { icon: Crown, label: 'Abonnement', value: profile?.subscription_tier || 'Starter', route: '/(tabs)/abonnements', color: '#eab308' },
-            { icon: Settings, label: 'Paramètres', route: '/(tabs)/settings', color: '#64748b' },
+            { icon: Crown, label: 'Abonnement', value: profile?.subscription_tier || 'Starter', route: ROUTES.ABONNEMENTS, color: '#eab308' },
+            { icon: Settings, label: 'Paramètres', route: ROUTES.SETTINGS, color: '#64748b' },
             { icon: Shield, label: 'Sécurité', color: '#64748b' },
             { icon: Mail, label: 'Support CITICLINE', color: '#64748b' }
           ].map((item, i) => (
             <TouchableOpacity 
               key={i}
-              onPress={() => item.route && router.push(item.route as any)}
+              onPress={() => item.route && navigateSafe(router, item.route)}
               style={styles.menuItem}
             >
               <View style={styles.menuItemLeft}>

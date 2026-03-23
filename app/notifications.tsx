@@ -117,7 +117,7 @@ export default function NotificationsScreen() {
                 <View style={styles.titleRow}>
                   <Text style={styles.title}>{item.title}</Text>
                   <Text style={styles.timeText}>
-                    {new Date(item.created_at).toLocaleDateString([], { day: '2-digit', month: 'short' })}
+                    {item.created_at ? new Date(item.created_at).toISOString().split('T')[0].split('-').reverse().slice(0, 2).join(' ') : '--'}
                   </Text>
                 </View>
                 <Text style={styles.content}>{item.content}</Text>

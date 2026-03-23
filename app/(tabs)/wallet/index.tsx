@@ -3,54 +3,28 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ChevronLeft, Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Leaf, RefreshCw } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { MotiView } from 'moti';
 import { useProfile } from '@/hooks/useProfile';
-import { supabase } from '@/lib/supabase';
-import { Waste } from '@/lib/types';
+import { useWallet } from '@/hooks/useWallet';
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
-  const [transactions, setTransactions] = useState<Waste[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!profile) return;
-    loadTransactions();
-  }, [profile]);
-
-  const loadTransactions = async () => {
-    if (!profile?.id) return;
-    try {
-      setLoading(true);
-
-      const { data } = await supabase
-        .from('wastes')
-        .select('*, waste_types(*)')
-        .or(`seller_id.eq.${profile.id},collector_id.eq.${profile.id}`)
-        .eq('status', 'collected')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      setTransactions((data as Waste[]) || []);
-    } catch (err) {
-      console.error("loadTransactions error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { transactions, loading, refresh } = useWallet(profile?.id);
 
   return (
     <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
       <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
-        <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
+        <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Portefeuille</Text>
-        <TouchableOpacity onPress={loadTransactions} style={styles.iconBtn}>
+        <TouchableOpacity onPress={refresh} style={styles.iconBtn}>
           <RefreshCw size={18} color="#020617" />
         </TouchableOpacity>
       </View>
@@ -142,7 +116,7 @@ export default function WalletScreen() {
                         {tx.waste_types?.name || 'Recyclage'}
                       </Text>
                       <Text style={styles.txSubtitle}>
-                        {tx.final_weight || tx.estimated_weight} kg · {new Date(tx.created_at).toLocaleDateString('fr-FR')}
+                        {tx.final_weight || tx.estimated_weight} kg · {tx.created_at ? new Date(tx.created_at).toISOString().split('T')[0].split('-').reverse().join('/') : 'Date inconnue'}
                       </Text>
                     </View>
                     <Text style={[styles.txAmount, { color: isIncome ? '#2aa275' : '#ef4444' }]}>
