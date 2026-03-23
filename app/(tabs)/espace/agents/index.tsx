@@ -129,7 +129,7 @@ export default function AgentsManagement() {
                 </View>
 
                 <View style={styles.agentRight}>
-                   <Text style={styles.agentBalance}>{agent.wallet_balance?.toLocaleString() || '0'} $</Text>
+                   <Text style={styles.agentBalance}>{(agent.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} $</Text>
                    <TouchableOpacity style={styles.moreBtn}>
                       <MoreVertical size={16} color="#94a3b8" />
                    </TouchableOpacity>

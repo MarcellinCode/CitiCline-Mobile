@@ -100,7 +100,7 @@ export default function ProfileScreen() {
           <View style={styles.statBoxDark}>
             <Wallet size={20} color="#2aa275" />
             <Text style={styles.statValueWhite}>
-              {profile?.wallet_balance?.toLocaleString('fr-FR') || '0'}
+              {(profile?.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
             </Text>
             <Text style={styles.statLabelMuted}>FCFA</Text>
           </View>

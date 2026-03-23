@@ -76,7 +76,7 @@ export default function WalletScreen() {
             ) : (
               <View style={styles.balanceRow}>
                 <Text style={styles.balanceAmount}>
-                  {profile?.wallet_balance?.toLocaleString('fr-FR') || '0'}
+                  {(profile?.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
                 </Text>
                 <Text style={styles.balanceCurrency}>FCFA</Text>
               </View>
@@ -146,7 +146,7 @@ export default function WalletScreen() {
                       </Text>
                     </View>
                     <Text style={[styles.txAmount, { color: isIncome ? '#2aa275' : '#ef4444' }]}>
-                      {isIncome ? '+' : '-'}{amount.toLocaleString('fr-FR')} FCFA
+                      {isIncome ? '+' : '-'}{amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA
                     </Text>
                   </MotiView>
                 );

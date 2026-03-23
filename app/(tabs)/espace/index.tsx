@@ -40,7 +40,7 @@ export default function EspaceDashboard() {
           {
             id: 'wallet',
             title: 'Portefeuille',
-            subtitle: `${profile.wallet_balance?.toLocaleString() || '0'} FCFA`,
+            subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
             icon: Wallet,
             color: '#2aa275',
             route: '/(tabs)/wallet'
@@ -75,7 +75,7 @@ export default function EspaceDashboard() {
           {
             id: 'wallet',
             title: 'Mes Gains',
-            subtitle: `${profile.wallet_balance?.toLocaleString() || '0'} FCFA`,
+            subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
             icon: TrendingUp,
             color: '#2aa275',
             route: '/(tabs)/wallet'
@@ -110,7 +110,7 @@ export default function EspaceDashboard() {
           {
             id: 'wallet',
             title: 'Trésorerie',
-            subtitle: `${profile.wallet_balance?.toLocaleString() || '0'} FCFA`,
+            subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
             icon: Wallet,
             color: '#2aa275',
             route: '/(tabs)/wallet'
