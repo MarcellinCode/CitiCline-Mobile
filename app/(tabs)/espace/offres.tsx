@@ -6,7 +6,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { WasteCard } from '@/components/WasteCard';
 import { Waste } from '@/lib/types';
 import { Search, Filter, Leaf, Zap, Box, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MotiView } from 'moti';
 
 const CATEGORIES = [
@@ -20,6 +20,7 @@ export default function AppelsDOffresScreen() {
   const { wastes, loading: wastesLoading, refreshing, onRefresh } = useWastes();
   const { profile, loading: profileLoading } = useProfile();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
@@ -101,11 +102,11 @@ export default function AppelsDOffresScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item, index }) => (
           <View style={styles.listCardContainer}>
-            <WasteCard waste={item} index={index % 5} />
+            <WasteCard waste={item} />
           </View>
         )}
         ListHeaderComponent={renderHeader}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 140 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2aa275" />
@@ -128,7 +129,7 @@ export default function AppelsDOffresScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#f8fafc' },
   loadingContainer: { flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center' },
-  listContent: { paddingBottom: 40 },
+  listContent: { },
   headerContainer: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 8 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
   iconBtn: { width: 48, height: 48, backgroundColor: 'white', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },

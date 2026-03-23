@@ -1,4 +1,5 @@
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
@@ -26,6 +27,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading } = useProfile();
 
@@ -46,17 +48,22 @@ export default function ProfileScreen() {
   const roleLabel = ROLE_LABELS[profile?.role || 'vendeur'] || 'Membre';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <Text style={styles.headerTitle}>Mon Compte</Text>
         <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/notifications')}>
           <Bell size={20} color="#020617" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+      >
+
         {/* Avatar & Identité */}
         <MotiView
           from={{ opacity: 0, translateY: -20 }}
@@ -171,19 +178,16 @@ export default function ProfileScreen() {
           <LogOut size={16} color="#ef4444" />
           <Text style={styles.logoutText}>Déconnexion</Text>
         </TouchableOpacity>
-
-        <View style={styles.bottomSpace} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
   safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
   notificationBtn: { width: 40, height: 40, backgroundColor: '#f8fafc', borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
@@ -219,6 +223,5 @@ const styles = StyleSheet.create({
   menuItemRight: { flexDirection: 'row', alignItems: 'center' },
   menuItemValue: { fontSize: 9, fontWeight: '900', color: '#d97706', marginRight: 8, textTransform: 'uppercase' },
   logoutBtn: { width: '100%', paddingVertical: 24, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fef2f2', borderRadius: 16 },
-  logoutText: { color: '#ef4444', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginLeft: 8 },
-  bottomSpace: { height: 40 }
+  logoutText: { color: '#ef4444', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginLeft: 8 }
 });

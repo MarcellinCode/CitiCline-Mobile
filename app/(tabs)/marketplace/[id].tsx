@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -20,9 +21,13 @@ import Animated, {
 const { width } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.6;
 
+import { useProfile } from '@/hooks/useProfile';
+
 export default function WasteDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { profile } = useProfile();
   const [waste, setWaste] = useState<Waste | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,29 +36,32 @@ export default function WasteDetail() {
 
   useEffect(() => {
     async function fetchDetail() {
-      const { data, error } = await supabase
-        .from('wastes')
-        .select(`*, waste_types(*), profiles:seller_id(*)`)
-        .eq('id', id)
-        .single();
-      
-      if (data) setWaste(data as Waste);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('wastes')
+          .select(`*, waste_types(*), profiles:seller_id(*)`)
+          .eq('id', id)
+          .single();
+        
+        if (data) setWaste(data as Waste);
+      } catch (err) {
+        console.error("fetchDetail error:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchDetail();
   }, [id]);
 
   const handleReserve = async () => {
+    if (!profile?.id) {
+      alert("Vous devez être connecté pour réserver !");
+      return;
+    }
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        alert("Vous devez être connecté pour réserver !");
-        return;
-      }
-
       const { error } = await supabase
         .from('wastes')
-        .update({ status: 'reserved', collector_id: user.id })
+        .update({ status: 'reserved', collector_id: profile.id })
         .eq('id', id);
       
       if (error) alert(error.message);
@@ -64,7 +72,7 @@ export default function WasteDetail() {
           params: { 
             id: waste?.seller_id, 
             name: waste?.profiles?.full_name || 'Vendeur',
-            waste_id: waste?.id // Transmission de l'ID du lot pour compatibilité web
+            waste_id: waste?.id 
           } 
         } as any);
       }
@@ -101,7 +109,7 @@ export default function WasteDetail() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
@@ -118,11 +126,12 @@ export default function WasteDetail() {
 
           <TouchableOpacity 
             onPress={() => router.back()}
-            style={styles.backBtn}
+            style={[styles.backBtn, { top: Platform.OS === 'android' ? 20 : 64 }]}
           >
             <ArrowLeft size={20} color="#020617" />
           </TouchableOpacity>
         </View>
+
 
         <View style={styles.contentContainer}>
            <View style={styles.titleRow}>
@@ -173,7 +182,7 @@ export default function WasteDetail() {
       </ScrollView>
 
       {/* FIXED SWIPE BAR AT BOTTOM */}
-      <View style={styles.swipeContainer}>
+      <View style={[styles.swipeContainer, { bottom: insets.bottom + 40 }]}>
         <Animated.View style={[styles.swipeTextContainer, textOpacity]}>
           <Text style={styles.swipeHintText}>Glisser pour réserver</Text>
         </Animated.View>

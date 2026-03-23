@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ChevronLeft, Target, MapPin, Clock, ShieldCheck, Box, RefreshCw } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
@@ -8,6 +9,7 @@ import { Waste } from '@/lib/types';
 import { MotiView } from 'moti';
 
 export default function MissionsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
   const [missions, setMissions] = useState<Waste[]>([]);
@@ -19,25 +21,29 @@ export default function MissionsScreen() {
   }, [profile]);
 
   const loadMissions = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!profile?.id) return;
+    try {
+      setLoading(true);
 
-    // Charger les wastes réservées assignées à cet agent/collecteur
-    const { data } = await supabase
-      .from('wastes')
-      .select('*, waste_types(*), profiles!wastes_seller_id_fkey(*)')
-      .eq('collector_id', user.id)
-      .in('status', ['reserved', 'published'])
-      .order('created_at', { ascending: true });
+      // Charger les wastes réservées assignées à cet agent/collecteur
+      const { data } = await supabase
+        .from('wastes')
+        .select('*, waste_types(*), profiles!wastes_seller_id_fkey(*)')
+        .eq('collector_id', profile.id)
+        .in('status', ['reserved', 'published'])
+        .order('created_at', { ascending: true });
 
-    setMissions((data as Waste[]) || []);
-    setLoading(false);
+      setMissions((data as Waste[]) || []);
+    } catch (err) {
+      console.error("loadMissions error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!profileLoading && profile?.role === 'vendeur') {
     return (
-      <SafeAreaView style={styles.guardContainer}>
+      <View style={[styles.guardContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.guardIconBg}>
           <ShieldCheck size={32} color="#cbd5e1" />
@@ -45,7 +51,7 @@ export default function MissionsScreen() {
         <Text style={styles.guardText}>
           Cet espace est réservé aux agents de collecte officiels.
         </Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -53,10 +59,10 @@ export default function MissionsScreen() {
   const remaining = missions.filter(m => m.status === 'reserved' || m.status === 'published').length;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
@@ -71,7 +77,11 @@ export default function MissionsScreen() {
           <ActivityIndicator color="#2aa275" />
         </View>
       ) : (
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 180 }}
+        >
           {/* Stats Summary */}
           <View style={styles.statsContainer}>
             <View style={styles.statBoxDark}>
@@ -152,7 +162,7 @@ export default function MissionsScreen() {
       )}
 
       {/* Action Bar */}
-      <View style={styles.actionBar}>
+      <View style={[styles.actionBar, { bottom: insets.bottom + 110 }]}>
         <View style={styles.gpsContainer}>
           <View style={styles.gpsDot} />
           <Text style={styles.gpsText}>GPS Actif</Text>
@@ -164,19 +174,19 @@ export default function MissionsScreen() {
           <Text style={styles.refreshBtnText}>Actualiser</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
+
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
   centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 128 },
+  scrollView: { flex: 1, paddingHorizontal: 32 },
   statsContainer: { flexDirection: 'row', gap: 16, marginBottom: 40 },
   statBoxDark: { flex: 1, backgroundColor: '#0f172a', padding: 24, borderRadius: 32 },
   statLabelDark: { color: '#2aa275', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },

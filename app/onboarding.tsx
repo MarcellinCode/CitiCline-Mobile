@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Platform, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
 import { useState } from 'react';
 import { ChevronRight, Recycle, Wallet, Globe } from 'lucide-react-native';
@@ -33,6 +34,7 @@ const SLIDES = [
 
 export default function Onboarding() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const handleNext = () => {
@@ -92,7 +94,7 @@ export default function Onboarding() {
             </Text>
           </View>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
             <TouchableOpacity 
               onPress={handleNext}
               style={styles.nextButton}
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     justifyContent: 'space-between',
     paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 50 : 40,
+    paddingBottom: 20,
   },
   indicatorContainer: {
     flexDirection: 'row',

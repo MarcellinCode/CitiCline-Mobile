@@ -12,15 +12,16 @@ export function useWastes() {
       const { data, error } = await supabase
         .from('wastes')
         .select(`
-          *,
-          waste_types (*),
-          profiles:seller_id (*)
+          id, seller_id, collector_id, type_id, estimated_weight, final_weight,
+          status, location, latitude, longitude, images, created_at,
+          waste_types (id, name, price_per_kg, emoji)
         `)
         .eq('status', 'published')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(30);
 
       if (error) throw error;
-      setWastes(data as Waste[]);
+      setWastes((data || []) as unknown as Waste[]);
     } catch (err) {
       console.error('Error fetching wastes:', err);
     } finally {
@@ -32,9 +33,9 @@ export function useWastes() {
   useEffect(() => {
     fetchWastes();
 
-    // Subscribe to realtime changes
+    // Subscribe to realtime changes - only meaningful changes
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('wastes-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'wastes' },

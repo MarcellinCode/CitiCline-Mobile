@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "CITICLINE",
-    "slug": "citicline-mobile",
+    "slug": "citicline",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,10 +18,17 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.recycla.citicline",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -49,6 +56,15 @@
         }
       ]
     ],
-    "scheme": "citicline"
+    "scheme": "citicline",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "04480029-ca9b-4bef-a0e8-bda65f1147d9"
+      }
+    },
+    "owner": "gobrick123"
   }
 }

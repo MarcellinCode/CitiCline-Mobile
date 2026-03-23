@@ -1,15 +1,17 @@
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { ChevronLeft, Settings, Bell, Lock, Shield, CircleHelp } from 'lucide-react-native';
+import { ChevronLeft, Bell, Lock, Shield, CircleHelp } from 'lucide-react-native';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <TouchableOpacity onPress={() => router.push('/(tabs)/profile')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
@@ -17,7 +19,13 @@ export default function SettingsScreen() {
         <View style={{ width: 48 }} />
       </View>
 
-      <ScrollView style={styles.scrollView}>
+
+
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+      >
         <View style={styles.listContainer}>
           {[
             { icon: Bell, title: "Notifications", route: '/notifications' },
@@ -39,18 +47,19 @@ export default function SettingsScreen() {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
+
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
-  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
+  centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  scrollView: { flex: 1, paddingHorizontal: 32 },
   listContainer: { flexDirection: 'column', gap: 24 },
   listItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 24, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
   listItemLeft: { flexDirection: 'row', alignItems: 'center' },

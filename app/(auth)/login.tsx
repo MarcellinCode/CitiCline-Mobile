@@ -1,4 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter, Stack } from 'expo-router';
 import { Mail, Lock, ArrowRight, ChevronLeft } from 'lucide-react-native';
@@ -9,6 +10,7 @@ import Logo from '@/components/ui/Logo';
 const { width } = Dimensions.get('window');
 
 export default function Login() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,13 +42,17 @@ export default function Login() {
 
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
       style={{ flex: 1, backgroundColor: 'white' }}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ padding: 32 }}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 60 }} 
+        style={{ paddingHorizontal: 32, paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
+        showsVerticalScrollIndicator={false}
+      >
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
@@ -147,7 +153,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },

@@ -1,4 +1,5 @@
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useRouter, Stack } from 'expo-router';
 import { Mail, Lock, User, ArrowRight, Truck, Building2, ChevronLeft, Phone, MapPin, Briefcase, FileText, Users } from 'lucide-react-native';
@@ -9,6 +10,7 @@ import Logo from '@/components/ui/Logo';
 const { width } = Dimensions.get('window');
 
 export default function Signup() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<'vendeur' | 'collecteur' | 'organisation_admin' | null>(null);
@@ -92,13 +94,17 @@ export default function Signup() {
 
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
       style={{ flex: 1, backgroundColor: 'white' }}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} style={{ padding: 32 }}>
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 60 }} 
+        style={{ paddingHorizontal: 32, paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
+        showsVerticalScrollIndicator={false}
+      >
         <TouchableOpacity 
           onPress={() => step === 1 ? router.back() : setStep(1)} 
           style={styles.backButton}
@@ -251,7 +257,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },

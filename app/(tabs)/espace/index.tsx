@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { 
   User, 
@@ -26,6 +27,7 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 64 - 16) / 2; // Fixed padding and gap
 
 export default function EspaceDashboard() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading } = useProfile();
 
@@ -174,15 +176,23 @@ export default function EspaceDashboard() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={[styles.scrollView, { marginTop: Platform.OS === 'android' ? 20 : 0 }]} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ 
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom + 140 // Clear the floating tab bar
+        }}
+      >
+
         {/* Profile Header */}
         <MotiView 
           from={{ opacity: 0, translateY: -20 }}
           animate={{ opacity: 1, translateY: 0 }}
           style={styles.headerMoti}
         >
-          <Text style={styles.welcomeText}>Bienvenue sur votre</Text>
-          <Text style={styles.titleText}>ESPACE</Text>
+          <Text style={styles.welcomeText}>Tableau de bord de</Text>
+          <Text style={styles.titleText}>{profile?.full_name || 'ESPACE'}</Text>
         </MotiView>
 
         {/* Dashboard Grid */}
@@ -190,18 +200,19 @@ export default function EspaceDashboard() {
           {gridItems.map((item, index) => (
             <MotiView
               key={item.id}
-              from={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 200 + (index * 50) }}
+              from={{ opacity: 0, scale: 0.95, translateY: 10 }}
+              animate={{ opacity: 1, scale: 1, translateY: 0 }}
+              transition={{ type: 'spring', delay: 100 + (index * 50) }}
             >
               <TouchableOpacity 
+                activeOpacity={0.7}
                 onPress={() => item.route && router.push(item.route as any)}
                 style={[styles.gridCard, { width: CARD_WIDTH }]}
               >
                 <View 
-                  style={[styles.iconContainer, { backgroundColor: `${item.color}10`, borderColor: `${item.color}20` }]}
+                  style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}
                 >
-                  <item.icon size={28} color={item.color} />
+                  <item.icon size={26} color={item.color} />
                 </View>
                 <View>
                   <Text 
@@ -220,20 +231,21 @@ export default function EspaceDashboard() {
         </View>
 
         {/* Info Banner */}
-        <MotiView
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ delay: 500 }}
-          style={styles.bannerContainer}
-        >
-          <View style={styles.bannerLeaf}>
-            <Leaf size={40} color="#2aa275" opacity={0.2} />
-          </View>
-          <Text style={styles.bannerSubtitle}>Impact Écologique</Text>
-          <Text style={styles.bannerTitle}>128 kg <Text style={styles.bannerTitleNormal}>recyclés</Text></Text>
-        </MotiView>
-        
-        <View style={styles.bottomSpace} />
+        {profile?.role !== 'agent_collecteur' && (
+          <MotiView
+            from={{ opacity: 0, translateY: 20 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'spring', delay: 400 }}
+            style={styles.bannerContainer}
+          >
+            <View style={styles.bannerLeaf}>
+              <Leaf size={60} color="#ffffff" opacity={0.15} />
+            </View>
+            <Text style={styles.bannerSubtitle}>Impact Écolo</Text>
+            <Text style={styles.bannerTitle}>128 kg <Text style={styles.bannerTitleNormal}>gérés</Text></Text>
+          </MotiView>
+        )}
+
       </ScrollView>
     </View>
   );
@@ -242,21 +254,20 @@ export default function EspaceDashboard() {
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
-  container: { flex: 1, backgroundColor: 'white' },
-  scrollView: { flex: 1, paddingTop: 64, paddingHorizontal: 32 },
-  headerMoti: { marginBottom: 48 },
-  welcomeText: { fontSize: 14, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
-  titleText: { fontSize: 36, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1 },
+  loadingContainer: { flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: '#f8fafc' },
+  scrollView: { flex: 1, paddingHorizontal: 24 },
+  headerMoti: { marginBottom: 32 },
+  welcomeText: { fontSize: 13, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
+  titleText: { fontSize: 28, fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1 },
   gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16 },
-  gridCard: { height: 180, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 24, borderRadius: 40, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2, justifyContent: 'space-between', marginBottom: 16 },
-  iconContainer: { width: 56, height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
-  cardTitle: { fontSize: 11, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
-  cardSubtitle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: -0.5, lineHeight: 16 },
-  bannerContainer: { marginTop: 48, width: '100%', backgroundColor: '#0f172a', padding: 32, borderRadius: 48, overflow: 'hidden', shadowColor: '#0f172a', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
-  bannerLeaf: { position: 'absolute', top: 0, right: 0, padding: 16 },
-  bannerSubtitle: { color: '#10b981', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginBottom: 8 },
-  bannerTitle: { color: 'white', fontSize: 30, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
-  bannerTitleNormal: { color: '#94a3b8', fontSize: 18, fontStyle: 'normal' },
-  bottomSpace: { height: 160 }
+  gridCard: { height: 180, backgroundColor: 'white', padding: 24, borderRadius: 32, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20, elevation: 3, justifyContent: 'space-between', marginBottom: 16 },
+  iconContainer: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  cardTitle: { fontSize: 13, fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  cardSubtitle: { fontSize: 10, fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 14 },
+  bannerContainer: { marginTop: 32, width: '100%', backgroundColor: '#10b981', padding: 32, borderRadius: 32, overflow: 'hidden', shadowColor: '#10b981', shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
+  bannerLeaf: { position: 'absolute', top: -10, right: -10, padding: 16 },
+  bannerSubtitle: { color: 'rgba(255,255,255,0.9)', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginBottom: 8 },
+  bannerTitle: { color: 'white', fontSize: 28, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
+  bannerTitleNormal: { color: 'rgba(255,255,255,0.7)', fontSize: 16, fontStyle: 'normal', fontWeight: 'bold' }
 });

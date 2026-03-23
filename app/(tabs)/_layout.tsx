@@ -14,45 +14,40 @@ export default function TabsLayout() {
 
   useEffect(() => {
     let locationSubscription: Location.LocationSubscription | null = null;
+    let isMounted = true;
 
-    const startTracking = async () => {
-      // Seulement tracer les agents
-      if (profile?.role !== 'agent_collecteur') return;
-
+    const startTracking = async (userId: string) => {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission de localisation refusée');
-        return;
-      }
+      if (status !== 'granted' || !isMounted) return;
 
       locationSubscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          distanceInterval: 10, // Mise à jour tous les 10 mètres
+          distanceInterval: 30, // Increase interval to 30 meters for better battery and performance
         },
         async (loc) => {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            await supabase.from('tracking_logs').insert({
-              agent_id: user.id,
-              latitude: loc.coords.latitude,
-              longitude: loc.coords.longitude,
-            });
-          }
+          if (!isMounted) return;
+          // Use the userId from closure instead of fetching it every 30 meters
+          await supabase.from('tracking_logs').insert({
+            agent_id: userId,
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude,
+          });
         }
       );
     };
 
-    if (!loading && profile) {
-      startTracking();
+    if (!loading && profile?.role === 'agent_collecteur' && profile?.id) {
+      startTracking(profile.id);
     }
 
     return () => {
+      isMounted = false;
       if (locationSubscription) {
         locationSubscription.remove();
       }
     };
-  }, [profile, loading]);
+  }, [profile?.id, profile?.role, loading]); // Depend on ID and Role specifically to avoid redundant restarts on name/balance changes
 
   if (loading) {
     return (
@@ -64,15 +59,25 @@ export default function TabsLayout() {
 
   return (
     <Tabs screenOptions={{
-      tabBarActiveTintColor: '#2aa275',
+      tabBarActiveTintColor: '#10b981',
       tabBarInactiveTintColor: '#94a3b8',
       tabBarStyle: {
-        borderTopWidth: 1,
-        borderTopColor: '#f1f5f9',
-        height: 90,
-        paddingBottom: 30,
-        paddingTop: 10,
-        backgroundColor: '#ffffff',
+        position: 'absolute',
+        bottom: 20,
+        left: 20,
+        right: 20,
+        elevation: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: 35,
+        height: 70,
+        paddingBottom: 0,
+        borderTopWidth: 0,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+        shadowColor: '#10b981',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
       },
       tabBarLabelStyle: {
         fontSize: 10,
@@ -117,18 +122,18 @@ export default function TabsLayout() {
                   }
                 }}
                 style={{
-                  width: 65,
-                  height: 65,
-                  borderRadius: 33,
-                  backgroundColor: '#020617',
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
+                  backgroundColor: '#10b981', // Emerald green
                   justifyContent: 'center',
                   alignItems: 'center',
-                  shadowColor: '#2aa275',
-                  shadowOffset: { width: 0, height: 10 },
-                  shadowOpacity: 0.4,
-                  shadowRadius: 15,
+                  shadowColor: '#10b981',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 12,
                   elevation: 5,
-                  borderWidth: 4,
+                  borderWidth: 3,
                   borderColor: 'white'
                 }}
               >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ChevronLeft, Package, CheckCircle2, Clock, XCircle, RefreshCw, History } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
@@ -15,6 +16,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
 };
 
 export default function MesDechetsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
   const [wastes, setWastes] = useState<Waste[]>([]);
@@ -26,24 +28,28 @@ export default function MesDechetsScreen() {
   }, [profile]);
 
   const loadWastes = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!profile?.id) return;
+    try {
+      setLoading(true);
 
-    let query = supabase
-      .from('wastes')
-      .select('*, waste_types(*)')
-      .order('created_at', { ascending: false });
+      let query = supabase
+        .from('wastes')
+        .select('*, waste_types(*)')
+        .order('created_at', { ascending: false });
 
-    if (profile?.role === 'vendeur') {
-      query = query.eq('seller_id', user.id);
-    } else if (profile?.role === 'collecteur' || profile?.role === 'agent_collecteur') {
-      query = query.eq('collector_id', user.id);
+      if (profile?.role === 'vendeur') {
+        query = query.eq('seller_id', profile.id);
+      } else if (profile?.role === 'collecteur' || profile?.role === 'agent_collecteur') {
+        query = query.eq('collector_id', profile.id);
+      }
+
+      const { data } = await query;
+      setWastes((data as Waste[]) || []);
+    } catch (err) {
+      console.error("loadWastes error:", err);
+    } finally {
+      setLoading(false);
     }
-
-    const { data } = await query;
-    setWastes((data as Waste[]) || []);
-    setLoading(false);
   };
 
   const title = profile?.role === 'vendeur' ? 'Mes Publications' : 'Mes Collectes';
@@ -54,10 +60,10 @@ export default function MesDechetsScreen() {
   const isLoad = profileLoading || loading;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
@@ -87,7 +93,11 @@ export default function MesDechetsScreen() {
           )}
         </View>
       ) : (
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.scrollView} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+        >
           {/* Stats rapides */}
           <View style={styles.statsRow}>
             <View style={styles.statBoxDark}>
@@ -97,13 +107,13 @@ export default function MesDechetsScreen() {
             <View style={styles.statBoxLight}>
               <Text style={styles.statLabelMuted}>Actifs</Text>
               <Text style={styles.statValueDark}>
-                {wastes.filter(w => w.status === 'published' || w.status === 'reserved').length}
+                {wastes.filter((w: any) => w.status === 'published' || w.status === 'reserved').length}
               </Text>
             </View>
             <View style={styles.statBoxGreen}>
               <Text style={styles.statLabelPrimary}>Collectés</Text>
               <Text style={styles.statValuePrimary}>
-                {wastes.filter(w => w.status === 'collected').length}
+                {wastes.filter((w: any) => w.status === 'collected').length}
               </Text>
             </View>
           </View>
@@ -111,7 +121,7 @@ export default function MesDechetsScreen() {
           <Text style={styles.historyTitle}>Historique</Text>
 
           <View style={styles.listContainer}>
-            {wastes.map((waste, i) => {
+            {wastes.map((waste: any, i: number) => {
               const statusCfg = STATUS_CONFIG[waste.status];
               const wasteType = waste.waste_types;
               return (
@@ -143,19 +153,15 @@ export default function MesDechetsScreen() {
               );
             })}
           </View>
-
-          <View style={styles.bottomSpace} />
         </ScrollView>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
-
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
   centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -183,6 +189,5 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 11, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
   cardSubtitle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
-  statusBadgeText: { fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
-  bottomSpace: { height: 128 }
+  statusBadgeText: { fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 }
 });

@@ -1,18 +1,20 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Image as RNImage } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image as RNImage, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, Plus, Trash2, ArrowRight } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { supabase } from '@/lib/supabase';
 import { Header } from '@/components/Header';
 import { WasteType } from '@/lib/types';
-import { useEffect } from 'react';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function PublishWaste() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { profile } = useProfile();
   const [images, setImages] = useState<string[]>([]);
-  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [weight, setWeight] = useState('');
   const [location, setLocation] = useState('');
@@ -22,8 +24,13 @@ export default function PublishWaste() {
 
   useEffect(() => {
     async function fetchTypes() {
-      const { data } = await supabase.from('waste_types').select('*');
-      if (data) setWasteTypes(data as WasteType[]);
+      try {
+        const { data, error } = await supabase.from('waste_types').select('*');
+        if (error) throw error;
+        if (data) setWasteTypes(data as WasteType[]);
+      } catch (err) {
+        console.error("fetchTypes error:", err);
+      }
     }
     fetchTypes();
   }, []);
@@ -42,17 +49,13 @@ export default function PublishWaste() {
   };
 
   const handlePublish = async () => {
-    if (!typeId || !weight || !location) {
+    if (!typeId || !weight || !location || !profile?.id) {
       alert("Veuillez remplir tous les champs obligatoires !");
       return;
     }
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get GPS location
       const { status } = await Location.requestForegroundPermissionsAsync();
       let lat = null;
       let lng = null;
@@ -62,17 +65,15 @@ export default function PublishWaste() {
           lng = pos.coords.longitude;
       }
 
-      // Upload images logic (simplified for now to save to public URL if needed, or just array)
-      
       const { error } = await supabase.from('wastes').insert({
-        seller_id: user.id,
+        seller_id: profile.id,
         type_id: typeId,
         estimated_weight: parseFloat(weight),
         location: location,
         latitude: lat,
         longitude: lng,
         status: 'published',
-        images: images, // In real app, these would be Supabase storage URLs
+        images: images,
       });
 
       if (error) throw error;
@@ -88,19 +89,19 @@ export default function PublishWaste() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <Header title="Publier" subtitle="Mettez vos déchets en ligne" />
 
-      <ScrollView className="flex-1 p-8">
-        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Photos</Text>
-        <View className="flex-row flex-wrap gap-4 mb-10">
+      <ScrollView style={styles.scrollView}>
+        <Text style={styles.sectionLabel}>Photos</Text>
+        <View style={styles.photosRow}>
           {images.map((img, i) => (
-            <View key={i} className="w-24 h-24 rounded-2xl overflow-hidden relative border border-slate-100">
-               <RNImage source={{ uri: img }} className="w-full h-full" />
+            <View key={i} style={styles.photoContainer}>
+               <RNImage source={{ uri: img }} style={styles.photoImage} />
                <TouchableOpacity 
                  onPress={() => setImages(images.filter((_, idx) => idx !== i))}
-                 className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-lg items-center justify-center shadow-sm"
+                 style={styles.photoDeleteBtn}
                >
                  <Trash2 size={12} color="white" />
                </TouchableOpacity>
@@ -108,46 +109,54 @@ export default function PublishWaste() {
           ))}
           <TouchableOpacity 
             onPress={pickImage}
-            className="w-24 h-24 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 items-center justify-center"
+            style={styles.addPhotoBtn}
           >
             <Camera size={24} color="#94a3b8" />
-            <Text className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-2">Ajouter</Text>
+            <Text style={styles.addPhotoText}>Ajouter</Text>
           </TouchableOpacity>
         </View>
 
-        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Type de déchet</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mb-10">
+        <Text style={styles.sectionLabel}>Type de déchet</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typesScroll}>
             {wasteTypes.map((type) => (
                <TouchableOpacity 
                  key={type.id}
                  onPress={() => setTypeId(type.id)}
-                 className={`mr-4 px-6 py-4 rounded-[1.5rem] border ${typeId === type.id ? 'bg-primary border-primary' : 'bg-slate-50 border-slate-100'}`}
+                 style={[
+                   styles.typeBtn,
+                   typeId === type.id ? styles.typeBtnActive : styles.typeBtnInactive
+                 ]}
                >
-                 <Text className="text-xl mb-1">{type.emoji}</Text>
-                 <Text className={`text-[10px] font-black uppercase tracking-widest ${typeId === type.id ? 'text-white' : 'text-slate-900'}`}>
+                 <Text style={styles.typeEmoji}>{type.emoji}</Text>
+                 <Text style={[
+                   styles.typeName,
+                   typeId === type.id ? styles.typeNameActive : styles.typeNameInactive
+                 ]}>
                     {type.name}
                  </Text>
                </TouchableOpacity>
             ))}
         </ScrollView>
 
-        <Text className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Détails</Text>
-        <View className="space-y-4 mb-10">
-            <View className="bg-slate-50 border border-slate-100 rounded-2xl px-4 h-16 justify-center">
+        <Text style={styles.sectionLabel}>Détails</Text>
+        <View style={styles.detailsContainer}>
+            <View style={styles.inputContainer}>
                 <TextInput 
                     placeholder="Poids estimé (KG)" 
                     keyboardType="numeric"
                     value={weight}
                     onChangeText={setWeight}
-                    className="font-semibold text-slate-900"
+                    style={styles.inputText}
+                    placeholderTextColor="#94a3b8"
                 />
             </View>
-            <View className="bg-slate-50 border border-slate-100 rounded-2xl px-4 h-16 justify-center">
+            <View style={[styles.inputContainer, { marginTop: 16 }]}>
                 <TextInput 
                     placeholder="Lieu de collecte (ex: Cocody, Abidjan)" 
                     value={location}
                     onChangeText={setLocation}
-                    className="font-semibold text-slate-900"
+                    style={styles.inputText}
+                    placeholderTextColor="#94a3b8"
                 />
             </View>
         </View>
@@ -155,9 +164,9 @@ export default function PublishWaste() {
         <TouchableOpacity 
           onPress={handlePublish}
           disabled={loading}
-          className="w-full bg-primary h-16 rounded-2xl flex-row items-center justify-center shadow-lg shadow-primary/20 mb-20"
+          style={[styles.publishBtn, { marginBottom: insets.bottom + 120 }]}
         >
-          <Text className="text-white font-black uppercase tracking-widest text-xs mr-2">
+          <Text style={styles.publishBtnText}>
             {loading ? 'Publication...' : 'Publier maintenant'}
           </Text>
           <ArrowRight size={16} color="white" />
@@ -166,3 +175,36 @@ export default function PublishWaste() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: 'white' },
+  scrollView: { flex: 1, paddingHorizontal: 32 },
+  sectionLabel: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 16 },
+  
+  // Photos
+  photosRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginBottom: 40 },
+  photoContainer: { width: 96, height: 96, borderRadius: 16, overflow: 'hidden', position: 'relative', borderWidth: 1, borderColor: '#f1f5f9' },
+  photoImage: { width: '100%', height: '100%' },
+  photoDeleteBtn: { position: 'absolute', top: 4, right: 4, width: 24, height: 24, backgroundColor: '#ef4444', borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  addPhotoBtn: { width: 96, height: 96, backgroundColor: '#f8fafc', borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', borderColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' },
+  addPhotoText: { fontSize: 8, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginTop: 8 },
+
+  // Types
+  typesScroll: { flexDirection: 'row', marginBottom: 40 },
+  typeBtn: { marginRight: 16, paddingHorizontal: 24, paddingVertical: 16, borderRadius: 24, borderWidth: 1 },
+  typeBtnActive: { backgroundColor: '#2aa275', borderColor: '#2aa275' },
+  typeBtnInactive: { backgroundColor: '#f8fafc', borderColor: '#f1f5f9' },
+  typeEmoji: { fontSize: 20, marginBottom: 4 },
+  typeName: { fontSize: 10, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3 },
+  typeNameActive: { color: 'white' },
+  typeNameInactive: { color: '#0f172a' },
+
+  // Details
+  detailsContainer: { marginBottom: 40 },
+  inputContainer: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 16, paddingHorizontal: 16, height: 64, justifyContent: 'center' },
+  inputText: { fontWeight: '600', color: '#0f172a' },
+
+  // Publish
+  publishBtn: { width: '100%', backgroundColor: '#2aa275', height: 64, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', shadowColor: '#2aa275', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
+  publishBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3, fontSize: 12, marginRight: 8 },
+});

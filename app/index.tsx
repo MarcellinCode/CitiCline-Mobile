@@ -1,16 +1,48 @@
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image as RNImage } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Stack, useRouter, Redirect } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ArrowRight } from 'lucide-react-native';
 import { CITICLINE_LOGO_BASE64 } from '@/components/ui/logoBase64';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 const { width } = Dimensions.get('window');
 
 export default function Home() {
   const router = useRouter();
+  const [session, setSession] = useState<Session | null>(null);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (e) {
+        console.error("Home screen auth check failed:", e);
+      } finally {
+        setIsChecking(false);
+      }
+    };
+    init();
+  }, []);
+
+  // Pendant que Supabase vérifie silencieusement, on ne rend RIEN (le Splash Screen couvre ce vide)
+  if (isChecking) {
+    return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
+  }
+
+  const insets = useSafeAreaInsets();
+
+  // Dès qu'on sait qu'il y a un compte, on "téléporte" l'utilisateur instantanément sans peindre l'écran
+  if (session) {
+    return <Redirect href="/(tabs)/marketplace" />;
+  }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 40) }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
@@ -43,6 +75,7 @@ export default function Home() {
             <ArrowRight size={18} color="white" />
         </View>
       </TouchableOpacity>
+
       
       <Text style={styles.footerBrand}>Powered by Citicline Engineering</Text>
     </View>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { 
   ArrowLeft, 
@@ -27,6 +28,7 @@ interface Agent {
 export default function AgentsManagement() {
   const router = useRouter();
   const { profile } = useProfile();
+  const insets = useSafeAreaInsets();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +65,11 @@ export default function AgentsManagement() {
         headerShadowVisible: false
       }} />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+      >
         {/* Header Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statBoxBlue}>
@@ -133,7 +139,7 @@ export default function AgentsManagement() {
           </View>
         )}
 
-        <View style={{ height: 80 }} />
+
       </ScrollView>
     </View>
   );

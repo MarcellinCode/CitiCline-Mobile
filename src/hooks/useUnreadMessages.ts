@@ -1,55 +1,54 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
+import { useProfileContext } from '../context/ProfileContext';
 
 export function useUnreadMessages() {
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [count, setCount] = useState(0);
+  const { session } = useProfileContext();
 
   useEffect(() => {
-    let channel: any;
+    if (!session?.user?.id) return;
 
-    async function fetchUnreadCount() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { count, error } = await supabase
+    const fetchUnreadCount = async () => {
+      const { count: unreadCount, error } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
-        .eq('receiver_id', user.id)
+        .eq('receiver_id', session.user.id)
         .eq('is_read', false);
 
-      if (!error) {
-        setUnreadCount(count || 0);
-      }
-    }
+      if (!error) setCount(unreadCount || 0);
+    };
 
     fetchUnreadCount();
 
-    // Real-time subscription
-    const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      channel = supabase
-        .channel('unread_messages_count')
-        .on(
-          'postgres_changes',
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'messages',
-            filter: `receiver_id=eq.${user.id}`
-          },
-          () => fetchUnreadCount()
-        )
-        .subscribe();
-    };
-
-    setupSubscription();
+    const channel = supabase
+      .channel(`unread-messages-${session.user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${session.user.id}`
+        },
+        () => fetchUnreadCount()
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${session.user.id}`
+        },
+        () => fetchUnreadCount()
+      )
+      .subscribe();
 
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
-  }, []);
+  }, [session?.user?.id]);
 
-  return unreadCount;
+  return count;
 }

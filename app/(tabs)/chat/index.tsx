@@ -1,56 +1,68 @@
-import { View, Text, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Message } from '@/lib/types';
 import { Header } from '@/components/Header';
 import { Send, User, MessageSquare } from 'lucide-react-native';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function ChatScreen() {
+  const insets = useSafeAreaInsets();
+  const { profile } = useProfile();
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     async function fetchConversations() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('messages')
-        .select(`*, sender:sender_id(*), receiver:receiver_id(*), wastes:waste_id(waste_types(name))`)
-        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order('created_at', { ascending: false });
-      
-      if (data) {
-        const uniqueConversations = new Map();
-        data.forEach(msg => {
-          const otherUser = msg.sender_id === user.id ? msg.receiver : msg.sender;
-          if (otherUser) {
-            const key = `${otherUser.id}_${msg.waste_id || 'general'}`;
-            if (!uniqueConversations.has(key)) {
-              let wasteName = 'Discussion libre';
-              if (msg.wastes?.waste_types?.name) {
-                 wasteName = `Lot: ${msg.wastes.waste_types.name}`;
-              }
-              uniqueConversations.set(key, {
-                id: msg.id,
-                waste_id: msg.waste_id,
-                wasteName,
-                otherUser,
-                lastMessage: msg.content,
-                timestamp: msg.created_at,
-                isRead: msg.is_read || msg.sender_id === user.id
-              });
-            }
-          }
-        });
-        setConversations(Array.from(uniqueConversations.values()));
+      if (!profile?.id) {
+        if (!profile && !loading) setLoading(false);
+        return;
       }
-      setLoading(false);
+      try {
+        const { data, error } = await supabase
+          .from('messages')
+          .select(`*, sender:sender_id(*), receiver:receiver_id(*), wastes:waste_id(waste_types(name))`)
+          .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+
+        if (data) {
+          const uniqueConversations = new Map();
+          data.forEach(msg => {
+            const otherUser = msg.sender_id === profile?.id ? msg.receiver : msg.sender;
+            if (otherUser) {
+              const key = `${otherUser.id}_${msg.waste_id || 'general'}`;
+              if (!uniqueConversations.has(key)) {
+                let wasteName = 'Discussion libre';
+                if (msg.wastes?.waste_types?.name) {
+                   wasteName = `Lot: ${msg.wastes.waste_types.name}`;
+                }
+                uniqueConversations.set(key, {
+                  id: msg.id,
+                  waste_id: msg.waste_id,
+                  wasteName,
+                  otherUser,
+                  lastMessage: msg.content,
+                  timestamp: msg.created_at,
+                  isRead: msg.is_read || msg.sender_id === profile.id
+                });
+              }
+            }
+          });
+          setConversations(Array.from(uniqueConversations.values()));
+        }
+      } catch (err) {
+        console.error("fetchConversations error:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchConversations();
-  }, []);
+  }, [profile?.id]);
 
   return (
     <View style={styles.container}>
@@ -71,7 +83,10 @@ export default function ChatScreen() {
       <FlatList
         data={conversations}
         keyExtractor={(item) => `${item.otherUser.id}_${item.waste_id || 'general'}`}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { 
+          paddingTop: 0,
+          paddingBottom: insets.bottom + 140 
+        }]}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity 
@@ -123,14 +138,12 @@ export default function ChatScreen() {
   );
 }
 
-import { StyleSheet } from 'react-native';
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white' },
   searchSection: { paddingHorizontal: 32, paddingBottom: 24 },
   searchBar: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 24, paddingHorizontal: 24, paddingVertical: 16, flexDirection: 'row', alignItems: 'center' },
   searchInput: { flex: 1, fontSize: 14, fontWeight: '600', color: '#020617' },
-  listContent: { paddingHorizontal: 24, paddingBottom: 120 },
+  listContent: { paddingHorizontal: 24 },
   chatItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
   avatarContainer: { position: 'relative' },
   avatarBg: { width: 56, height: 56, backgroundColor: '#f1f5f9', borderRadius: 28, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f8fafc', marginRight: 16 },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ChevronLeft, Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Leaf, RefreshCw } from 'lucide-react-native';
 import { MotiView } from 'moti';
@@ -8,6 +9,7 @@ import { supabase } from '@/lib/supabase';
 import { Waste } from '@/lib/types';
 
 export default function WalletScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
   const [transactions, setTransactions] = useState<Waste[]>([]);
@@ -19,27 +21,31 @@ export default function WalletScreen() {
   }, [profile]);
 
   const loadTransactions = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!profile?.id) return;
+    try {
+      setLoading(true);
 
-    const { data } = await supabase
-      .from('wastes')
-      .select('*, waste_types(*)')
-      .or(`seller_id.eq.${user.id},collector_id.eq.${user.id}`)
-      .eq('status', 'collected')
-      .order('created_at', { ascending: false })
-      .limit(10);
+      const { data } = await supabase
+        .from('wastes')
+        .select('*, waste_types(*)')
+        .or(`seller_id.eq.${profile.id},collector_id.eq.${profile.id}`)
+        .eq('status', 'collected')
+        .order('created_at', { ascending: false })
+        .limit(10);
 
-    setTransactions((data as Waste[]) || []);
-    setLoading(false);
+      setTransactions((data as Waste[]) || []);
+    } catch (err) {
+      console.error("loadTransactions error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
@@ -49,7 +55,11 @@ export default function WalletScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+      >
         {/* Solde Principal */}
         <View style={styles.balanceSection}>
           <MotiView
@@ -113,7 +123,7 @@ export default function WalletScreen() {
             </View>
           ) : (
             <View style={styles.listContainer}>
-              {transactions.map((tx, i) => {
+              {transactions.map((tx: any, i: number) => {
                 const isIncome = !!tx.seller_id && tx.status === 'collected';
                 const amount = (tx.final_weight || tx.estimated_weight) * (tx.waste_types?.price_per_kg || 0);
                 return (
@@ -145,15 +155,13 @@ export default function WalletScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
-
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
   scrollView: { flex: 1 },

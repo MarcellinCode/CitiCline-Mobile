@@ -9,63 +9,75 @@ import { usePushNotifications } from "../hooks/usePushNotifications";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
+import { ProfileProvider } from "../src/context/ProfileContext";
+
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { expoPushToken, notification } = usePushNotifications();
-  const router = useRouter();
+  const [loaded, error] = useFonts({});
   const segments = useSegments();
-  const [session, setSession] = useState<Session | null>(null);
-  const [authLoaded, setAuthLoaded] = useState(false);
-  
-  const [loaded, error] = useFonts({
-    // Add custom fonts here if needed
-  });
+// Auth logic is now handled in ProfileProvider via Context
+
+  return (
+    <ProfileProvider>
+      <AuthNavigationWrapper loaded={loaded} error={error} segments={segments}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#ffffff' }}>
+          <Stack 
+            screenOptions={{ 
+              headerShown: false,
+              animation: 'fade_from_bottom',
+            }} 
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </GestureHandlerRootView>
+      </AuthNavigationWrapper>
+    </ProfileProvider>
+  );
+}
+
+import { useProfileContext } from "../src/context/ProfileContext";
+
+function AuthNavigationWrapper({ children, loaded, error, segments }: { children: React.ReactNode, loaded: boolean, error: any, segments: string[] }) {
+  const { session, loading: profileLoading } = useProfileContext();
+  const router = useRouter();
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setAuthLoaded(true);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
-  useEffect(() => {
-    if (!authLoaded || !loaded) return;
+    if (profileLoading || (!loaded && !error)) return;
 
     const inAuthGroup = segments[0] === '(auth)';
     const inOnboarding = segments[0] === 'onboarding';
     const inIndex = segments.length === 0 || (segments.length === 1 && segments[0] === '');
 
     if (session && (inAuthGroup || inOnboarding || inIndex)) {
-      // If logged in and in auth/onboarding/index, go to main app
       router.replace('/(tabs)/marketplace');
     } else if (!session && !inAuthGroup && !inOnboarding && !inIndex) {
-      // If not logged in and not in auth/onboarding/index, go to home
       router.replace('/');
     }
-  }, [session, authLoaded, loaded, segments]);
 
-  // Global Message Listener for in-app notifications
+    const hideSplash = async () => {
+      try {
+        await SplashScreen.hideAsync();
+      } catch (e) {}
+    };
+
+    // Only hide splash when profile is loaded (or error)
+    if (!profileLoading) {
+      setTimeout(hideSplash, 300);
+    }
+  }, [session, profileLoading, loaded, segments]);
+
+  // Global Message Listener - Staticized to avoid re-renders on every scroll/nav
   useEffect(() => {
     if (!session?.user) return;
 
     const channel = supabase
-      .channel('global_messages')
+      .channel('global_messages_fixed')
       .on(
         'postgres_changes',
         { 
@@ -75,33 +87,27 @@ export default function RootLayout() {
           filter: `receiver_id=eq.${session.user.id}`
         },
         async (payload: any) => {
-          // If we are already in the chat with this person, don't show an alert
-          const currentPath = segments.join('/');
-          const isChatting = currentPath.includes('chat/') && currentPath.includes(payload.new.sender_id);
-          
-          if (!isChatting) {
-            // Fetch sender name
-            const { data } = await supabase
-              .from('profiles')
-              .select('full_name')
-              .eq('id', payload.new.sender_id)
-              .single();
+          // Verify path without depending on segments array to avoid re-running effect
+          const { data } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', payload.new.sender_id)
+            .single();
 
-            Alert.alert(
-              "Nouveau Message",
-              `${data?.full_name || 'Partenaire CITICLINE'}: ${payload.new.content}`,
-              [
-                { text: "Ignorer", style: "cancel" },
-                { 
-                  text: "Répondre", 
-                  onPress: () => router.push({
-                    pathname: '/(tabs)/chat/[id]',
-                    params: { id: payload.new.sender_id, name: data?.full_name }
-                  } as any)
-                }
-              ]
-            );
-          }
+          Alert.alert(
+            "Nouveau Message",
+            `${data?.full_name || 'Partenaire'}: ${payload.new.content}`,
+            [
+              { text: "Ignorer", style: "cancel" },
+              { 
+                text: "Répondre", 
+                onPress: () => router.push({
+                  pathname: '/(tabs)/chat/[id]',
+                  params: { id: payload.new.sender_id, name: data?.full_name }
+                } as any)
+              }
+            ]
+          );
         }
       )
       .subscribe();
@@ -109,25 +115,9 @@ export default function RootLayout() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session, segments]);
+  }, [session?.user?.id]); // Only depend on User ID, NOT segments
 
-  if (!loaded && !error) {
-    return null;
-  }
+  if (!loaded && !error) return null;
 
-  return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#ffffff' }}>
-      <Stack 
-        screenOptions={{ 
-          headerShown: false,
-          animation: 'fade_from_bottom',
-        }} 
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-      </Stack>
-    </GestureHandlerRootView>
-  );
+  return children;
 }

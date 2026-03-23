@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, ScrollView, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { ChevronLeft, Crown, CheckCircle2, Globe, AlertCircle, Calendar } from 'lucide-react-native';
+import { ChevronLeft, Crown, CheckCircle2, AlertCircle, Calendar } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { MotiView } from 'moti';
@@ -17,6 +18,7 @@ type Subscription = {
 };
 
 export default function AbonnementsScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -28,30 +30,34 @@ export default function AbonnementsScreen() {
   }, [profile]);
 
   const loadSubscription = async () => {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!profile?.id) return;
+    try {
+      setLoading(true);
 
-    // Chercher l'abonnement actif du citoyen
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      // Chercher l'abonnement actif du citoyen
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .single();
 
-    setSubscription(data as Subscription | null);
-    setLoading(false);
+      setSubscription(data as Subscription | null);
+    } catch (err) {
+      console.error("loadSubscription error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const title = profile?.role === 'vendeur' ? 'Service de Collecte' : 'Abonnement';
   const isLoad = profileLoading || loading;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
         <TouchableOpacity onPress={() => router.push('/(tabs)/espace')} style={styles.iconBtn}>
           <ChevronLeft size={24} color="#020617" />
         </TouchableOpacity>
@@ -64,7 +70,11 @@ export default function AbonnementsScreen() {
           <ActivityIndicator color="#2aa275" />
         </View>
       ) : (
-        <ScrollView style={styles.scrollView}>
+        <ScrollView 
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+        >
           {profile?.role === 'vendeur' && subscription ? (
             /* ── ABONNÉ ACTIF ── */
             <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -172,19 +182,18 @@ export default function AbonnementsScreen() {
           )}
         </ScrollView>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, paddingTop: 64, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
   iconBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
   centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
+  scrollView: { flex: 1, paddingHorizontal: 32 },
   activeSubCard: { backgroundColor: 'rgba(42, 162, 117, 0.1)', borderColor: 'rgba(42, 162, 117, 0.2)', borderWidth: 1, padding: 32, borderRadius: 48, alignItems: 'center', marginBottom: 40 },
   crownIconBg: { width: 80, height: 80, backgroundColor: 'white', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
   zoneNameTitle: { fontSize: 24, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 4 },

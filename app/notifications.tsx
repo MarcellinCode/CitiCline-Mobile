@@ -1,6 +1,7 @@
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, Bell, DollarSign, Handshake, Info, Truck } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,19 +21,23 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const { profile } = useProfile();
+
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [profile?.id]); // Re-fetch when profile ID is available
 
   const fetchNotifications = async () => {
+    if (!profile?.id) {
+      setLoading(false); // Ensure loading is false if no profile
+      return;
+    }
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
+      setLoading(true);
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('profile_id', user.id)
+        .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -140,7 +145,7 @@ const styles = StyleSheet.create({
   backBtn: { width: 48, height: 48, backgroundColor: '#f8fafc', borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
   headerTitle: { fontSize: 16, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
   centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  listContent: { paddingHorizontal: 24, paddingBottom: 40, paddingTop: 16 },
+  listContent: { paddingHorizontal: 24, paddingBottom: 100, paddingTop: 16 },
   notifCard: { flexDirection: 'row', alignItems: 'flex-start', padding: 20, backgroundColor: 'white', borderRadius: 24, marginBottom: 16, borderWidth: 1, borderColor: '#f1f5f9' },
   notifCardUnread: { backgroundColor: '#f8fafc' },
   iconContainer: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 16 },

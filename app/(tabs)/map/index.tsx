@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { Stack } from 'expo-router';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout } from 'react-native-maps';
 import { useWastes } from '@/hooks/useWastes';
 import { useLocation } from '@/hooks/useLocation';
 import { Header } from '@/components/Header';
@@ -25,11 +25,11 @@ export default function MapScreen() {
       
       <View style={styles.mapContainer}>
         <MapView
-          provider={PROVIDER_GOOGLE}
           style={StyleSheet.absoluteFill}
           initialRegion={initialRegion}
           showsUserLocation
           showsMyLocationButton
+          mapPadding={{ top: 0, right: 0, bottom: 100, left: 0 }}
           customMapStyle={mapStyle}
         >
           {wastes.map((waste) => (

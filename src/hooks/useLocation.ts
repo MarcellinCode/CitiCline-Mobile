@@ -8,16 +8,22 @@ export function useLocation() {
 
   useEffect(() => {
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setErrorMsg('Permission to access location was denied');
-        setLoading(false);
-        return;
-      }
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setErrorMsg('Permission to access location was denied');
+          setLoading(false);
+          return;
+        }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-      setLoading(false);
+        let location = await Location.getCurrentPositionAsync({});
+        setLocation(location);
+      } catch (e) {
+        setErrorMsg('Impossible de récupérer la position GPS');
+        console.error('useLocation error:', e);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 

@@ -1,7 +1,7 @@
 export type Profile = {
   id: string;
   full_name: string;
-  role: 'vendeur' | 'collecteur' | 'entreprise' | 'mairie' | 'organisation_admin' | 'agent_collecteur';
+  role: 'vendeur' | 'collecteur' | 'entreprise' | 'mairie' | 'organisation_admin' | 'agent_collecteur' | 'super_admin';
   city: string;
   wallet_balance: number;
   eco_points: number;

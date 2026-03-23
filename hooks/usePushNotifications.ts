@@ -72,7 +72,10 @@ export const usePushNotifications = (): PushNotificationState => {
   }
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    // Defer push registration to not block app startup
+    const timer = setTimeout(() => {
+      registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    }, 3000);
 
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       setNotification(notification);
@@ -83,6 +86,7 @@ export const usePushNotifications = (): PushNotificationState => {
     });
 
     return () => {
+      clearTimeout(timer);
       if (notificationListener.current) Notifications.removeNotificationSubscription(notificationListener.current);
       if (responseListener.current) Notifications.removeNotificationSubscription(responseListener.current);
     };

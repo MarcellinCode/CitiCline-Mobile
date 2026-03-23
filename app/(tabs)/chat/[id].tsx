@@ -1,95 +1,104 @@
-import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Send, ChevronLeft, User, MoreVertical } from 'lucide-react-native';
 import { MotiView } from 'moti';
 
+import { useProfile } from '@/hooks/useProfile';
+
 export default function ChatDetail() {
+  const insets = useSafeAreaInsets();
   const { id, name, waste_id } = useLocalSearchParams();
   const router = useRouter();
+  const { profile } = useProfile();
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
+    let channel: any;
     async function setup() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-      if (!user) return;
+      if (!profile?.id) return;
+      try {
+        let query = supabase
+          .from('messages')
+          .select('*')
+          .or(`and(sender_id.eq.${profile.id},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${profile.id})`)
+          .order('created_at', { ascending: true });
 
-      let query = supabase
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${id}),and(sender_id.eq.${id},receiver_id.eq.${user.id})`)
-        .order('created_at', { ascending: true });
+        if (waste_id) {
+          query = query.eq('waste_id', waste_id);
+        }
 
-      if (waste_id) {
-        query = query.eq('waste_id', waste_id);
+        const { data, error } = await query;
+        if (error) throw error;
+        if (data) setMessages(data);
+
+        // Mark as read
+        await supabase
+          .from('messages')
+          .update({ is_read: true })
+          .eq('sender_id', id)
+          .eq('receiver_id', profile.id)
+          .eq('is_read', false);
+
+        // Subscribe to real-time changes
+        channel = supabase
+          .channel(`chat_${id}`)
+          .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'messages',
+            filter: `receiver_id=eq.${profile.id}`
+          }, (payload: any) => {
+            if (payload.new.sender_id === id) {
+              if (waste_id && payload.new.waste_id !== waste_id) return;
+              setMessages(prev => [...prev, payload.new]);
+            }
+          })
+          .subscribe();
+      } catch (err) {
+        console.error("ChatDetail setup error:", err);
       }
-
-      const { data, error } = await query;
-      if (data) setMessages(data);
-
-      // Mark as read
-      await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('sender_id', id)
-        .eq('receiver_id', user.id)
-        .eq('is_read', false);
-
-      // Subscribe to real-time changes
-      const channel = supabase
-        .channel(`chat_${id}`)
-        .on('postgres_changes', { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}`
-        }, (payload: any) => {
-          if (payload.new.sender_id === id) {
-            // Vérifier que le message appartient au même lot si on est en mode lot
-            if (waste_id && payload.new.waste_id !== waste_id) return;
-            setMessages(prev => [...prev, payload.new]);
-          }
-        })
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
     setup();
-  }, [id]);
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [id, profile?.id]);
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !currentUser) return;
+    if (!newMessage.trim() || !profile) return;
 
-    const messageToSend = {
-      content: newMessage.trim(),
-      sender_id: currentUser.id,
-      receiver_id: id,
-      waste_id: waste_id || null, // Inclusion de l'ID du lot si disponible
-      created_at: new Date().toISOString(),
-      is_read: false
-    };
+    try {
+      const messageToSend = {
+        content: newMessage.trim(),
+        sender_id: profile.id,
+        receiver_id: id,
+        waste_id: waste_id || null,
+        created_at: new Date().toISOString(),
+        is_read: false
+      };
 
-    // Optimistic update
-    setMessages(prev => [...prev, { ...messageToSend, id: 'temp-' + Date.now() }]);
-    setNewMessage('');
+      // Optimistic update
+      setMessages(prev => [...prev, { ...messageToSend, id: 'temp-' + Date.now() }]);
+      setNewMessage('');
 
-    const { error } = await supabase.from('messages').insert([messageToSend]);
-    if (error) alert(error.message);
+      const { error } = await supabase.from('messages').insert([messageToSend]);
+      if (error) alert(error.message);
+    } catch (err: any) {
+      alert(err.message || "Erreur d'envoi");
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <Stack.Screen options={{ headerShown: false }} />
       
       {/* Sleek Furtive Messenger Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 10 : 0) }]}>
         <View style={styles.headerLeft}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                 <ChevronLeft size={28} color="#020617" />
@@ -119,7 +128,7 @@ export default function ChatDetail() {
         showsVerticalScrollIndicator={false}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         renderItem={({ item, index }) => {
-          const isMe = item.sender_id === currentUser?.id;
+          const isMe = item.sender_id === profile?.id;
           const prevMsg = messages[index - 1];
           const isSameSender = prevMsg?.sender_id === item.sender_id;
           
@@ -177,7 +186,7 @@ export default function ChatDetail() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 24, paddingLeft: 24, paddingRight: 24, paddingTop: 64, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
+  header: { paddingHorizontal: 24, paddingBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
   backBtn: { marginRight: 12 },
   avatarWrapper: { position: 'relative', marginRight: 12 },
