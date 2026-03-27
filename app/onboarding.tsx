@@ -1,33 +1,36 @@
-import { View, Text, TouchableOpacity, Dimensions, StyleSheet, Platform, ScrollView } from 'react-native';
+import { View, Dimensions, Platform, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
 import { useState } from 'react';
 import { ChevronRight, Recycle, Wallet, Globe } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
+import { HubButton } from '@/components/ui/HubButton';
+import { HubText } from '@/components/ui/HubText';
 import Logo from '@/components/ui/Logo';
+import { cn } from '@/lib/utils';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
     id: 1,
     title: "Collecte\nIntelligente",
     description: "Vendez vos ressources recyclables en quelques clics et participez à l'économie circulaire.",
-    color: "#10b981",
+    color: "#2A9D8F",
     Icon: Recycle,
   },
   {
     id: 2,
     title: "Impact\nMonétisé",
     description: "Chaque action compte. Transformez vos déchets en revenus réels grâce à notre système de valorisation.",
-    color: "#f59e0b",
+    color: "#E9C46A",
     Icon: Wallet,
   },
   {
     id: 3,
     title: "Planète\nProtégée",
     description: "Faites partie du changement. Réduisez votre empreinte carbone tout en optimisant votre gestion locale.",
-    color: "#10b981",
+    color: "#2A9D8F",
     Icon: Globe,
   }
 ];
@@ -48,60 +51,75 @@ export default function Onboarding() {
   const CurrentIcon = SLIDES[currentSlide].Icon;
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
-      <View style={styles.topHeader}>
-        <View style={styles.logoWrapperTiny}>
+      <View className="flex-row justify-between items-center px-8 h-16">
+        <View className="w-10">
             <Logo size="small" />
         </View>
-        <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
-            <Text style={styles.skipText}>Sauter</Text>
-        </TouchableOpacity>
+        <HubButton 
+          variant="secondary" 
+          size="sm" 
+          onPress={() => router.push('/(auth)/login')}
+        >
+          Sauter
+        </HubButton>
       </View>
 
       <ScrollView 
-        contentContainerStyle={styles.scrollContent} 
+        contentContainerStyle={{ flexGrow: 1 }} 
         showsVerticalScrollIndicator={false} 
         bounces={false}
       >
-        <View style={styles.imageSection}>
-            <View style={[styles.iconCircle, { backgroundColor: `${SLIDES[currentSlide].color}1A` }]}>
-               <CurrentIcon size={width * 0.35} color={SLIDES[currentSlide].color} strokeWidth={1.5} />
-            </View>
+        <View className="flex-1 items-center justify-center p-5">
+           <View className="items-center justify-center">
+              <View 
+                className="w-64 h-64 rounded-[4rem] items-center justify-center"
+                style={{ backgroundColor: `${SLIDES[currentSlide].color}15` }}
+              >
+                 <CurrentIcon size={width * 0.35} color={SLIDES[currentSlide].color} strokeWidth={1.5} />
+              </View>
+           </View>
         </View>
 
-        <View style={styles.contentSection}>
-          <View style={styles.indicatorContainer}>
-            {SLIDES.map((_, i) => (
-              <View 
-                key={i} 
-                style={[
-                  styles.indicator, 
-                  i === currentSlide ? styles.indicatorActive : styles.indicatorInactive
-                ]} 
-              />
-            ))}
+        <View className="flex-[1.2] bg-white px-10 justify-between pb-10">
+          <View>
+            <View className="flex-row gap-2 mb-8">
+              {SLIDES.map((_, i) => (
+                <View 
+                  key={i} 
+                  className={cn(
+                    "h-1.5 rounded-full",
+                    i === currentSlide ? "w-10" : "w-10",
+                    i === currentSlide ? "bg-zinc-900" : "bg-zinc-100"
+                  )}
+                  style={{ backgroundColor: i === currentSlide ? SLIDES[currentSlide].color : '#f1f5f9' }}
+                />
+              ))}
+            </View>
+
+              <View>
+                <HubText variant="h1" className="mb-4 text-zinc-900 leading-[0.95]">
+                  {SLIDES[currentSlide].title}
+                </HubText>
+                <HubText variant="body" className="text-zinc-500 leading-6">
+                  {SLIDES[currentSlide].description}
+                </HubText>
+              </View>
           </View>
 
-          <View style={styles.textContent}>
-            <Text style={styles.title}>
-              {SLIDES[currentSlide].title}
-            </Text>
-            <Text style={styles.description}>
-              {SLIDES[currentSlide].description}
-            </Text>
-          </View>
-
-          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
-            <TouchableOpacity 
+          <View style={{ paddingBottom: Math.max(insets.bottom, 20) }}>
+            <HubButton 
               onPress={handleNext}
-              style={styles.nextButton}
-              activeOpacity={0.8}
+              variant="primary"
+              size="lg"
+              icon={<ChevronRight size={32} color="white" />}
+              className="w-20 rounded-[2.5rem]"
             >
-              <ChevronRight size={32} color="white" />
-            </TouchableOpacity>
+              {""}
+            </HubButton>
           </View>
         </View>
       </ScrollView>
@@ -109,106 +127,3 @@ export default function Onboarding() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-  },
-  topHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    height: 60,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  logoWrapperTiny: {
-    justifyContent: 'center',
-  },
-  skipText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#cbd5e1',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  imageSection: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  iconCircle: {
-    width: width * 0.6,
-    height: width * 0.6,
-    borderRadius: (width * 0.6) / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  contentSection: {
-    flex: 1.2,
-    backgroundColor: 'white',
-    paddingHorizontal: 40,
-    justifyContent: 'space-between',
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  indicatorContainer: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  indicator: {
-    height: 6,
-    borderRadius: 3,
-  },
-  indicatorActive: {
-    width: 40,
-    backgroundColor: '#10b981',
-  },
-  indicatorInactive: {
-    width: 10,
-    backgroundColor: '#f1f5f9',
-  },
-  textContent: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: '#020617',
-    textTransform: 'uppercase',
-    fontStyle: 'italic',
-    lineHeight: 38,
-    marginBottom: 16,
-    letterSpacing: -1.5,
-  },
-  description: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#94a3b8',
-    lineHeight: 22,
-    letterSpacing: -0.2,
-  },
-  footer: {
-    alignItems: 'flex-start',
-    width: '100%',
-  },
-  nextButton: {
-    width: 68,
-    height: 68,
-    backgroundColor: '#020617',
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 8,
-  }
-});

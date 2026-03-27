@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { 
@@ -7,25 +7,11 @@ import {
   User, 
   Search, 
   Plus, 
-  TrendingUp, 
-  CheckCircle2, 
-  Clock,
   MoreVertical
 } from 'lucide-react-native';
 import { useAgents } from '@/hooks/useAgents';
 import { navigateSafe } from '@/utils/navigation';
 import { ROUTES } from '@/constants/routes';
-import { useProfile } from '@/hooks/useProfile';
-import { MotiView } from 'moti';
-
-interface Agent {
-  id: string;
-  full_name: string;
-  phone: string;
-  eco_points: number;
-  wallet_balance: number;
-  status?: 'active' | 'offline';
-}
 
 export default function AgentsManagement() {
   const router = useRouter();
@@ -89,14 +75,8 @@ export default function AgentsManagement() {
           </View>
         ) : (
           <View style={styles.listContainer}>
-            {agents.map((agent, index) => (
-              <MotiView
-                key={agent.id}
-                from={{ opacity: 0, translateX: -20 }}
-                animate={{ opacity: 1, translateX: 0 }}
-                transition={{ delay: 100 * index }}
-                style={styles.agentCard}
-              >
+            {agents.map((agent) => (
+              <View key={agent.id} style={styles.agentCard}>
                 <View style={styles.agentAvatarBg}>
                   <User size={24} color="#64748b" />
                 </View>
@@ -115,18 +95,14 @@ export default function AgentsManagement() {
                       <MoreVertical size={16} color="#94a3b8" />
                    </TouchableOpacity>
                 </View>
-              </MotiView>
+              </View>
             ))}
           </View>
         )}
-
-
       </ScrollView>
     </View>
   );
 }
-
-import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white' },

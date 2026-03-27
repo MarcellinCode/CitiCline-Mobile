@@ -6,19 +6,13 @@ import { ROUTES } from '@/constants/routes';
 import { navigateSafe } from '@/utils/navigation';
 import { 
   ChevronLeft, 
-  Plus, 
-  History, 
-  Leaf, 
   RefreshCw,
   Package,
-  CheckCircle2,
-  Clock,
-  XCircle
+  CheckCircle2
 } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { Waste } from '@/lib/types';
-import { MotiView } from 'moti';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   published: { label: 'Disponible', color: '#2aa275', bg: '#2aa27515' },
@@ -134,15 +128,10 @@ export default function MesDechetsScreen() {
 
           <View style={styles.listContainer}>
             {wastes.map((waste: any, i: number) => {
-              const statusCfg = STATUS_CONFIG[waste.status];
+              const statusCfg = STATUS_CONFIG[waste.status] || STATUS_CONFIG.published;
               const wasteType = waste.waste_types;
               return (
-                <MotiView
-                  key={waste.id}
-                  from={{ opacity: 0, translateX: -20 }}
-                  animate={{ opacity: 1, translateX: 0 }}
-                  transition={{ delay: 50 * i }}
-                >
+                <View key={waste.id}>
                   <TouchableOpacity style={styles.cardItem}>
                     <View style={styles.cardIconBg}>
                       <Text style={styles.cardEmoji}>{wasteType?.emoji || '♻️'}</Text>
@@ -161,7 +150,7 @@ export default function MesDechetsScreen() {
                       </Text>
                     </View>
                   </TouchableOpacity>
-                </MotiView>
+                </View>
               );
             })}
           </View>

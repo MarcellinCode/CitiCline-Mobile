@@ -17,7 +17,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string, retries = 3) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -25,11 +25,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
       
-      if (data) setProfile(data as Profile);
+      if (data) {
+        setProfile(data as Profile);
+        setLoading(false);
+      } else if (retries > 0) {
+        // Retry after a short delay if no data yet (common during signup)
+        setTimeout(() => fetchProfile(userId, retries - 1), 1000);
+      } else {
+        setLoading(false);
+      }
     } catch (err) {
-      console.error("fetchProfile error:", err);
-    } finally {
-      setLoading(false);
+      if (retries > 0) {
+        setTimeout(() => fetchProfile(userId, retries - 1), 1000);
+      } else {
+        console.error("fetchProfile error after retries:", err);
+        setLoading(false);
+      }
     }
   };
 

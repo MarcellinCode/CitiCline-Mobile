@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Dimensions, StyleSheet, Platform } from 'react-native';
+import { View, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Image as RNImage, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { useWastes } from '@/hooks/useWastes';
@@ -8,10 +8,13 @@ import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 import { WasteCard } from '@/components/WasteCard';
 import { FeaturedWasteCard } from '@/components/FeaturedWasteCard';
 import { Waste } from '@/lib/types';
-import { Search, Filter, Leaf, Zap, Box, ShoppingBag, Bell } from 'lucide-react-native';
+import { Search, Leaf, Zap, Box, ShoppingBag, Bell } from 'lucide-react-native';
+import { HubText } from '@/components/ui/HubText';
+import { HubCard } from '@/components/ui/HubCard';
+import { cn } from '@/lib/utils';
 
 const CATEGORIES = [
-  { id: 'all', name: 'Tous les Matériaux', icon: Leaf },
+  { id: 'all', name: 'Tous', icon: Leaf },
   { id: 1, name: 'Plastique', icon: Box },
   { id: 2, name: 'Métal', icon: Zap },
   { id: 3, name: 'Papier', icon: ShoppingBag },
@@ -34,7 +37,7 @@ export default function Marketplace() {
       const matchCategory = activeCategory === 'all' || w.type_id.toString() === activeCategory;
       return matchSearch && matchCategory;
     });
-  }, [wastes, search, activeCategory, profile]);
+  }, [wastes, search, activeCategory]);
 
   const loading = wastesLoading || profileLoading;
 
@@ -44,93 +47,118 @@ export default function Marketplace() {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#2aa275" />
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator color="#2A9D8F" size="large" />
       </View>
     );
   }
 
   const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      <View style={styles.topRow}>
+    <View className="pb-6 px-6">
+      <View className="mb-10 px-8 flex-row items-center justify-between mb-8">
         <View>
-          <Text style={styles.greeting}>Bonjour,</Text>
-          <Text style={styles.userName}>{profile?.full_name || 'Citoyen'}</Text>
+          <HubText variant="label" className="text-zinc-400">Bonjour,</HubText>
+          <HubText variant="h2" className="text-zinc-900 leading-tight">
+            {profile?.full_name?.split(' ')[0] || 'Eco-Guerrier'}
+          </HubText>
         </View>
-        <TouchableOpacity style={styles.notificationBtn} onPress={() => router.push('/notifications')}>
-          <Bell size={20} color="#0f172a" />
-          {unreadCount > 0 && <View style={styles.notificationBadge} />}
+        <TouchableOpacity 
+            onPress={() => router.push('/notifications' as any)}
+            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+        >
+          <Bell size={20} color="#0f172a" strokeWidth={2.5} />
+          {unreadCount > 0 && <View className="absolute top-3 right-3 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />}
         </TouchableOpacity>
       </View>
 
       {/* Bento Widget: Impact Ecolo */}
-      <View style={styles.bentoWidget}>
-         <View style={styles.bentoLeft}>
-            <View style={styles.iconWrapper}>
-               <Leaf size={20} color="#10b981" />
-            </View>
-            <Text style={styles.bentoTitle}>Impact Écologique</Text>
-            <Text style={styles.bentoValue}>12.5 <Text style={styles.bentoUnit}>kg recyclés</Text></Text>
-         </View>
-         <View style={styles.bentoRight}>
-            <Zap size={24} color="#f59e0b" />
-            <Text style={styles.bentoRightText}>Niv. 2</Text>
-         </View>
+      <View>
+          <HubCard className="bg-primary border-0 p-8 mb-10 overflow-hidden">
+             <View className="flex-row justify-between items-start">
+                <View className="flex-1">
+                    <View className="w-10 h-10 bg-white/20 rounded-xl items-center justify-center mb-6">
+                       <Leaf size={20} color="white" />
+                    </View>
+                    <HubText variant="label" className="text-white/80 mb-1">Impact ÉCOLOGIQUE</HubText>
+                    <HubText variant="h2" className="text-white">12.5 <HubText className="text-white/70 text-base italic normal-case">kg recyclés</HubText></HubText>
+                </View>
+                <View className="bg-white/10 rounded-3xl p-4 items-center justify-center">
+                    <Zap size={24} color="#E9C46A" />
+                    <HubText variant="label" className="text-white mt-1 text-[8px]">Niv. 2</HubText>
+                </View>
+             </View>
+             
+             {/* Background decoration */}
+             <View className="absolute -bottom-10 -right-10 opacity-10">
+                <Leaf size={160} color="white" />
+             </View>
+          </HubCard>
       </View>
 
-      <Text style={styles.sectionTitleExplore}>Explorer le réseau</Text>
+      <HubText variant="h3" className="mb-6 ml-1">Explorer le réseau</HubText>
 
-      <View style={styles.searchBar}>
-        <Search size={20} color="#94a3b8" />
+      <View className="bg-white border-2 border-zinc-50 rounded-[2rem] flex-row items-center px-6 py-4 mb-8 shadow-xl shadow-zinc-200/30">
+        <Search size={22} color="#94a3b8" />
         <TextInput 
-          placeholder="Rechercher des produits recyclables..."
+          placeholder="Rechercher des produits..."
           placeholderTextColor="#94a3b8"
-          style={styles.searchInput}
+          className="flex-1 ml-4 text-base font-semibold text-zinc-900"
           value={search}
           onChangeText={setSearch}
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesScroll}>
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity 
-            key={cat.id.toString()}
-            onPress={() => setActiveCategory(cat.id.toString())}
-            style={[
-              styles.categoryBtn,
-              activeCategory === cat.id.toString() ? styles.categoryBtnActive : styles.categoryBtnInactive
-            ] as any}
-          >
-            <cat.icon size={14} color={activeCategory === cat.id.toString() ? '#2aa275' : '#64748b'} />
-            <Text style={[
-              styles.categoryText,
-              activeCategory === cat.id.toString() ? styles.categoryTextActive : styles.categoryTextInactive
-            ]}>
-              {cat.name}
-            </Text>
-          </TouchableOpacity>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-10">
+        {CATEGORIES.map((cat, idx) => (
+          <View key={cat.id.toString()}>
+            <TouchableOpacity 
+                onPress={() => setActiveCategory(cat.id.toString())}
+                className={cn(
+                  "flex-row items-center px-6 py-4 rounded-[1.5rem] mr-3 border-2 transition-all",
+                  activeCategory === cat.id.toString() ? "bg-zinc-900 border-zinc-900 shadow-lg shadow-zinc-400/30" : "bg-white border-zinc-50"
+                )}
+            >
+                <cat.icon size={16} color={activeCategory === cat.id.toString() ? '#2A9D8F' : '#94a3b8'} strokeWidth={3} />
+                <HubText 
+                    variant="label" 
+                    className={cn(
+                        "ml-3 mb-0 text-[9px]",
+                        activeCategory === cat.id.toString() ? "text-white" : "text-zinc-500"
+                    )}
+                >
+                    {cat.name}
+                </HubText>
+            </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
 
-      <View style={styles.featuredSection}>
-        <Text style={styles.sectionTitle}>
-          {profile?.role === 'vendeur' ? 'Opportunités Locales' : 'Lots en Vedette'}
-        </Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {featuredWastes.map((item) => (
-            <FeaturedWasteCard key={`featured-${item.id}`} waste={item} />
-          ))}
-        </ScrollView>
-      </View>
+      {featuredWastes.length > 0 && (
+        <View className="mb-10">
+            <View className="flex-row justify-between items-end mb-6 ml-1">
+                <HubText variant="h3">
+                    {profile?.role === 'vendeur' ? 'Opportunités' : 'Lots en Vedette'}
+                </HubText>
+                <HubText variant="label" className="text-primary italic">VOIR TOUT</HubText>
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="overflow-visible">
+            {featuredWastes.map((item) => (
+                <View key={`featured-${item.id}`} className="mr-6">
+                    <FeaturedWasteCard waste={item} />
+                </View>
+            ))}
+            </ScrollView>
+        </View>
+      )}
 
-      <Text style={styles.sectionTitle}>
+      <HubText variant="h3" className="mb-6 ml-1">
         {profile?.role === 'vendeur' ? 'Vos Publications' : 'Nouveaux Arrivages'}
-      </Text>
+      </HubText>
     </View>
   );
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       <Stack.Screen options={{ headerShown: false }} />
       
       <FlatList
@@ -139,58 +167,23 @@ export default function Marketplace() {
         renderItem={({ item }: { item: Waste }) => <WasteCard waste={item} />}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 24, paddingBottom: 20 }}
+        columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 24, paddingBottom: 24 }}
         contentContainerStyle={{ 
-          paddingTop: insets.top,
+          paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0),
           paddingBottom: insets.bottom + 160 
         }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2aa275" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2A9D8F" />
         }
         ListEmptyComponent={() => (
-          <View style={styles.emptyList}>
-            <Text style={styles.emptyListText}>
+          <View className="py-20 items-center">
+            <HubText variant="label" className="text-zinc-300">
               Aucun lot correspondant trouvé
-            </Text>
+            </HubText>
           </View>
         )}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  loadingContainer: { flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center' },
-  headerContainer: { paddingBottom: 24, paddingHorizontal: 24 },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
-  greeting: { fontSize: 14, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 },
-  userName: { fontSize: 28, fontWeight: '900', color: '#0f172a', letterSpacing: -1 },
-  notificationBtn: { width: 48, height: 48, backgroundColor: 'white', borderRadius: 24, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
-  notificationBadge: { position: 'absolute', top: 12, right: 12, width: 10, height: 10, backgroundColor: '#ef4444', borderRadius: 5, borderWidth: 2, borderColor: 'white' },
-  
-  bentoWidget: { flexDirection: 'row', backgroundColor: '#10b981', borderRadius: 32, padding: 24, marginBottom: 32, shadowColor: '#10b981', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 5 },
-  bentoLeft: { flex: 1 },
-  iconWrapper: { width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.2)', padding: 10, borderRadius: 16, alignSelf: 'flex-start', marginBottom: 16 },
-  bentoTitle: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  bentoValue: { color: 'white', fontSize: 24, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
-  bentoUnit: { fontSize: 14, fontStyle: 'normal', color: 'rgba(255,255,255,0.8)' },
-  bentoRight: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 24, paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center', justifyContent: 'center' },
-  bentoRightText: { color: 'white', fontSize: 10, fontWeight: '900', marginTop: 4, textTransform: 'uppercase' },
-
-  sectionTitleExplore: { fontSize: 20, fontWeight: '900', color: '#0f172a', marginBottom: 16, letterSpacing: -0.5 },
-  searchBar: { backgroundColor: 'white', borderRadius: 24, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.04, shadowRadius: 15, elevation: 3 },
-  searchInput: { flex: 1, marginLeft: 12, fontSize: 15, fontWeight: '600', color: '#0f172a' },
-  categoriesScroll: { marginBottom: 32 },
-  categoryBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, marginRight: 12, backgroundColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2 },
-  categoryBtnActive: { backgroundColor: '#10b981' },
-  categoryBtnInactive: { backgroundColor: 'white' },
-  categoryText: { marginLeft: 8, fontSize: 12, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
-  categoryTextActive: { color: 'white' },
-  categoryTextInactive: { color: '#64748b' },
-  featuredSection: { marginBottom: 32 },
-  sectionTitle: { fontSize: 20, fontWeight: '900', color: '#0f172a', marginBottom: 16, letterSpacing: -0.5 },
-  emptyList: { paddingVertical: 80, alignItems: 'center' },
-  emptyListText: { color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, fontSize: 11 }
-});

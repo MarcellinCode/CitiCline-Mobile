@@ -5,7 +5,6 @@ import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { ArrowLeft, Bell, DollarSign, Handshake, Info, Truck } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MotiView } from 'moti';
 
 interface Notification {
   id: number;
@@ -104,10 +103,8 @@ export default function NotificationsScreen() {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => (
-            <MotiView
-              from={{ opacity: 0, translateY: 10 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ delay: index * 50 }}
+            <View
+              key={item.id.toString()}
               style={[styles.notifCard, !item.is_read && styles.notifCardUnread]}
             >
               <View style={[styles.iconContainer, { backgroundColor: getIconBg(item.type) }]}>
@@ -123,7 +120,7 @@ export default function NotificationsScreen() {
                 <Text style={styles.content}>{item.content}</Text>
               </View>
               {!item.is_read && <View style={styles.unreadDot} />}
-            </MotiView>
+            </View>
           )}
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>

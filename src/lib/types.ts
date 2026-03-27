@@ -7,6 +7,15 @@ export type Profile = {
   eco_points: number;
   subscription_tier: 'starter' | 'pro' | 'business';
   updated_at: string;
+  avatar_url?: string;
+  phone?: string;
+  district?: string;
+  vehicle_type?: string;
+  id_number?: string;
+  rccm?: string;
+  contact_person?: string;
+  agent_count?: string;
+  official_department?: string;
 };
 
 export type WasteType = {

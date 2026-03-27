@@ -1,3 +1,4 @@
+import 'react-native-reanimated';
 import { Stack, useRouter, useSegments } from "expo-router";
 import { ROUTES } from "@/constants/routes";
 import { navigateSafe } from "@/utils/navigation";

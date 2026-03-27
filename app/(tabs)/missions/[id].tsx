@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
-import { navigateSafe } from '@/utils/navigation';
 import { 
   ArrowLeft, 
   MapPin, 
-  ShieldCheck, 
-  Camera, 
   Weight, 
   CheckCircle2, 
   Info,
-  AlertTriangle
+  ArrowRight,
+  Camera
 } from 'lucide-react-native';
-import { MotiView, AnimatePresence } from 'moti';
+import { HubText } from '@/components/ui/HubText';
+import { HubCard } from '@/components/ui/HubCard';
+import { HubButton } from '@/components/ui/HubButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MissionDetail() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { id, name, type, color } = useLocalSearchParams();
   const [step, setStep] = useState<'info' | 'scan' | 'weight' | 'success'>('info');
   const [scanned, setScanned] = useState(false);
@@ -44,116 +46,100 @@ export default function MissionDetail() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       <Stack.Screen options={{ 
         headerShown: true,
-        headerTitle: "MISSION DÉTAIL",
-        headerTitleStyle: { fontWeight: '900' },
+        headerTitle: () => <HubText variant="label" className="text-zinc-900 italic tracking-[0.2em] mb-0">MISSION DÉTAIL</HubText>,
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
-            <ArrowLeft size={20} color="#020617" />
+          <TouchableOpacity onPress={() => router.back()} className="ml-4 w-10 h-10 bg-zinc-50 rounded-xl items-center justify-center border border-zinc-100">
+            <ArrowLeft size={18} color="#020617" strokeWidth={3} />
           </TouchableOpacity>
         ),
-        headerShadowVisible: false
+        headerShadowVisible: false,
+        headerStyle: { backgroundColor: 'white' }
       }} />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <AnimatePresence exitBeforeEnter>
+      <ScrollView className="flex-1 px-8 pt-6" showsVerticalScrollIndicator={false}>
           {step === 'info' && (
-            <MotiView 
-              key="info"
-              from={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <View style={styles.infoCard}>
-                <View style={styles.infoIconBg}>
-                  <MapPin size={32} color={color?.toString() || '#2aa275'} />
+            <View key="info">
+              <HubCard className="p-10 border-0 bg-primary/5 items-center mb-8">
+                <View className="w-20 h-20 bg-white rounded-[2rem] items-center justify-center shadow-xl shadow-zinc-200/50 mb-8">
+                  <MapPin size={32} color={color?.toString() || '#2A9D8F'} strokeWidth={3} />
                 </View>
-                <Text style={styles.infoName}>{name}</Text>
-                <Text style={styles.infoType}>{type}</Text>
-              </View>
+                <HubText variant="h2" className="text-zinc-900 mb-1">{name}</HubText>
+                <HubText variant="label" className="text-primary italic tracking-widest">{type}</HubText>
+              </HubCard>
 
-              <View style={styles.instructionsCard}>
-                <View style={styles.instructionsRow}>
-                  <Info size={16} color="#2aa275" />
-                  <Text style={styles.instructionsLabel}>Instructions</Text>
+              <HubCard className="bg-zinc-900 p-8 mb-10 border-0">
+                <View className="flex-row items-center gap-2 mb-4">
+                  <Info size={16} color="#2A9D8F" strokeWidth={3} />
+                  <HubText variant="label" className="text-primary italic tracking-widest mb-0">INSTRUCTIONS</HubText>
                 </View>
-                <Text style={styles.instructionsText}>
+                <HubText variant="body" className="text-white/80 leading-relaxed italic">
                    {isMarketplace 
-                     ? "Vérifiez la qualité des matières. Le paiement sera déduit de votre balance après validation du poids réel."
-                     : "Scannez le badge QR du foyer pour valider le passage. En cas d'absence, prenez une photo de la rue."}
-                </Text>
-              </View>
+                     ? "Vérifiez la qualité des matières sur place. Le paiement final sera calculé après votre pesée réelle."
+                     : "Scannez le badge QR du foyer pour valider le ramassage. Prenez une photo en cas d'imprévu."}
+                </HubText>
+              </HubCard>
 
-              <TouchableOpacity 
+              <HubButton 
                 onPress={() => setStep('scan')}
-                style={styles.launchBtn}
+                variant="primary"
+                size="xl"
+                icon={<ArrowRight size={20} color="white" />}
               >
-                <Text style={styles.launchBtnText}>Lancer l'opération</Text>
-              </TouchableOpacity>
-            </MotiView>
+                Lancer l'opération
+              </HubButton>
+            </View>
           )}
 
           {step === 'scan' && (
-            <MotiView 
-              key="scan"
-              from={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              style={styles.scanContainer}
-            >
-              <View style={styles.scanArea}>
+            <View key="camera" className="items-center py-10">
+              <View className="w-full aspect-square bg-zinc-50 rounded-[4rem] border-4 border-dashed border-zinc-200 items-center justify-center relative overflow-hidden">
                  {!scanned ? (
                    <>
-                     <Camera size={48} color="#94a3b8" />
-                     <Text style={styles.scanHintText}>Visez le QR Code</Text>
+                     <Camera size={64} color="#cbd5e1" strokeWidth={1} />
+                     <HubText variant="label" className="mt-6 text-zinc-400">VISEZ LE QR CODE</HubText>
                      
-                     <View style={[styles.scanCorner, styles.scanCornerTL]} />
-                     <View style={[styles.scanCorner, styles.scanCornerTR]} />
-                     <View style={[styles.scanCorner, styles.scanCornerBL]} />
-                     <View style={[styles.scanCorner, styles.scanCornerBR]} />
+                     <View className="absolute top-12 left-12 w-16 h-16 border-t-8 border-l-8 border-primary rounded-tl-3xl opacity-50" />
+                     <View className="absolute top-12 right-12 w-16 h-16 border-t-8 border-r-8 border-primary rounded-tr-3xl opacity-50" />
+                     <View className="absolute bottom-12 left-12 w-16 h-16 border-b-8 border-l-8 border-primary rounded-bl-3xl opacity-50" />
+                     <View className="absolute bottom-12 right-12 w-16 h-16 border-b-8 border-r-8 border-primary rounded-br-3xl opacity-50" />
                    </>
                  ) : (
-                   <MotiView 
-                     from={{ scale: 0.5, opacity: 0 }}
-                     animate={{ scale: 1, opacity: 1 }}
-                     style={styles.scanSuccessContainer}
-                   >
-                     <CheckCircle2 size={64} color="#2aa275" />
-                     <Text style={styles.scanSuccessText}>Code Validé</Text>
-                   </MotiView>
+                    <View className="items-center">
+                     <View className="w-24 h-24 bg-emerald-500 rounded-full items-center justify-center shadow-2xl shadow-emerald-500/50">
+                        <CheckCircle2 size={48} color="white" />
+                     </View>
+                     <HubText variant="h2" className="mt-8 text-zinc-900">Code Validé</HubText>
+                    </View>
                  )}
               </View>
 
               <TouchableOpacity 
                 onPress={handleScan}
-                style={styles.simulateScanBtn}
+                className="mt-12 bg-zinc-900 px-10 py-5 rounded-3xl"
               >
-                <Text style={styles.simulateScanText}>Simuler Scan</Text>
+                <HubText variant="label" className="text-white italic tracking-widest mb-0">SIMULER SCAN HUB</HubText>
               </TouchableOpacity>
-            </MotiView>
+            </View>
           )}
 
           {step === 'weight' && (
-            <MotiView 
-               key="weight"
-               from={{ opacity: 0, translateX: 20 }}
-               animate={{ opacity: 1, translateX: 0 }}
-            >
-               <View style={styles.weightCard}>
-                 <Weight size={48} color="#6366f1" />
-                 <Text style={styles.weightLabel}>Saisie de la Pesée</Text>
+            <View key="weight">
+               <HubCard className="bg-zinc-50 border-0 p-10 items-center mb-10">
+                 <Weight size={48} color="#2A9D8F" strokeWidth={1.5} />
+                 <HubText variant="label" className="mt-6 text-zinc-400 italic mb-8">SAISIE DE LA PESÉE RÉELLE</HubText>
                  
-                 <View style={styles.weightValueRow}>
-                   <Text style={styles.weightValue}>
+                 <View className="flex-row items-end gap-3">
+                   <HubText variant="h1" className="text-7xl text-zinc-900 italic mb-[-10]">
                      {weight || "0.0"}
-                   </Text>
-                   <Text style={styles.weightUnit}>kg</Text>
+                   </HubText>
+                   <HubText variant="h2" className="text-primary italic">KG</HubText>
                  </View>
-               </View>
+               </HubCard>
 
-               <View style={styles.keypadGrid}>
+               <View className="flex-row flex-wrap justify-between gap-4 mb-10">
                   {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map((k) => (
                     <TouchableOpacity 
                       key={k}
@@ -161,101 +147,46 @@ export default function MissionDetail() {
                         if (k === '⌫') setWeight(prev => prev.slice(0, -1));
                         else if (weight.length < 5) setWeight(prev => prev + k);
                       }}
-                      style={styles.keypadKey}
+                      className="w-[30%] h-20 bg-zinc-50 rounded-3xl items-center justify-center border border-zinc-100"
                     >
-                      <Text style={styles.keypadKeyText}>{k}</Text>
+                      <HubText variant="h2" className="text-zinc-900 text-2xl">{k}</HubText>
                     </TouchableOpacity>
                   ))}
                </View>
 
-               <TouchableOpacity 
+               <HubButton 
                 onPress={handleFinalize}
-                style={styles.validateBtn}
+                variant="primary"
+                size="xl"
               >
-                <Text style={styles.validateBtnText}>Valider & Payer</Text>
-              </TouchableOpacity>
-            </MotiView>
+                Valider & Débiter
+              </HubButton>
+            </View>
           )}
 
           {step === 'success' && (
-            <MotiView 
-               key="success"
-               from={{ opacity: 0, scale: 0.8 }}
-               animate={{ opacity: 1, scale: 1 }}
-               style={styles.successContainer}
-            >
-               <View style={styles.successIconBg}>
-                  <CheckCircle2 size={48} color="#2aa275" />
+            <View key="success" className="items-center justify-center pt-20">
+               <View className="w-32 h-32 bg-emerald-50 rounded-[3rem] items-center justify-center mb-10">
+                  <CheckCircle2 size={64} color="#10b981" strokeWidth={2.5} />
                </View>
-               <Text style={styles.successTitle}>Collecte Terminée</Text>
-               <Text style={styles.successSubtitle}>Données transmises à City OS</Text>
+               <HubText variant="h1" className="text-center mb-4">OPÉRATION RÉUSSIE</HubText>
+               <HubText variant="body" className="text-center text-zinc-400 italic mb-12">
+                   Données transmises instantanément{'\n'}au Central Hub CITICLINE.
+               </HubText>
 
-               <TouchableOpacity 
-                onPress={() => navigateSafe(router, ROUTES.MISSIONS)}
-                style={styles.successBtn}
+               <HubButton 
+                onPress={() => router.push(ROUTES.MISSIONS as any)}
+                variant="primary"
+                size="lg"
+                className="w-full"
               >
-                <Text style={styles.successBtnText}>Retour à la route</Text>
-              </TouchableOpacity>
-            </MotiView>
+                Retour à la route
+              </HubButton>
+            </View>
           )}
-        </AnimatePresence>
 
-        <View style={{ height: 80 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'white' },
-  headerBackBtn: { marginLeft: 16, padding: 8, backgroundColor: '#f8fafc', borderRadius: 12 },
-  scrollView: { flex: 1, paddingHorizontal: 32, paddingTop: 24 },
-  
-  // Info step
-  infoCard: { backgroundColor: '#f8fafc', padding: 32, borderRadius: 48, borderWidth: 1, borderColor: '#f1f5f9', alignItems: 'center', marginBottom: 24 },
-  infoIconBg: { width: 80, height: 80, backgroundColor: 'white', borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, marginBottom: 24 },
-  infoName: { fontSize: 24, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', marginBottom: 8 },
-  infoType: { fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3 },
-  
-  instructionsCard: { padding: 24, backgroundColor: '#0f172a', borderRadius: 40, marginBottom: 24 },
-  instructionsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  instructionsLabel: { marginLeft: 8, color: '#2aa275', fontWeight: '900', fontSize: 9, textTransform: 'uppercase', letterSpacing: 3 },
-  instructionsText: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 'bold', lineHeight: 20 },
-  
-  launchBtn: { width: '100%', backgroundColor: '#2aa275', paddingVertical: 24, borderRadius: 32, alignItems: 'center', shadowColor: '#2aa275', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
-  launchBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3 },
-
-  // Scan step
-  scanContainer: { flex: 1, alignItems: 'center', paddingVertical: 40 },
-  scanArea: { width: '100%', aspectRatio: 1, backgroundColor: '#f1f5f9', borderRadius: 48, overflow: 'hidden', borderWidth: 2, borderStyle: 'dashed', borderColor: '#cbd5e1', alignItems: 'center', justifyContent: 'center', position: 'relative' },
-  scanHintText: { marginTop: 16, color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 3, fontSize: 10 },
-  scanCorner: { position: 'absolute', width: 40, height: 40 },
-  scanCornerTL: { top: 40, left: 40, borderTopWidth: 4, borderLeftWidth: 4, borderColor: '#2aa275', borderTopLeftRadius: 16 },
-  scanCornerTR: { top: 40, right: 40, borderTopWidth: 4, borderRightWidth: 4, borderColor: '#2aa275', borderTopRightRadius: 16 },
-  scanCornerBL: { bottom: 40, left: 40, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: '#2aa275', borderBottomLeftRadius: 16 },
-  scanCornerBR: { bottom: 40, right: 40, borderBottomWidth: 4, borderRightWidth: 4, borderColor: '#2aa275', borderBottomRightRadius: 16 },
-  scanSuccessContainer: { alignItems: 'center' },
-  scanSuccessText: { marginTop: 16, color: '#2aa275', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3 },
-  simulateScanBtn: { marginTop: 48, backgroundColor: '#0f172a', paddingHorizontal: 40, paddingVertical: 20, borderRadius: 16 },
-  simulateScanText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3, fontSize: 12 },
-
-  // Weight step
-  weightCard: { backgroundColor: '#f8fafc', padding: 32, borderRadius: 48, alignItems: 'center', marginBottom: 32 },
-  weightLabel: { marginTop: 16, fontSize: 10, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 24 },
-  weightValueRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
-  weightValue: { fontSize: 56, fontWeight: '900', fontStyle: 'italic', letterSpacing: -2, color: '#020617' },
-  weightUnit: { fontSize: 20, fontWeight: '900', color: '#94a3b8', paddingBottom: 8, fontStyle: 'italic' },
-  keypadGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, marginBottom: 32 },
-  keypadKey: { width: '31%', backgroundColor: '#f1f5f9', height: 64, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  keypadKeyText: { fontWeight: '900', fontSize: 18 },
-  validateBtn: { width: '100%', backgroundColor: '#6366f1', paddingVertical: 24, borderRadius: 32, alignItems: 'center', shadowColor: '#6366f1', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
-  validateBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3 },
-
-  // Success step
-  successContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
-  successIconBg: { width: 96, height: 96, backgroundColor: '#ecfdf5', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 32 },
-  successTitle: { fontSize: 28, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, textAlign: 'center', paddingHorizontal: 16 },
-  successSubtitle: { marginTop: 16, color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 3, fontSize: 10, textAlign: 'center' },
-  successBtn: { marginTop: 64, width: '100%', backgroundColor: '#0f172a', paddingVertical: 24, borderRadius: 32, alignItems: 'center' },
-  successBtnText: { color: 'white', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 3 },
-});

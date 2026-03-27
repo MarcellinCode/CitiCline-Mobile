@@ -13,7 +13,7 @@ export function useUnreadNotifications() {
       const { count: unreadCount, error } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('profile_id', session.user.id)
+        .eq('user_id', session.user.id)
         .eq('is_read', false);
 
       if (!error) setCount(unreadCount || 0);

@@ -1,31 +1,33 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet } from 'lucide-react-native';
+import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet, ArrowUpRight } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
-import { navigateSafe } from '@/utils/navigation';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
-import { MotiView } from 'moti';
+import { HubText } from '@/components/ui/HubText';
+import { HubCard } from '@/components/ui/HubCard';
+import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format';
 
 const ROLE_LABELS: Record<string, string> = {
   vendeur: 'Citoyen Éco',
-  collecteur: 'Collecteur',
-  entreprise: 'Entreprise',
-  organisation_admin: 'Admin Organisation',
-  agent_collecteur: 'Agent Collecteur',
-  mairie: 'Mairie',
+  collecteur: 'Collecteur Pro',
+  entreprise: 'Entreprise Hub',
+  organisation_admin: 'Admin Org',
+  agent_collecteur: 'Agent Terrain',
+  mairie: 'Mairie Vision',
   super_admin: 'Super Admin',
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  vendeur: '#2aa275',
-  collecteur: '#3b82f6',
-  entreprise: '#6366f1',
-  organisation_admin: '#8b5cf6',
-  agent_collecteur: '#f59e0b',
-  mairie: '#020617',
-  super_admin: '#ef4444',
+  vendeur: 'text-emerald-500 bg-emerald-50',
+  collecteur: 'text-primary bg-primary/10',
+  entreprise: 'text-indigo-500 bg-indigo-50',
+  organisation_admin: 'text-violet-500 bg-violet-50',
+  agent_collecteur: 'text-amber-500 bg-amber-50',
+  mairie: 'text-zinc-900 bg-zinc-50',
+  super_admin: 'text-red-500 bg-red-50',
 };
 
 export default function ProfileScreen() {
@@ -35,195 +37,154 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace('/(auth)/login');
+    router.replace('/(auth)/login' as any);
   };
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#2aa275" />
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator color="#2A9D8F" size="large" />
       </View>
     );
   }
 
-  const roleColor = ROLE_COLORS[profile?.role || 'vendeur'] || '#2aa275';
-  const roleLabel = ROLE_LABELS[profile?.role || 'vendeur'] || 'Membre';
+  const roleStyle = ROLE_COLORS[profile?.role || 'vendeur'] || 'text-emerald-500 bg-emerald-50';
+  const roleLabel = ROLE_LABELS[profile?.role || 'vendeur'] || 'Membre Hub';
 
   return (
-    <View style={styles.safeArea}>
+    <View className="flex-1 bg-white">
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
-        <Text style={styles.headerTitle}>Mon Compte</Text>
-        <TouchableOpacity style={styles.notificationBtn} onPress={() => navigateSafe(router, ROUTES.NOTIFICATIONS)}>
-          <Bell size={20} color="#020617" />
+      <View 
+        className="px-8 flex-row items-center justify-between mb-8"
+        style={{ paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
+      >
+        <HubText variant="label" className="text-zinc-900 italic">Mon Compte</HubText>
+        <TouchableOpacity 
+            onPress={() => router.push(ROUTES.NOTIFICATIONS as any)}
+            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+        >
+          <Bell size={20} color="#020617" strokeWidth={2.5} />
         </TouchableOpacity>
       </View>
 
       <ScrollView 
-        style={styles.scrollView} 
+        className="px-8" 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
       >
 
-        {/* Avatar & Identité */}
-        <MotiView
-          from={{ opacity: 0, translateY: -20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          style={styles.avatarSection}
-        >
-          <View style={styles.avatarWrapper}>
-            <View style={styles.avatarCircle}>
-              <User size={50} color="#cbd5e1" />
-            </View>
-            <TouchableOpacity style={styles.cameraBtn}>
-              <Camera size={14} color="white" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.userName}>
-            {profile?.full_name || 'Utilisateur CITICLINE'}
-          </Text>
-          
-          {/* Badge rôle */}
-          <View style={[styles.roleBadge, { backgroundColor: `${roleColor}15` }]}>
-            <Text style={[styles.roleBadgeText, { color: roleColor }]}>
-              {roleLabel}
-            </Text>
-          </View>
-        </MotiView>
-
-        {/* Stats rapides */}
-        <MotiView
-          from={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 100 }}
-          style={styles.statsRow}
-        >
-          <View style={styles.statBoxDark}>
-            <Wallet size={20} color="#2aa275" />
-            <Text style={styles.statValueWhite}>
-              {(profile?.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")}
-            </Text>
-            <Text style={styles.statLabelMuted}>FCFA</Text>
-          </View>
-          <View style={styles.statBoxGreen}>
-            <Leaf size={20} color="#2aa275" />
-            <Text style={styles.statValueDark}>
-              {profile?.eco_points || 0}
-            </Text>
-            <Text style={styles.statLabelMuted}>ECO-PTS</Text>
-          </View>
-          <View style={styles.statBoxLight}>
-            <Crown size={20} color="#eab308" />
-            <Text style={styles.statValueSmallDark}>
-              {profile?.subscription_tier || 'Starter'}
-            </Text>
-            <Text style={styles.statLabelMuted}>Plan</Text>
-          </View>
-        </MotiView>
-
-        {/* Info Ville */}
-        {profile?.city && (
-          <View style={styles.cityInfo}>
-            <View style={styles.cityDot} />
-            <Text style={styles.cityLabel}>Zone : </Text>
-            <Text style={styles.cityValue}>{profile.city}</Text>
-          </View>
-        )}
-
-        {/* Menu paramètres */}
-        <Text style={styles.menuSectionTitle}>Paramètres</Text>
-        <View style={styles.menuContainer}>
-          {profile?.role === 'super_admin' && (
-            <TouchableOpacity 
-              onPress={() => Linking.openURL('https://recycla-admin.vercel.app/admin')}
-              style={styles.adminBtn}
-            >
-              <View style={styles.adminBtnLeft}>
-                <Shield size={20} color="#ef4444" />
-                <View style={styles.adminBtnTexts}>
-                  <Text style={styles.adminBtnTitle}>Dashboard Super Admin</Text>
-                  <Text style={styles.adminBtnSubtitle}>Contrôle Total Plateforme</Text>
+        {/* Profile Card Emphasis */}
+        <View className="mb-10">
+            <HubCard className="p-8 border-0 bg-zinc-900 overflow-hidden">
+                <View className="flex-row items-center gap-6">
+                    <View className="relative">
+                        <View className="w-24 h-24 rounded-[2rem] bg-zinc-800 items-center justify-center border-2 border-zinc-700 overflow-hidden">
+                             {profile?.avatar_url ? (
+                                <RNImage source={{ uri: profile.avatar_url }} className="w-full h-full" />
+                             ) : (
+                                <User size={40} color="#475569" />
+                             )}
+                        </View>
+                        <TouchableOpacity className="absolute bottom-[-5] right-[-5] w-10 h-10 bg-primary rounded-full items-center justify-center border-4 border-zinc-900">
+                            <Camera size={14} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                    <View className="flex-1">
+                        <HubText variant="h2" className="text-white leading-tight mb-2">
+                            {profile?.full_name?.split(' ')[0] || 'Utilisateur'}{'\n'}
+                            <HubText variant="h2" className="text-primary italic">{profile?.full_name?.split(' ')[1] || 'HUB'}</HubText>
+                        </HubText>
+                        <View className={cn("self-start px-3 py-1.5 rounded-full", roleStyle.split(' ')[1])}>
+                            <HubText variant="label" className={cn("text-[8px] tracking-[0.2em] mb-0", roleStyle.split(' ')[0])}>
+                                {roleLabel}
+                            </HubText>
+                        </View>
+                    </View>
                 </View>
-              </View>
-              <ChevronRight size={16} color="white" />
-            </TouchableOpacity>
-          )}
 
-          {[
-            { icon: Crown, label: 'Abonnement', value: profile?.subscription_tier || 'Starter', route: ROUTES.ABONNEMENTS, color: '#eab308' },
-            { icon: Settings, label: 'Paramètres', route: ROUTES.SETTINGS, color: '#64748b' },
-            { icon: Shield, label: 'Sécurité', color: '#64748b' },
-            { icon: Mail, label: 'Support CITICLINE', color: '#64748b' }
-          ].map((item, i) => (
-            <TouchableOpacity 
-              key={i}
-              onPress={() => item.route && navigateSafe(router, item.route)}
-              style={styles.menuItem}
-            >
-              <View style={styles.menuItemLeft}>
-                <item.icon size={18} color={item.color} />
-                <Text style={styles.menuItemLabel}>{item.label}</Text>
-              </View>
-              <View style={styles.menuItemRight}>
-                {item.value && <Text style={styles.menuItemValue}>{item.value}</Text>}
-                <ChevronRight size={14} color="#cbd5e1" />
-              </View>
-            </TouchableOpacity>
-          ))}
+                {/* Optional Impact Stat Bar inside card */}
+                <View className="mt-8 pt-8 border-t border-zinc-800 flex-row justify-between">
+                    <View>
+                        <HubText variant="label" className="text-zinc-500 mb-1">Impact Total</HubText>
+                        <HubText variant="h3" className="text-white">1,248 KG</HubText>
+                    </View>
+                    <View className="items-end">
+                        <HubText variant="label" className="text-zinc-500 mb-1">Depuis</HubText>
+                        <HubText variant="h3" className="text-white">Mars 2024</HubText>
+                    </View>
+                </View>
+            </HubCard>
         </View>
 
+        {/* Quick Balance Bento */}
+        <View className="flex-row gap-4 mb-10">
+            <HubCard className="flex-1 p-6 bg-white border-2 border-zinc-50 items-center">
+                <View className="w-10 h-10 rounded-xl bg-emerald-50 items-center justify-center mb-4">
+                    <Wallet size={18} color="#10b981" />
+                </View>
+                <HubText variant="h3" className="text-zinc-900">{formatCurrency(profile?.wallet_balance)} <HubText className="text-[8px] italic normal-case text-zinc-400">FCFA</HubText></HubText>
+                <HubText variant="label" className="text-zinc-400 text-[8px] mt-1">WALLET</HubText>
+            </HubCard>
+            <HubCard className="flex-1 p-6 bg-white border-2 border-zinc-50 items-center">
+                <View className="w-10 h-10 rounded-xl bg-amber-50 items-center justify-center mb-4">
+                    <Crown size={18} color="#F59E0B" />
+                </View>
+                <HubText variant="h3" className="text-zinc-900">{profile?.subscription_tier || 'STARTER'}</HubText>
+                <HubText variant="label" className="text-zinc-400 text-[8px] mt-1">PLAN ACTUEL</HubText>
+            </HubCard>
+        </View>
+
+        {/* Settings Menu */}
+        <HubText variant="label" className="mb-6 ml-1">Paramètres du Compte</HubText>
+        <HubCard className="p-0 border-2 border-zinc-50 overflow-hidden mb-10">
+            {[
+                { icon: User, label: 'Éditer mon Profil', desc: 'Infos persos & photo', route: ROUTES.SETTINGS },
+                { icon: Shield, label: 'Sécurité & Accès', desc: 'Mot de passe & 2FA', route: null },
+                { icon: Bell, label: 'Notifications', desc: 'Alertes & Préférences', route: ROUTES.NOTIFICATIONS },
+                { icon: Crown, label: 'Abonnement Hub', desc: 'Gérer mon forfait', route: ROUTES.ABONNEMENTS, value: 'PRO' },
+            ].map((item, idx) => (
+                <TouchableOpacity 
+                    key={idx}
+                    activeOpacity={0.7}
+                    onPress={() => item.route && router.push(item.route as any)}
+                    className={cn(
+                        "flex-row items-center justify-between p-6",
+                        idx < 3 && "border-b border-zinc-50"
+                    )}
+                >
+                    <View className="flex-row items-center gap-4">
+                        <View className="w-10 h-10 rounded-xl bg-zinc-50 items-center justify-center border border-zinc-100">
+                            <item.icon size={18} color="#475569" strokeWidth={2.5} />
+                        </View>
+                        <View>
+                            <HubText variant="h3" className="text-zinc-900 text-[11px] mb-[-2]">{item.label}</HubText>
+                            <HubText variant="caption" className="text-zinc-400 text-[8px]">{item.desc}</HubText>
+                        </View>
+                    </View>
+                    <View className="flex-row items-center gap-2">
+                        {item.value && (
+                            <View className="bg-primary/10 px-2 py-0.5 rounded-full">
+                                <HubText variant="label" className="text-primary text-[7px] tracking-[0.1em] mb-0">{item.value}</HubText>
+                            </View>
+                        )}
+                        <ChevronRight size={14} color="#cbd5e1" strokeWidth={3} />
+                    </View>
+                </TouchableOpacity>
+            ))}
+        </HubCard>
+
+        {/* Danger Zone */}
         <TouchableOpacity 
           onPress={handleLogout}
-          style={styles.logoutBtn}
+          activeOpacity={0.8}
+          className="bg-red-50 border border-red-100 rounded-[2rem] p-6 flex-row items-center justify-center gap-3"
         >
-          <LogOut size={16} color="#ef4444" />
-          <Text style={styles.logoutText}>Déconnexion</Text>
+          <LogOut size={18} color="#ef4444" strokeWidth={2.5} />
+          <HubText variant="label" className="text-red-500 italic mb-0">SE DÉCONNECTER DU HUB</HubText>
         </TouchableOpacity>
+
       </ScrollView>
     </View>
   );
 }
-
-
-const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' },
-  safeArea: { flex: 1, backgroundColor: 'white' },
-  header: { paddingHorizontal: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
-  headerTitle: { fontSize: 14, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
-  notificationBtn: { width: 40, height: 40, backgroundColor: '#f8fafc', borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9' },
-  scrollView: { flex: 1, paddingHorizontal: 32, paddingBottom: 80 },
-  avatarSection: { alignItems: 'center', marginBottom: 40 },
-  avatarWrapper: { position: 'relative' },
-  avatarCircle: { width: 112, height: 112, backgroundColor: '#f8fafc', borderRadius: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#f1f5f9', overflow: 'hidden', marginBottom: 16 },
-  cameraBtn: { position: 'absolute', bottom: 8, right: 0, width: 36, height: 36, backgroundColor: '#020617', borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 },
-  userName: { fontSize: 20, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, marginBottom: 4 },
-  roleBadge: { paddingHorizontal: 16, paddingVertical: 4, borderRadius: 9999, marginTop: 4 },
-  roleBadgeText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 40 },
-  statBoxDark: { flex: 1, backgroundColor: '#0f172a', padding: 20, borderRadius: 32, alignItems: 'center' },
-  statBoxGreen: { flex: 1, backgroundColor: '#ecfdf5', borderWidth: 1, borderColor: '#d1fae5', padding: 20, borderRadius: 32, alignItems: 'center' },
-  statBoxLight: { flex: 1, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 20, borderRadius: 32, alignItems: 'center' },
-  statValueWhite: { color: 'white', fontSize: 18, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1, marginTop: 8 },
-  statValueDark: { color: '#020617', fontSize: 18, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1, marginTop: 8 },
-  statValueSmallDark: { color: '#020617', fontSize: 10, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1, marginTop: 8, textTransform: 'uppercase' },
-  statLabelMuted: { color: '#94a3b8', fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
-  cityInfo: { backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#f1f5f9', padding: 16, borderRadius: 16, flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
-  cityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981', marginRight: 12 },
-  cityLabel: { fontSize: 10, fontWeight: '900', color: '#64748b', textTransform: 'uppercase', letterSpacing: 2 },
-  cityValue: { fontSize: 10, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
-  menuSectionTitle: { fontSize: 10, fontWeight: '900', color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: 3, marginBottom: 16 },
-  menuContainer: { marginBottom: 32 },
-  adminBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 24, backgroundColor: '#0f172a', paddingHorizontal: 24, borderRadius: 24, marginBottom: 16, shadowColor: '#0f172a', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 10 },
-  adminBtnLeft: { flexDirection: 'row', alignItems: 'center' },
-  adminBtnTexts: { marginLeft: 16 },
-  adminBtnTitle: { fontSize: 11, fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: 2 },
-  adminBtnSubtitle: { fontSize: 8, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4, fontStyle: 'italic' },
-  menuItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: '#f8fafc' },
-  menuItemLeft: { flexDirection: 'row', alignItems: 'center' },
-  menuItemLabel: { marginLeft: 16, fontSize: 11, fontWeight: 'bold', color: '#020617', textTransform: 'uppercase', letterSpacing: 2 },
-  menuItemRight: { flexDirection: 'row', alignItems: 'center' },
-  menuItemValue: { fontSize: 9, fontWeight: '900', color: '#d97706', marginRight: 8, textTransform: 'uppercase' },
-  logoutBtn: { width: '100%', paddingVertical: 24, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fef2f2', borderRadius: 16 },
-  logoutText: { color: '#ef4444', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginLeft: 8 }
-});

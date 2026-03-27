@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { ArrowLeft, BarChart3, TrendingUp, Package, Users, Zap } from 'lucide-react-native';
-import { MotiView } from 'moti';
+import { ArrowLeft, TrendingUp, Package, Users, Zap } from 'lucide-react-native';
 
 export default function AnalyticsScreen() {
   const router = useRouter();
@@ -35,14 +34,10 @@ export default function AnalyticsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
       >
-        <MotiView 
-          from={{ opacity: 0, translateY: 10 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          style={styles.headerMoti}
-        >
+        <View style={styles.headerView}>
           <Text style={styles.reportSubtitle}>Rapport de Performance</Text>
           <Text style={styles.reportTitle}>Impact Zone</Text>
-        </MotiView>
+        </View>
 
         <View style={styles.statsGrid}>
           {stats.map((stat, i) => (
@@ -65,20 +60,16 @@ export default function AnalyticsScreen() {
                "Les rapports détaillés par concession et les exports CSV sont disponibles uniquement sur le tableau de bord Web CITICLINE."
              </Text>
         </View>
-
-
       </ScrollView>
     </View>
   );
 }
 
-import { StyleSheet } from 'react-native';
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'white' },
   headerBackBtn: { marginLeft: 16, padding: 8, backgroundColor: '#f8fafc', borderRadius: 12 },
   scrollView: { flex: 1, paddingHorizontal: 24, paddingTop: 16 },
-  headerMoti: { marginBottom: 32 },
+  headerView: { marginBottom: 32 },
   reportSubtitle: { color: '#94a3b8', fontWeight: 'bold', fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
   reportTitle: { fontSize: 32, fontWeight: '900', color: '#020617', fontStyle: 'italic', letterSpacing: -1, textTransform: 'uppercase' },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16 },

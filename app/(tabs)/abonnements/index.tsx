@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -7,18 +7,12 @@ import { navigateSafe } from '@/utils/navigation';
 import { 
   ChevronLeft, 
   Crown, 
-  Check, 
-  Zap, 
-  Shield, 
-  Star, 
-  RefreshCw,
-  CheckCircle2,
-  AlertCircle,
+  CheckCircle2, 
+  AlertCircle, 
   Calendar
 } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
-import { MotiView } from 'moti';
 
 type Subscription = {
   id: string;
@@ -89,8 +83,7 @@ export default function AbonnementsScreen() {
           contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
         >
           {profile?.role === 'vendeur' && subscription ? (
-            /* ── ABONNÉ ACTIF ── */
-            <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <View>
               <View style={styles.activeSubCard}>
                 <View style={styles.crownIconBg}>
                   <Crown size={40} color="#2aa275" />
@@ -125,11 +118,9 @@ export default function AbonnementsScreen() {
                 <AlertCircle size={16} color="white" />
                 <Text style={styles.reportBtnText}>Signaler un Problème</Text>
               </TouchableOpacity>
-            </MotiView>
-
+            </View>
           ) : profile?.role === 'vendeur' && !subscription ? (
-            /* ── PAS D'ABONNEMENT ── */
-            <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <View>
               <View style={styles.noSubCard}>
                 <View style={styles.emptyCrownIconBg}>
                   <Crown size={40} color="#cbd5e1" />
@@ -158,11 +149,9 @@ export default function AbonnementsScreen() {
               <TouchableOpacity style={styles.contactBtn}>
                 <Text style={styles.contactBtnText}>Contacter un Collecteur</Text>
               </TouchableOpacity>
-            </MotiView>
-
+            </View>
           ) : (
-            /* ── COLLECTEUR / ENTREPRISE / AUTRES ── */
-            <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <View>
               <View style={styles.proSubCard}>
                 <View style={styles.proCrownIconBg}>
                   <Crown size={40} color="#6366f1" />
@@ -191,14 +180,13 @@ export default function AbonnementsScreen() {
                   </View>
                 ))}
               </View>
-            </MotiView>
+            </View>
           )}
         </ScrollView>
       )}
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'white' },

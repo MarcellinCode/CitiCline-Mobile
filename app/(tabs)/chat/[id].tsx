@@ -4,8 +4,6 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Send, ChevronLeft, User, MoreVertical } from 'lucide-react-native';
-import { MotiView } from 'moti';
-
 import { useProfile } from '@/hooks/useProfile';
 
 export default function ChatDetail() {
@@ -133,9 +131,8 @@ export default function ChatDetail() {
           const isSameSender = prevMsg?.sender_id === item.sender_id;
           
           return (
-            <MotiView 
-              from={{ opacity: 0, scale: 0.95, translateY: 5 }}
-              animate={{ opacity: 1, scale: 1, translateY: 0 }}
+            <View 
+              key={item.id.toString()}
               style={[styles.msgRow, isMe ? styles.msgRowMe : styles.msgRowThem]}
             >
               <View 
@@ -149,7 +146,7 @@ export default function ChatDetail() {
                   {item.content}
                 </Text>
               </View>
-            </MotiView>
+            </View>
           );
         }}
       />

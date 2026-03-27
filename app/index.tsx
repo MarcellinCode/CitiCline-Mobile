@@ -1,26 +1,29 @@
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image as RNImage } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Dimensions, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter, Redirect } from 'expo-router';
 import { ROUTES } from "@/constants/routes";
 import { StatusBar } from 'expo-status-bar';
-import { ArrowRight } from 'lucide-react-native';
+import { ArrowRight, Leaf } from 'lucide-react-native';
 import { CITICLINE_LOGO_BASE64 } from '@/components/ui/logoBase64';
-import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import { HubButton } from '@/components/ui/HubButton';
+import { HubText } from '@/components/ui/HubText';
 
 const { width } = Dimensions.get('window');
 
 export default function Home() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [session, setSession] = useState<Session | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        setSession(currentSession);
       } catch (e) {
         console.error("Home screen auth check failed:", e);
       } finally {
@@ -30,152 +33,68 @@ export default function Home() {
     init();
   }, []);
 
-  // Pendant que Supabase vérifie silencieusement, on ne rend RIEN (le Splash Screen couvre ce vide)
   if (isChecking) {
-    return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
+    return <View className="flex-1 bg-white" />;
   }
 
-  const insets = useSafeAreaInsets();
-
-  // Dès qu'on sait qu'il y a un compte, on "téléporte" l'utilisateur instantanément sans peindre l'écran
   if (session) {
     return <Redirect href={ROUTES.MARKETPLACE as any} />;
   }
 
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 40) }]}>
+    <View 
+      className="flex-1 bg-white items-center justify-between px-8"
+      style={{ 
+        paddingTop: insets.top + 60,
+        paddingBottom: Math.max(insets.bottom, 40)
+      }}
+    >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="dark" />
       
-      <View style={styles.logoWrapper}>
-        <RNImage 
-          source={{ uri: CITICLINE_LOGO_BASE64 }} 
-          style={{ width: width * 0.4, height: width * 0.4 }}
-          resizeMode="contain"
-        />
+      {/* Top Section: Logo & Badge */}
+      <View className="items-center justify-center">
+        <View className="w-48 h-48 bg-zinc-50 rounded-[4rem] items-center justify-center shadow-2xl shadow-zinc-200/50">
+          <RNImage 
+            source={{ uri: CITICLINE_LOGO_BASE64 }} 
+            className="w-32 h-32"
+            resizeMode="contain"
+          />
+        </View>
+        <View className="bg-primary/10 px-4 py-2 rounded-full mt-8 flex-row items-center">
+          <Leaf size={14} color="#2A9D8F" />
+          <HubText variant="label" className="ml-2 text-primary">ECO-ENGINEERING HUB</HubText>
+        </View>
       </View>
  
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>
-          CITI<Text style={{ color: '#10b981' }}>CLINE</Text>
-        </Text>
-        <Text style={styles.subtitle}>
+      {/* Middle Section: Hero Text */}
+      <View className="items-center w-full">
+        <View>
+          <Text className="text-5xl font-black uppercase italic tracking-tighter text-zinc-900 text-center leading-[0.9]">
+            CITI<Text className="text-primary">CLINE</Text>
+          </Text>
+        </View>
+        <Text className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mt-4 text-center">
           L'EXCELLENCE DE LA GESTION DES DÉCHETS
         </Text>
       </View>
  
-      <TouchableOpacity 
-        onPress={() => router.push('/onboarding')}
-        style={styles.button}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.buttonText}>
+      {/* Bottom Section: Action & Footer */}
+      <View className="w-full">
+        <HubButton 
+          onPress={() => router.push('/onboarding')}
+          size="xl"
+          variant="primary"
+          icon={<ArrowRight size={20} color="white" />}
+        >
           Commencer l'aventure
-        </Text>
-        <View style={styles.buttonIcon}>
-            <ArrowRight size={18} color="white" />
+        </HubButton>
+        
+        <View className="mt-12 items-center">
+            <HubText variant="label" className="text-zinc-300">Powered by Citicline Central</HubText>
         </View>
-      </TouchableOpacity>
+      </View>
 
-      
-      <Text style={styles.footerBrand}>Powered by Citicline Engineering</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-  },
-  logoWrapper: {
-    width: width * 0.6,
-    height: width * 0.6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  hugeIconContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: '#10b981',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#10b981',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  logo: {
-    width: '100%',
-    height: '100%',
-  },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: 60,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: '900',
-    color: '#020617',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    fontStyle: 'italic',
-    letterSpacing: -2,
-    lineHeight: 48,
-  },
-  subtitle: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#94a3b8',
-    textAlign: 'center',
-    marginTop: 12,
-    letterSpacing: 3,
-    textTransform: 'uppercase',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#020617',
-    height: 72,
-    borderRadius: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    fontSize: 11,
-    fontStyle: 'italic',
-  },
-  buttonIcon: {
-    width: 40,
-    height: 40,
-    backgroundColor: '#10b981',
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  footerBrand: {
-    position: 'absolute',
-    bottom: 40,
-    fontSize: 8,
-    fontWeight: '900',
-    color: '#cbd5e1',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  }
-});

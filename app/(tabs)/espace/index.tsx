@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Platform } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Platform, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { 
@@ -18,15 +18,19 @@ import {
   TrendingUp,
   Target,
   BarChart3,
-  Globe
+  Globe,
+  ArrowUpRight,
+  Users
 } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
-import { navigateSafe } from '@/utils/navigation';
 import { useProfile } from '@/hooks/useProfile';
-import { MotiView } from 'moti';
+import { HubCard } from '@/components/ui/HubCard';
+import { HubText } from '@/components/ui/HubText';
+import { HubButton } from '@/components/ui/HubButton';
+import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/utils/format';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 64 - 16) / 2; // Fixed padding and gap
 
 export default function EspaceDashboard() {
   const insets = useSafeAreaInsets();
@@ -42,33 +46,34 @@ export default function EspaceDashboard() {
           {
             id: 'wallet',
             title: 'Portefeuille',
-            subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
+            subtitle: 'Consultez vos gains',
+            value: `${(profile.wallet_balance || 0).toLocaleString()} FCFA`,
             icon: Wallet,
-            color: '#2aa275',
+            color: 'bg-emerald-500',
             route: ROUTES.WALLET
           },
           {
             id: 'membership',
             title: 'Abonnement',
-            subtitle: 'Service de ramassage',
-            icon: Crown,
-            color: '#8b5cf6',
+            subtitle: 'Gestion & Alertes',
+            icon: ShieldCheck,
+            color: 'bg-primary',
             route: ROUTES.ABONNEMENTS
           },
           {
             id: 'history',
-            title: 'Mes Ventes',
-            subtitle: 'Suivi de vos recyclables',
+            title: 'Mes Déchets',
+            subtitle: 'Gérer vos publications',
             icon: History,
-            color: '#f59e0b',
+            color: 'bg-amber-500',
             route: ROUTES.MES_DECHETS
           },
           {
             id: 'map',
-            title: 'Carte',
+            title: 'Carte Live',
             subtitle: 'Points de collecte',
             icon: MapIcon,
-            color: '#0ea5e9',
+            color: 'bg-blue-500',
             route: ROUTES.MAP
           }
         ];
@@ -77,33 +82,34 @@ export default function EspaceDashboard() {
           {
             id: 'wallet',
             title: 'Mes Gains',
-            subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
+            subtitle: 'Revenus générés',
+            value: `${formatCurrency(profile.wallet_balance)} FCFA`,
             icon: TrendingUp,
-            color: '#2aa275',
+            color: 'bg-emerald-500',
             route: ROUTES.WALLET
           },
           {
             id: 'missions',
-            title: 'Missions',
-            subtitle: 'Feuille de route active',
+            title: 'Ma Mission',
+            subtitle: 'Feuille de route optimisée',
             icon: Target,
-            color: '#ef4444',
+            color: 'bg-primary',
             route: ROUTES.MISSIONS
           },
           {
             id: 'bourse',
             title: 'Appels d\'Offres',
-            subtitle: 'Gros volumes (B2B)',
+            subtitle: 'Espace B2B & Entreprises',
             icon: ShieldCheck,
-            color: '#10b981',
+            color: 'bg-indigo-500',
             route: ROUTES.ESPACE_OFFRES
           },
           {
             id: 'history',
             title: 'Collectes',
-            subtitle: 'Historique des ramassages',
+            subtitle: 'Historique complet',
             icon: History,
-            color: '#3b82f6',
+            color: 'bg-amber-500',
             route: ROUTES.MES_DECHETS
           }
         ];
@@ -111,141 +117,186 @@ export default function EspaceDashboard() {
         return [
           {
             id: 'wallet',
-            title: 'Trésorerie',
-            subtitle: `${(profile.wallet_balance || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`,
+            title: 'Revenus Zone',
+            subtitle: 'Solde & Abonnements',
+            value: `${formatCurrency(profile.wallet_balance)} FCFA`,
             icon: Wallet,
-            color: '#2aa275',
+            color: 'bg-emerald-500',
             route: ROUTES.WALLET
-          },
-          {
-            id: 'bourse',
-            title: 'Appels d\'Offres',
-            subtitle: 'Marché B2B / Gros volumes',
-            icon: ShieldCheck,
-            color: '#10b981',
-            route: ROUTES.ESPACE_OFFRES // Redirection vers le nouvel écran dédié des Appels d'Offres
-          },
-          {
-            id: 'agents',
-            title: 'Nos Agents',
-            subtitle: 'Gestion du personnel',
-            icon: User,
-            color: '#6366f1',
-            route: ROUTES.ESPACE_AGENTS
           },
           {
             id: 'analytics',
             title: 'Analytique',
-            subtitle: 'Rapport d\'impact zone',
+            subtitle: 'Impact & Performance',
             icon: BarChart3,
-            color: '#6366f1',
-            route: ROUTES.ESPACE_ANALYTICS
-          }
-        ];
-      case 'mairie':
-        return [
-          {
-            id: 'web_portal',
-            title: 'Portail Web',
-            subtitle: 'Gestion via CITICLINE City OS',
-            icon: Globe,
-            color: '#2aa275',
-            route: null // handled separately below
+            color: 'bg-indigo-500',
+            route: '/espace/analytics'
           },
           {
-            id: 'stats',
-            title: 'Aperçu Ville',
-            subtitle: 'Statistiques de collecte',
-            icon: BarChart3,
-            color: '#0ea5e9',
-            route: ROUTES.ESPACE_ANALYTICS
+            id: 'agents',
+            title: 'Mes Agents',
+            subtitle: 'Gestion de l\'équipe',
+            icon: Users,
+            color: 'bg-primary',
+            route: '/espace/agents'
+          },
+          {
+            id: 'history',
+            title: 'Activité',
+            subtitle: 'Lots & Déchets',
+            icon: History,
+            color: 'bg-amber-500',
+            route: ROUTES.MES_DECHETS
           }
         ];
       default:
-        return [];
+        return [
+           {
+            id: 'wallet',
+            title: 'Portefeuille',
+            subtitle: 'Consultez vos gains',
+            value: `${(profile.wallet_balance || 0).toLocaleString()} FCFA`,
+            icon: Wallet,
+            color: 'bg-emerald-500',
+            route: ROUTES.WALLET
+          },
+          {
+            id: 'history',
+            title: 'Mes Déchets',
+            subtitle: 'Gérer vos publications',
+            icon: History,
+            color: 'bg-amber-500',
+            route: ROUTES.MES_DECHETS
+          }
+        ];
     }
   }, [profile]);
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#2aa275" />
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator color="#2A9D8F" size="large" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white">
       <Stack.Screen options={{ headerShown: false }} />
       
       <ScrollView 
-        style={[styles.scrollView, { marginTop: Platform.OS === 'android' ? 20 : 0 }]} 
+        className="flex-1 px-6" 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ 
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom + 140 // Clear the floating tab bar
+          paddingTop: insets.top + 20,
+          paddingBottom: insets.bottom + 140
         }}
       >
 
-        {/* Profile Header */}
-        <MotiView 
-          from={{ opacity: 0, translateY: -20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          style={styles.headerMoti}
-        >
-          <Text style={styles.welcomeText}>Tableau de bord de</Text>
-          <Text style={styles.titleText}>{profile?.full_name || 'ESPACE'}</Text>
-        </MotiView>
-
-        {/* Dashboard Grid */}
-        <View style={styles.gridContainer}>
-          {gridItems.map((item, index) => (
-            <MotiView
-              key={item.id}
-              from={{ opacity: 0, scale: 0.95, translateY: 10 }}
-              animate={{ opacity: 1, scale: 1, translateY: 0 }}
-              transition={{ type: 'spring', delay: 100 + (index * 50) }}
-            >
-              <TouchableOpacity 
-                activeOpacity={0.7}
-                onPress={() => item.route && navigateSafe(router, item.route)}
-                style={[styles.gridCard, { width: CARD_WIDTH }]}
-              >
-                <View 
-                  style={[styles.iconContainer, { backgroundColor: `${item.color}15` }]}
-                >
-                  <item.icon size={26} color={item.color} />
-                </View>
+        {/* Header section with User emphasis */}
+        <View className="mb-10">
+            <View className="flex-row items-center gap-2 mb-2">
+                <View className="w-8 h-[2px] bg-primary" />
+                <HubText variant="label" className="text-primary italic">CITICLINE CENTRAL HUB</HubText>
+            </View>
+            <View className="flex-row items-end justify-between">
                 <View>
-                  <Text 
-                    style={styles.cardTitle}
-                    numberOfLines={1}
-                  >
-                    {item.title}
-                  </Text>
-                  <Text style={styles.cardSubtitle} numberOfLines={2}>
-                    {item.subtitle}
-                  </Text>
+                    <HubText variant="h1" className="text-zinc-900">
+                        Bonjour, <HubText variant="h1" className="text-primary">{profile?.full_name?.split(' ')[0] || "Eco-Guerrier"}</HubText>
+                    </HubText>
+                    <HubText variant="body" className="text-zinc-400 mt-1">Prêt pour votre prochaine action ?</HubText>
                 </View>
-              </TouchableOpacity>
-            </MotiView>
-          ))}
+            </View>
         </View>
 
-        {/* Info Banner */}
-        {profile?.role !== 'agent_collecteur' && (
-          <MotiView
-            from={{ opacity: 0, translateY: 20 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: 'spring', delay: 400 }}
-            style={styles.bannerContainer}
-          >
-            <View style={styles.bannerLeaf}>
-              <Leaf size={60} color="#ffffff" opacity={0.15} />
+        {/* Quick Wallet Summary Card */}
+        <View className="mb-10">
+            <HubCard className="bg-zinc-900 border-0 flex-row items-center justify-between p-8">
+                <View className="flex-row items-center gap-4">
+                    <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
+                        <Wallet size={24} color="white" />
+                    </View>
+                    <View>
+                        <HubText variant="label" className="text-zinc-400">Solde Actuel</HubText>
+                        <HubText variant="h2" className="text-white">{formatCurrency(profile?.wallet_balance)} FCFA</HubText>
+                    </View>
+                </View>
+                <TouchableOpacity 
+                    onPress={() => router.push(ROUTES.WALLET as any)}
+                    className="w-10 h-10 rounded-full bg-zinc-800 items-center justify-center border border-zinc-700"
+                >
+                    <ArrowUpRight size={20} color="white" />
+                </TouchableOpacity>
+            </HubCard>
+        </View>
+
+        {/* Quick Stats Grid */}
+        <View className="flex-row gap-4 mb-10">
+            <MiniStat 
+                label="Recyclé" 
+                value="128kg" 
+                icon={Leaf} 
+                delay={300}
+            />
+            <MiniStat 
+                label="Points" 
+                value={profile?.eco_points || "450"} 
+                icon={Crown} 
+                delay={400}
+            />
+        </View>
+
+        {/* Main Hub Navigation */}
+        <HubText variant="label" className="mb-6 ml-1">Menu Principal</HubText>
+        <View className="flex-row flex-wrap justify-between">
+            {gridItems.map((item, idx) => (
+                <View className="w-[48%] mb-6">
+                    <TouchableOpacity 
+                        activeOpacity={0.8}
+                        onPress={() => item.route && router.push(item.route as any)}
+                    >
+                        <HubCard 
+                            className="p-6 h-48 justify-between border-2 border-zinc-50"
+                            variant="default"
+                        >
+                            <View className={cn("w-12 h-12 rounded-2xl items-center justify-center shadow-lg shadow-zinc-200/50", item.color)}>
+                                <item.icon size={24} color="white" />
+                            </View>
+                            
+                            <View>
+                                <HubText variant="h3" className="text-zinc-900 mb-1">{item.title}</HubText>
+                                <HubText variant="caption" className="text-zinc-500" numberOfLines={1}>{item.subtitle}</HubText>
+                            </View>
+
+                            <View className="flex-row items-center gap-1">
+                                <HubText variant="label" className="text-primary text-[8px] tracking-[0.2em]">EXPLORER</HubText>
+                                <ArrowUpRight size={10} color="#2A9D8F" />
+                            </View>
+                        </HubCard>
+                    </TouchableOpacity>
+                </View>
+            ))}
+        </View>
+
+        {/* Premium Promotional Card */}
+        {profile?.role === 'collecteur' && (
+            <View className="mt-4 mb-10">
+                <HubCard className="bg-primary/5 border-primary/10 border-2 p-8">
+                    <HubText variant="h2" className="text-zinc-900 mb-2">
+                        Devenez un <HubText variant="h2" className="text-primary">Partenaire Certifié</HubText>
+                    </HubText>
+                    <HubText variant="body" className="text-zinc-500 mb-6">
+                        Boostez votre visibilité et accédez à des lots premium en passant au forfait Business.
+                    </HubText>
+                    <HubButton 
+                        variant="accent" 
+                        size="md"
+                        onPress={() => router.push(ROUTES.ABONNEMENTS as any)}
+                    >
+                        En savoir plus
+                    </HubButton>
+                </HubCard>
             </View>
-            <Text style={styles.bannerSubtitle}>Impact Écolo</Text>
-            <Text style={styles.bannerTitle}>128 kg <Text style={styles.bannerTitleNormal}>gérés</Text></Text>
-          </MotiView>
         )}
 
       </ScrollView>
@@ -253,23 +304,16 @@ export default function EspaceDashboard() {
   );
 }
 
-import { StyleSheet } from 'react-native';
-
-const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center' },
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  scrollView: { flex: 1, paddingHorizontal: 24 },
-  headerMoti: { marginBottom: 32 },
-  welcomeText: { fontSize: 13, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 },
-  titleText: { fontSize: 28, fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1 },
-  gridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 16 },
-  gridCard: { height: 180, backgroundColor: 'white', padding: 24, borderRadius: 32, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.04, shadowRadius: 20, elevation: 3, justifyContent: 'space-between', marginBottom: 16 },
-  iconContainer: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  cardTitle: { fontSize: 13, fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-  cardSubtitle: { fontSize: 10, fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5, lineHeight: 14 },
-  bannerContainer: { marginTop: 32, width: '100%', backgroundColor: '#10b981', padding: 32, borderRadius: 32, overflow: 'hidden', shadowColor: '#10b981', shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
-  bannerLeaf: { position: 'absolute', top: -10, right: -10, padding: 16 },
-  bannerSubtitle: { color: 'rgba(255,255,255,0.9)', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2, fontSize: 10, marginBottom: 8 },
-  bannerTitle: { color: 'white', fontSize: 28, fontWeight: '900', fontStyle: 'italic', letterSpacing: -1 },
-  bannerTitleNormal: { color: 'rgba(255,255,255,0.7)', fontSize: 16, fontStyle: 'normal', fontWeight: 'bold' }
-});
+function MiniStat({ label, value, icon: Icon, delay }: any) {
+    return (
+        <View className="flex-1 p-4 bg-zinc-50 rounded-3xl border border-zinc-100 flex-row items-center gap-3">
+            <View className="w-10 h-10 rounded-xl bg-white items-center justify-center shadow-sm">
+                <Icon size={18} color="#2A9D8F" />
+            </View>
+            <View>
+                <HubText variant="label" className="text-[8px] mb-0">{label}</HubText>
+                <HubText variant="h3" className="text-sm mt-[-2]">{value}</HubText>
+            </View>
+        </View>
+    );
+}

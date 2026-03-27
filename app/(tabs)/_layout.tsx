@@ -62,31 +62,32 @@ export default function TabsLayout() {
 
   return (
     <Tabs screenOptions={{
-      tabBarActiveTintColor: '#10b981',
+      tabBarActiveTintColor: '#2A9D8F',
       tabBarInactiveTintColor: '#94a3b8',
       tabBarStyle: {
         position: 'absolute',
-        bottom: 20,
+        bottom: 30,
         left: 20,
         right: 20,
         elevation: 0,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: 35,
-        height: 70,
+        backgroundColor: '#ffffff',
+        borderRadius: 40,
+        height: 80,
         paddingBottom: 0,
         borderTopWidth: 0,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.5)',
-        shadowColor: '#10b981',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 20,
+        borderWidth: 2,
+        borderColor: '#f8fafc',
+        shadowColor: '#2A9D8F',
+        shadowOffset: { width: 0, height: 15 },
+        shadowOpacity: 0.1,
+        shadowRadius: 25,
       },
       tabBarLabelStyle: {
-        fontSize: 10,
+        fontSize: 9,
+        fontFamily: Platform.OS === 'ios' ? 'Inter-Black' : 'sans-serif',
         fontWeight: '900',
         textTransform: 'uppercase',
-        letterSpacing: 1,
+        letterSpacing: 1.5,
         marginTop: 5,
       },
       headerShown: false,
@@ -96,7 +97,7 @@ export default function TabsLayout() {
         name="marketplace/index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color }: { color: string }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <Home size={22} color={color} strokeWidth={2.5} />,
         }}
       />
 
@@ -105,7 +106,7 @@ export default function TabsLayout() {
         name="espace/index"
         options={{
           title: 'Espace',
-          tabBarIcon: ({ color }: { color: string }) => <LayoutDashboard size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <LayoutDashboard size={22} color={color} strokeWidth={2.5} />,
         }}
       />
 
@@ -115,35 +116,22 @@ export default function TabsLayout() {
         options={{
           title: '',
           tabBarButton: () => (
-            <View style={{ top: -20, justifyContent: 'center', alignItems: 'center' }}>
+            <View className="top-[-25] items-center justify-center">
               <TouchableOpacity 
+                activeOpacity={0.9}
                 onPress={() => {
                   if (profile?.role === 'vendeur') {
-                    navigateSafe(router, '/marketplace/publish');
+                    router.push('/marketplace/publish' as any);
                   } else {
-                    navigateSafe(router, ROUTES.MARKETPLACE);
+                    router.push(ROUTES.MARKETPLACE as any);
                   }
                 }}
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 30,
-                  backgroundColor: '#10b981', // Emerald green
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  shadowColor: '#10b981',
-                  shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 12,
-                  elevation: 5,
-                  borderWidth: 3,
-                  borderColor: 'white'
-                }}
+                className="w-16 h-16 rounded-[2rem] bg-zinc-900 items-center justify-center shadow-xl shadow-zinc-400/50 border-[4px] border-white"
               >
                 {profile?.role === 'vendeur' ? (
-                  <Plus size={32} color="white" />
+                  <Plus size={32} color="#2A9D8F" strokeWidth={3} />
                 ) : (
-                  <Search size={28} color="white" />
+                  <Search size={28} color="#2A9D8F" strokeWidth={3} />
                 )}
               </TouchableOpacity>
             </View>
@@ -156,7 +144,7 @@ export default function TabsLayout() {
         name="chat/index"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }: { color: string }) => <MessageSquare size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <MessageSquare size={22} color={color} strokeWidth={2.5} />,
           tabBarBadge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
           tabBarBadgeStyle: { backgroundColor: '#ef4444', fontSize: 10, fontWeight: 'bold' }
         }}
@@ -167,9 +155,10 @@ export default function TabsLayout() {
         name="profile/index"
         options={{
           title: 'Compte',
-          tabBarIcon: ({ color }: { color: string }) => <User size={24} color={color} />,
+          tabBarIcon: ({ color }: { color: string }) => <User size={22} color={color} strokeWidth={2.5} />,
         }}
       />
+
 
       {/* ROUTES SECONDAIRES (Masquées de la barre de navigation) */}
       <Tabs.Screen name="map/index" options={{ href: null }} />

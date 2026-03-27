@@ -1,7 +1,9 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Image as RNImage } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Waste } from '../lib/types';
-import { Leaf } from 'lucide-react-native';
+import { Leaf, ArrowUpRight } from 'lucide-react-native';
+import { HubText } from './ui/HubText';
+import { HubCard } from './ui/HubCard';
 
 interface FeaturedWasteCardProps {
   waste: Waste;
@@ -14,123 +16,51 @@ export function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
 
   return (
     <TouchableOpacity 
-      onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } })}
-      style={styles.card}
+      activeOpacity={0.9}
+      onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } } as any)}
+      className="w-64"
     >
-      <View style={styles.imageContainer}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
-        ) : (
-          <View style={styles.imageFallback}>
-            <Leaf size={32} color="#cbd5e1" />
+      <HubCard className="p-0 border-2 border-zinc-50 overflow-hidden h-64 bg-white justify-between">
+        <View className="h-32 w-full bg-zinc-50 items-center justify-center">
+          {imageUrl ? (
+            <RNImage source={{ uri: imageUrl }} className="w-full h-full" resizeMode="cover" />
+          ) : (
+            <Leaf size={40} color="#cbd5e1" strokeWidth={1} />
+          )}
+          <View className="absolute top-4 left-4 bg-primary px-3 py-1 rounded-full">
+            <HubText variant="label" className="text-white text-[8px] tracking-[0.2em]">FEATURED</HubText>
           </View>
-        )}
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={1}>
-          {waste.waste_types?.name || 'Recyclables'}
-        </Text>
-        <View style={styles.statsRow}>
-          <Text style={styles.weightText}>
-            {waste.estimated_weight} Tons
-          </Text>
-          <Text style={styles.priceText}>
-            ${waste.waste_types?.price_per_kg || '0'}/kg
-          </Text>
         </View>
-        <View style={styles.userRow}>
-           <View style={styles.userAvatarBg}>
-             <View style={styles.userAvatarDot} />
-           </View>
-           <Text style={styles.userName} numberOfLines={1}>
-             {waste.profiles?.full_name || 'CITICLINE'}
-           </Text>
+        
+        <View className="p-6">
+          <HubText variant="h2" className="text-lg text-zinc-900 mb-2" numberOfLines={1}>
+            {waste.waste_types?.name || 'Recyclables'}
+          </HubText>
+          
+          <View className="flex-row justify-between items-center mb-4">
+              <View>
+                <HubText variant="label" className="text-[8px] mb-0 text-zinc-400">POIDS EST.</HubText>
+                <HubText variant="h3" className="text-zinc-900 text-sm italic">{waste.estimated_weight} Tons</HubText>
+              </View>
+              <View className="items-end">
+                <HubText variant="label" className="text-[8px] mb-0 text-zinc-400">PRIX/KG</HubText>
+                <HubText variant="h3" className="text-primary text-sm italic">{waste.waste_types?.price_per_kg || '0'} FCFA</HubText>
+              </View>
+          </View>
+
+          <View className="flex-row items-center justify-between border-t border-zinc-50 pt-4">
+            <View className="flex-row items-center gap-2">
+                <View className="w-5 h-5 rounded-full bg-primary/10 items-center justify-center">
+                    <View className="w-2 h-2 rounded-full bg-primary" />
+                </View>
+                <HubText variant="caption" className="text-[9px] uppercase tracking-tighter decoration-zinc-400">
+                    {waste.profiles?.full_name || 'CITICLINE'}
+                </HubText>
+            </View>
+            <ArrowUpRight size={14} color="#2A9D8F" />
+          </View>
         </View>
-      </View>
+      </HubCard>
     </TouchableOpacity>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'white',
-    borderRadius: 32,
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    overflow: 'hidden',
-    width: 220,
-  },
-  imageContainer: {
-    height: 112,
-    width: '100%',
-    backgroundColor: '#f1f5f9',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imageFallback: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#020617',
-    marginBottom: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  weightText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#94a3b8',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-  },
-  priceText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#10b981',
-    textTransform: 'uppercase',
-  },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#f8fafc',
-  },
-  userAvatarBg: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  userAvatarDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10b981',
-  },
-  userName: {
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    letterSpacing: -0.5,
-  }
-});

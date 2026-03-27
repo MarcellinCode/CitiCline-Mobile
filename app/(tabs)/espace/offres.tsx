@@ -4,10 +4,8 @@ import { Stack, useRouter } from 'expo-router';
 import { useWastes } from '@/hooks/useWastes';
 import { useProfile } from '@/hooks/useProfile';
 import { WasteCard } from '@/components/WasteCard';
-import { Waste } from '@/lib/types';
-import { Search, Filter, Leaf, Zap, Box, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react-native';
+import { Search, Leaf, Zap, Box, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MotiView } from 'moti';
 
 const CATEGORIES = [
   { id: 'all', name: 'Tous les Matériaux', icon: Leaf },
@@ -24,7 +22,6 @@ export default function AppelsDOffresScreen() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
-  // Filtrage orienté B2B : on veut potentiellement lister les gros volumes ou simplement tout pour l'entreprise
   const filteredWastes = useMemo(() => {
     let list = wastes;
     return list.filter(w => {
@@ -100,7 +97,7 @@ export default function AppelsDOffresScreen() {
       <FlatList
         data={filteredWastes}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <View style={styles.listCardContainer}>
             <WasteCard waste={item} />
           </View>
