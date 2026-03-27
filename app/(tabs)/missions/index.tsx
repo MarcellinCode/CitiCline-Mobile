@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import { View, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { ChevronLeft, Target, ShieldCheck, RefreshCw, ArrowUpRight, MapPin, Scale } from 'lucide-react-native';
+import { ChevronLeft, Target, ShieldCheck, RefreshCw, ArrowUpRight, MapPin, Scale, Power, AlertTriangle, AlertCircle } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
 import { Waste } from '@/lib/types';
@@ -10,13 +10,35 @@ import { ROUTES } from '@/constants/routes';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { HubButton } from '@/components/ui/HubButton';
+import { cn } from '@/lib/utils';
+import { useTracking } from '@/hooks/useTracking';
 
 export default function MissionsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
+  const { isTracking, toggleTracking } = useTracking();
   const [missions, setMissions] = useState<Waste[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleToggleTracking = () => {
+    if (!isTracking) {
+      Alert.alert(
+        "Démarrer le Tracking ?",
+        "Votre position sera partagée en direct avec les services de la Mairie jusqu'à la fin de votre service.",
+        [
+          { text: "Annuler", style: "cancel" },
+          { 
+            text: "Démarrer", 
+            style: "default",
+            onPress: () => toggleTracking() 
+          }
+        ]
+      );
+    } else {
+      toggleTracking();
+    }
+  };
 
   useEffect(() => {
     if (!profile) return;
@@ -173,23 +195,46 @@ export default function MissionsScreen() {
         </ScrollView>
       )}
 
-      {/* Dynamic Action Bar */}
+      {/* Dynamic Action Bar - Tracking Controller */}
       <View 
-        className="absolute left-8 right-8 bg-zinc-900 p-6 rounded-[2.5rem] flex-row items-center justify-between shadow-2xl shadow-zinc-900/50"
+        className={cn(
+            "absolute left-8 right-8 p-6 rounded-[2.5rem] flex-row items-center justify-between shadow-2xl transition-all duration-500",
+            isTracking ? "bg-emerald-500 shadow-emerald-500/40" : "bg-zinc-900 shadow-zinc-900/50"
+        )}
         style={{ bottom: insets.bottom + 110 }}
       >
         <View className="flex-row items-center gap-3 ml-2">
-          <View className="w-2 h-2 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/50" />
-          <HubText variant="label" className="text-white italic tracking-widest text-[10px]">GPS ACTIF</HubText>
+          {!isTracking ? (
+            <>
+                 <View className="w-2 h-2 bg-zinc-500 rounded-full" />
+                 <HubText variant="label" className="text-zinc-400 italic tracking-widest text-[10px]">TRACKING INACTIF</HubText>
+            </>
+          ) : (
+            <>
+                <View className="w-2 h-2 bg-white rounded-full shadow-lg shadow-white/50" />
+                <HubText variant="label" className="text-white italic tracking-widest text-[10px]">LIVE EMISSION</HubText>
+            </>
+          )}
         </View>
-        <HubButton 
-          variant="primary" 
-          size="sm" 
-          onPress={loadMissions}
-          className="px-8 min-w-0 h-10 rounded-2xl"
+        
+        <TouchableOpacity 
+            onPress={handleToggleTracking}
+            className={cn(
+                "px-8 h-10 rounded-2xl items-center justify-center flex-row gap-2 border",
+                isTracking ? "bg-white border-white" : "bg-primary border-primary"
+            )}
         >
-          ACTUALISER
-        </HubButton>
+            <Power size={14} color={isTracking ? "#10b981" : "white"} strokeWidth={3} />
+            <HubText 
+                variant="label" 
+                className={cn(
+                    "mb-0 text-[10px] tracking-widest",
+                    isTracking ? "text-emerald-500" : "text-white"
+                )}
+            >
+                {isTracking ? "ARRÊTER" : "DÉMARRER"}
+            </HubText>
+        </TouchableOpacity>
       </View>
     </View>
   );

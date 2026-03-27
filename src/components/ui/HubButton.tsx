@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, TouchableOpacityProps, View } from 'react-native';
+import { TouchableOpacity, Text, TouchableOpacityProps, View, ActivityIndicator } from 'react-native';
 import { cn } from '@/lib/utils';
 
 interface HubButtonProps extends TouchableOpacityProps {
@@ -9,6 +9,7 @@ interface HubButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'accent' | 'outline';
   icon?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  loading?: boolean;
 }
 
 export function HubButton({ 
@@ -18,6 +19,8 @@ export function HubButton({
   variant = 'primary', 
   icon,
   size = 'md',
+  loading,
+  disabled,
   ...props 
 }: HubButtonProps) {
   const variants = {
@@ -51,6 +54,7 @@ export function HubButton({
   return (
     <TouchableOpacity 
       activeOpacity={0.8}
+      disabled={disabled || loading}
       {...props}
     >
       <View
@@ -58,27 +62,36 @@ export function HubButton({
           "flex-row items-center justify-between overflow-hidden",
           variants[variant],
           sizes[size],
+          (disabled || loading) && "opacity-50",
           className
         )}
       >
-        <Text 
-          className={cn(
-            "font-black uppercase italic tracking-[0.1em]",
-            textColors[variant],
-            textSizes[size],
-            textClassName
-          )}
-        >
-          {children}
-        </Text>
-        
-        {icon && (
-          <View className={cn(
-            "w-8 h-8 rounded-xl items-center justify-center ml-4",
-            variant === 'primary' ? 'bg-primary' : 'bg-zinc-900'
-          )}>
-            {icon}
-          </View>
+        {loading ? (
+             <View className="flex-1 items-center justify-center">
+                <ActivityIndicator color={variant === 'primary' || variant === 'accent' ? 'white' : '#18181b'} />
+             </View>
+        ) : (
+            <>
+                <Text 
+                className={cn(
+                    "font-black uppercase italic tracking-[0.1em]",
+                    textColors[variant],
+                    textSizes[size],
+                    textClassName
+                )}
+                >
+                {children}
+                </Text>
+                
+                {icon && (
+                <View className={cn(
+                    "w-8 h-8 rounded-xl items-center justify-center ml-4",
+                    variant === 'primary' ? 'bg-primary' : 'bg-zinc-900'
+                )}>
+                    {icon}
+                </View>
+                )}
+            </>
         )}
       </View>
     </TouchableOpacity>

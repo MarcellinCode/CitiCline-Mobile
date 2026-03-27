@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TouchableOpacity, ScrollView, Alert, StyleSheet } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
 import { 
@@ -11,9 +11,13 @@ import {
   ArrowRight,
   Camera
 } from 'lucide-react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { HubButton } from '@/components/ui/HubButton';
+import { uploadProofImage } from '@/lib/storage';
+import { supabase } from '@/lib/supabase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MissionDetail() {
@@ -23,18 +27,62 @@ export default function MissionDetail() {
   const [step, setStep] = useState<'info' | 'scan' | 'weight' | 'success'>('info');
   const [scanned, setScanned] = useState(false);
   const [weight, setWeight] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = React.useRef<CameraView>(null);
+  const [photoBefore, setPhotoBefore] = useState<string | null>(null);
+  const [photoAfter, setPhotoAfter] = useState<string | null>(null);
 
   const isMarketplace = type?.toString().toLowerCase().includes('recyclage') || type?.toString().toLowerCase().includes('bac');
+  
+  // Pre-request permissions when entering scan step
+  useEffect(() => {
+    if (step === 'scan' && (!permission || !permission.granted)) {
+        requestPermission();
+    }
+  }, [step, permission?.granted]);
 
-  const handleScan = () => {
-    setScanned(true);
-    setTimeout(() => {
-        if (isMarketplace) {
-          setStep('weight');
-        } else {
-          setStep('success');
+  const handleScan = async () => {
+    if (!permission || !permission.granted) {
+        const response = await requestPermission();
+        if (!response.granted) {
+            Alert.alert("Permission refusée", "L'accès à la caméra est nécessaire pour cette opération.");
+            return;
         }
-    }, 1500);
+        return; // Return and wait for rerender with granted permission
+    }
+    
+    if (cameraRef.current) {
+        try {
+            const photo = await cameraRef.current.takePictureAsync({ quality: 0.5 });
+            if (photo) {
+                setLoading(true);
+                const publicUrl = await uploadProofImage(photo.uri);
+                
+                if (!photoBefore) {
+                    setPhotoBefore(publicUrl);
+                    await supabase.from('wastes').update({ photo_url: publicUrl }).eq('id', id);
+                } else {
+                    setPhotoAfter(publicUrl);
+                }
+                
+                setScanned(true);
+                setTimeout(() => {
+                    if (isMarketplace) {
+                        setStep('weight');
+                    } else {
+                        setStep('success');
+                    }
+                }, 1000);
+            }
+        } catch (err) {
+            console.error("Capture/Upload error:", err);
+            Alert.alert("Erreur", "Impossible de capturer ou d'envoyer la photo.");
+        } finally {
+            setLoading(false);
+        }
+    }
   };
 
   const handleFinalize = () => {
@@ -95,33 +143,60 @@ export default function MissionDetail() {
 
           {step === 'scan' && (
             <View key="camera" className="items-center py-10">
-              <View className="w-full aspect-square bg-zinc-50 rounded-[4rem] border-4 border-dashed border-zinc-200 items-center justify-center relative overflow-hidden">
+              <View className="w-full aspect-[3/4] bg-zinc-900 rounded-[3rem] border-4 border-zinc-100 items-center justify-center relative overflow-hidden">
                  {!scanned ? (
-                   <>
-                     <Camera size={64} color="#cbd5e1" strokeWidth={1} />
-                     <HubText variant="label" className="mt-6 text-zinc-400">VISEZ LE QR CODE</HubText>
-                     
-                     <View className="absolute top-12 left-12 w-16 h-16 border-t-8 border-l-8 border-primary rounded-tl-3xl opacity-50" />
-                     <View className="absolute top-12 right-12 w-16 h-16 border-t-8 border-r-8 border-primary rounded-tr-3xl opacity-50" />
-                     <View className="absolute bottom-12 left-12 w-16 h-16 border-b-8 border-l-8 border-primary rounded-bl-3xl opacity-50" />
-                     <View className="absolute bottom-12 right-12 w-16 h-16 border-b-8 border-r-8 border-primary rounded-br-3xl opacity-50" />
-                   </>
+                   permission?.granted ? (
+                     <CameraView
+                       ref={cameraRef}
+                       style={StyleSheet.absoluteFill}
+                       facing="back"
+                     >
+                       <View className="flex-1 items-center justify-center">
+                          <View className="absolute top-12 left-12 w-16 h-16 border-t-8 border-l-8 border-white rounded-tl-3xl opacity-50" />
+                          <View className="absolute top-12 right-12 w-16 h-16 border-t-8 border-r-8 border-white rounded-tr-3xl opacity-50" />
+                          <View className="absolute bottom-12 left-12 w-16 h-16 border-b-8 border-l-8 border-white rounded-bl-3xl opacity-50" />
+                          <View className="absolute bottom-12 right-12 w-16 h-16 border-b-8 border-r-8 border-white rounded-tr-3xl opacity-50" />
+                       </View>
+                     </CameraView>
+                   ) : (
+                     <View className="items-center p-10">
+                        <Camera size={48} color="#94a3b8" strokeWidth={1} />
+                        <HubText variant="label" className="mt-6 text-zinc-500 text-center italic">
+                          CLIQUEZ SUR LE BOUTON CI-DESSOUS{'\n'}POUR ACTIVER LA CAMÉRA
+                        </HubText>
+                     </View>
+                   )
                  ) : (
                     <View className="items-center">
                      <View className="w-24 h-24 bg-emerald-500 rounded-full items-center justify-center shadow-2xl shadow-emerald-500/50">
                         <CheckCircle2 size={48} color="white" />
                      </View>
-                     <HubText variant="h2" className="mt-8 text-zinc-900">Code Validé</HubText>
+                     <HubText variant="h2" className="mt-8 text-zinc-900">PREUVE ENREGISTRÉE</HubText>
                     </View>
                  )}
               </View>
 
-              <TouchableOpacity 
-                onPress={handleScan}
-                className="mt-12 bg-zinc-900 px-10 py-5 rounded-3xl"
-              >
-                <HubText variant="label" className="text-white italic tracking-widest mb-0">SIMULER SCAN HUB</HubText>
-              </TouchableOpacity>
+              {!scanned && (
+                <View className="mt-12 w-full px-10">
+                  <HubButton 
+                    onPress={handleScan}
+                    variant="primary"
+                    size="xl"
+                    loading={loading}
+                    icon={<Camera size={20} color="white" />}
+                  >
+                    {!photoBefore ? "Prendre Photo Avant" : "Prendre Photo Après"}
+                  </HubButton>
+                  
+                  <View className="mt-6">
+                    <HubText variant="label" className="text-zinc-400 text-center italic">
+                      {!photoBefore 
+                        ? "Prenez une photo du site AVANT l'intervention" 
+                        : "Prenez une photo du site APRÈS le nettoyage"}
+                    </HubText>
+                  </View>
+                </View>
+              )}
             </View>
           )}
 

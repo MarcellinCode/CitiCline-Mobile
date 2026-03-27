@@ -14,7 +14,7 @@ import {
   Plus,
   ArrowRight
 } from 'lucide-react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, UrlTile } from 'react-native-maps';
 import { useWastes } from '@/hooks/useWastes';
 import { useLocation } from '@/hooks/useLocation';
 import { Header } from '@/components/Header';
@@ -43,8 +43,12 @@ export default function MapScreen() {
           showsUserLocation
           showsMyLocationButton
           mapPadding={{ top: 0, right: 0, bottom: 100, left: 0 }}
-          customMapStyle={mapStyle}
         >
+          <UrlTile 
+            urlTemplate="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maximumZ={19}
+            flipY={false}
+          />
           {wastes.map((waste) => (
             waste.latitude && waste.longitude && (
               <Marker

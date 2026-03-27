@@ -1,4 +1,4 @@
-import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search } from 'lucide-react-native';
+import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search, Truck } from 'lucide-react-native';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -150,7 +150,18 @@ export default function TabsLayout() {
         }}
       />
 
-      {/* 5. COMPTE */}
+      {/* 5. GESTION FLOTTE (Visible pour Org Admin et Agent Collecteur) */}
+      {(profile?.role === 'organisation_admin' || profile?.role === 'agent_collecteur') && (
+        <Tabs.Screen
+          name="fleet/index"
+          options={{
+            title: 'Flotte',
+            tabBarIcon: ({ color }: { color: string }) => <Truck size={22} color={color} strokeWidth={2.5} />,
+          }}
+        />
+      )}
+
+      {/* 6. COMPTE */}
        <Tabs.Screen
         name="profile/index"
         options={{

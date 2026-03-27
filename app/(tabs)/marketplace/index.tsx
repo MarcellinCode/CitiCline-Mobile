@@ -1,14 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { View, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Image as RNImage, Platform } from 'react-native';
+import { View, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Image as RNImage, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { useWastes } from '@/hooks/useWastes';
 import { useProfile } from '@/hooks/useProfile';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import { uploadProofImage } from '@/lib/storage';
+import { supabase } from '@/lib/supabase';
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 import { WasteCard } from '@/components/WasteCard';
 import { FeaturedWasteCard } from '@/components/FeaturedWasteCard';
 import { Waste } from '@/lib/types';
-import { Search, Leaf, Zap, Box, ShoppingBag, Bell } from 'lucide-react-native';
+import { Search, Leaf, Zap, Box, ShoppingBag, Bell, AlertTriangle, Camera } from 'lucide-react-native';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { cn } from '@/lib/utils';
@@ -27,6 +31,7 @@ export default function Marketplace() {
   const unreadCount = useUnreadNotifications();
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [emergencyLoading, setEmergencyLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
 
   const filteredWastes = useMemo(() => {
@@ -44,6 +49,45 @@ export default function Marketplace() {
   const featuredWastes = useMemo(() => {
     return wastes.slice(0, 3);
   }, [wastes]);
+
+  const handleEmergencyReport = async () => {
+    try {
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
+      
+      if (cameraStatus !== 'granted' || locationStatus !== 'granted') {
+        Alert.alert("Permissions requises", "L'accès à la caméra et à la position est nécessaire pour signaler un dépôt sauvage.");
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.5,
+        allowsEditing: false,
+      });
+
+      if (!result.canceled && result.assets[0].uri) {
+        setEmergencyLoading(true);
+        const locationCoords = await Location.getCurrentPositionAsync({});
+        const publicUrl = await uploadProofImage(result.assets[0].uri);
+
+        await supabase.from('emergency_reports').insert({
+          reporter_id: profile?.id,
+          latitude: locationCoords.coords.latitude,
+          longitude: locationCoords.coords.longitude,
+          photo_url: publicUrl,
+          description: 'Signalement urgent via application mobile',
+          status: 'pending'
+        });
+
+        Alert.alert("Signalement envoyé", "Merci ! La mairie a été alertée et interviendra dans les plus brefs délais.");
+      }
+    } catch (error) {
+      console.error("Emergency report error:", error);
+      Alert.alert("Erreur", "Une erreur est survenue lors de l'envoi du signalement.");
+    } finally {
+      setEmergencyLoading(false);
+    }
+  };
 
   if (loading && !refreshing) {
     return (
@@ -71,31 +115,52 @@ export default function Marketplace() {
         </TouchableOpacity>
       </View>
 
-      {/* Bento Widget: Impact Ecolo */}
-      <View>
-          <HubCard className="bg-primary border-0 p-8 mb-10 overflow-hidden">
-             <View className="flex-row justify-between items-start">
-                <View className="flex-1">
-                    <View className="w-10 h-10 bg-white/20 rounded-xl items-center justify-center mb-6">
-                       <Leaf size={20} color="white" />
-                    </View>
-                    <HubText variant="label" className="text-white/80 mb-1">Impact ÉCOLOGIQUE</HubText>
-                    <HubText variant="h2" className="text-white">12.5 <HubText className="text-white/70 text-base italic normal-case">kg recyclés</HubText></HubText>
-                </View>
-                <View className="bg-white/10 rounded-3xl p-4 items-center justify-center">
-                    <Zap size={24} color="#E9C46A" />
-                    <HubText variant="label" className="text-white mt-1 text-[8px]">Niv. 2</HubText>
-                </View>
+       {/* Bento Widget: Impact Ecolo & Urgence */}
+       <View className="flex-row gap-4 mb-10">
+          <HubCard className="flex-1 bg-primary border-0 p-6 overflow-hidden min-h-[160px]">
+             <View className="w-10 h-10 bg-white/20 rounded-xl items-center justify-center mb-4">
+                <Leaf size={20} color="white" />
              </View>
+             <HubText variant="label" className="text-white/80 mb-1">Impact</HubText>
+             <HubText variant="h2" className="text-white text-xl">12.5 <HubText className="text-white/70 text-xs italic normal-case">kg</HubText></HubText>
              
-             {/* Background decoration */}
-             <View className="absolute -bottom-10 -right-10 opacity-10">
-                <Leaf size={160} color="white" />
+             <View className="absolute -bottom-6 -right-6 opacity-10">
+                <Leaf size={100} color="white" />
              </View>
           </HubCard>
-      </View>
 
-      <HubText variant="h3" className="mb-6 ml-1">Explorer le réseau</HubText>
+          <TouchableOpacity 
+            className="flex-1"
+            onPress={handleEmergencyReport}
+            disabled={emergencyLoading}
+          >
+            <HubCard className={cn(
+                "border-amber-200 p-6 overflow-hidden min-h-[160px]",
+                emergencyLoading ? "bg-amber-50" : "bg-amber-100"
+            )}>
+               {emergencyLoading ? (
+                 <View className="flex-1 items-center justify-center">
+                    <ActivityIndicator color="#D97706" />
+                    <HubText variant="label" className="mt-2 text-amber-600">ENVOI...</HubText>
+                 </View>
+               ) : (
+                 <>
+                    <View className="w-10 h-10 bg-amber-500 rounded-xl items-center justify-center mb-4">
+                        <AlertTriangle size={20} color="white" />
+                    </View>
+                    <HubText variant="label" className="text-amber-800 mb-1">URGENCE</HubText>
+                    <HubText variant="h2" className="text-amber-600 text-sm">SIGNALER UN DÉPÔT</HubText>
+                    
+                    <View className="absolute -bottom-4 -right-4 opacity-20">
+                        <Camera size={80} color="#D97706" />
+                    </View>
+                 </>
+               )}
+            </HubCard>
+          </TouchableOpacity>
+       </View>
+
+       <HubText variant="h3" className="mb-6 ml-1">Explorer le réseau</HubText>
 
       <View className="bg-white border-2 border-zinc-50 rounded-[2rem] flex-row items-center px-6 py-4 mb-8 shadow-xl shadow-zinc-200/30">
         <Search size={22} color="#94a3b8" />
