@@ -102,10 +102,9 @@ export default function ChatScreen() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TouchableOpacity 
-            onPress={() => navigateSafe(router, ROUTES.CHAT_DETAILS(item.id), { 
-              id: item.id, 
-              otherUserName: item.otherUser?.full_name || 'Utilisateur CITICLINE',
-              wasteName: item.wasteName 
+            onPress={() => navigateSafe(router, ROUTES.CHAT_DETAILS(item.otherUser?.id), { 
+              name: item.otherUser?.full_name || 'Utilisateur CITICLINE',
+              waste_id: item.waste_id 
             })} style={styles.chatItem}
           >
             <View style={styles.avatarContainer}>

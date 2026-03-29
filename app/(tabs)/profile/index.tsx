@@ -9,6 +9,8 @@ import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
+import * as ImagePicker from 'expo-image-picker';
+import { Alert } from 'react-native';
 
 const ROLE_LABELS: Record<string, string> = {
   vendeur: 'Citoyen Éco',
@@ -33,11 +35,42 @@ const ROLE_COLORS: Record<string, string> = {
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { profile, loading } = useProfile();
+  const { profile, loading, refreshProfile } = useProfile();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.replace('/(auth)/login' as any);
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      handleUpdateAvatar(result.assets[0].uri);
+    }
+  };
+
+  const handleUpdateAvatar = async (uri: string) => {
+    try {
+      // Pour une démo, on simule l'upload ou on met l'URI directe si c'est du local (pas idéal pour Supabase mais ok pour démo UI)
+      // En prod, il faudrait uploader vers Supabase Storage d'abord.
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: uri })
+        .eq('id', profile?.id);
+
+      if (error) throw error;
+      refreshProfile();
+      Alert.alert('Succès', 'Photo de profil mise à jour !');
+    } catch (err) {
+      console.error('handleUpdateAvatar error:', err);
+      Alert.alert('Erreur', 'Impossible de mettre à jour la photo.');
+    }
   };
 
   if (loading) {
@@ -86,7 +119,10 @@ export default function ProfileScreen() {
                                 <User size={40} color="#475569" />
                              )}
                         </View>
-                        <TouchableOpacity className="absolute bottom-[-5] right-[-5] w-10 h-10 bg-primary rounded-full items-center justify-center border-4 border-zinc-900">
+                        <TouchableOpacity 
+                            onPress={pickImage}
+                            className="absolute bottom-[-5] right-[-5] w-10 h-10 bg-primary rounded-full items-center justify-center border-4 border-zinc-900"
+                        >
                             <Camera size={14} color="white" />
                         </TouchableOpacity>
                     </View>
@@ -119,28 +155,41 @@ export default function ProfileScreen() {
 
         {/* Quick Balance Bento */}
         <View className="flex-row gap-4 mb-10">
-            <HubCard className="flex-1 p-6 bg-white border-2 border-zinc-50 items-center">
-                <View className="w-10 h-10 rounded-xl bg-emerald-50 items-center justify-center mb-4">
-                    <Wallet size={18} color="#10b981" />
-                </View>
-                <HubText variant="h3" className="text-zinc-900">{formatCurrency(profile?.wallet_balance)} <HubText className="text-[8px] italic normal-case text-zinc-400">FCFA</HubText></HubText>
-                <HubText variant="label" className="text-zinc-400 text-[8px] mt-1">WALLET</HubText>
-            </HubCard>
-            <HubCard className="flex-1 p-6 bg-white border-2 border-zinc-50 items-center">
-                <View className="w-10 h-10 rounded-xl bg-amber-50 items-center justify-center mb-4">
-                    <Crown size={18} color="#F59E0B" />
-                </View>
-                <HubText variant="h3" className="text-zinc-900">{profile?.subscription_tier || 'STARTER'}</HubText>
-                <HubText variant="label" className="text-zinc-400 text-[8px] mt-1">PLAN ACTUEL</HubText>
-            </HubCard>
+            <TouchableOpacity 
+                activeOpacity={0.9}
+                onPress={() => router.push(ROUTES.WALLET as any)}
+                className="flex-1"
+            >
+                <HubCard className="p-6 bg-white border-2 border-zinc-50 items-center">
+                    <View className="w-10 h-10 rounded-xl bg-emerald-50 items-center justify-center mb-4">
+                        <Wallet size={18} color="#10b981" />
+                    </View>
+                    <HubText variant="h3" className="text-zinc-900">{formatCurrency(profile?.wallet_balance)} <HubText className="text-[8px] italic normal-case text-zinc-400">FCFA</HubText></HubText>
+                    <HubText variant="label" className="text-zinc-400 text-[8px] mt-1">WALLET</HubText>
+                </HubCard>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+                activeOpacity={0.9}
+                onPress={() => router.push(ROUTES.ABONNEMENTS as any)}
+                className="flex-1"
+            >
+                <HubCard className="p-6 bg-white border-2 border-zinc-50 items-center">
+                    <View className="w-10 h-10 rounded-xl bg-amber-50 items-center justify-center mb-4">
+                        <Crown size={18} color="#F59E0B" />
+                    </View>
+                    <HubText variant="h3" className="text-zinc-900">{profile?.subscription_tier || 'STARTER'}</HubText>
+                    <HubText variant="label" className="text-zinc-400 text-[8px] mt-1">PLAN ACTUEL</HubText>
+                </HubCard>
+            </TouchableOpacity>
         </View>
 
         {/* Settings Menu */}
         <HubText variant="label" className="mb-6 ml-1">Paramètres du Compte</HubText>
         <HubCard className="p-0 border-2 border-zinc-50 overflow-hidden mb-10">
             {[
-                { icon: User, label: 'Éditer mon Profil', desc: 'Infos persos & photo', route: ROUTES.SETTINGS },
-                { icon: Shield, label: 'Sécurité & Accès', desc: 'Mot de passe & 2FA', route: null },
+                { icon: User, label: 'Éditer mon Profil', desc: 'Infos persos & photo', route: '/profile/edit' },
+                { icon: Shield, label: 'Sécurité & Accès', desc: 'Mot de passe & 2FA', route: ROUTES.SETTINGS },
                 { icon: Bell, label: 'Notifications', desc: 'Alertes & Préférences', route: ROUTES.NOTIFICATIONS },
                 { icon: Crown, label: 'Abonnement Hub', desc: 'Gérer mon forfait', route: ROUTES.ABONNEMENTS, value: 'PRO' },
             ].map((item, idx) => (

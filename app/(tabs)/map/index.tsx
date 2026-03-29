@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -14,18 +14,29 @@ import {
   Plus,
   ArrowRight
 } from 'lucide-react-native';
-import MapView, { Marker, Callout, UrlTile } from 'react-native-maps';
+import { useProfile } from '@/hooks/useProfile';
 import { useWastes } from '@/hooks/useWastes';
 import { useLocation } from '@/hooks/useLocation';
 import { Header } from '@/components/Header';
+import { MapOSM } from '@/components/map/MapOSM';
+
+// Fixed points for the Demo Radar (Mairie Hubs & Partners)
+const CITICLINE_HUBS = [
+  { id: 'h1', name: 'Hub Principal - Mairie', type: 'office', latitude: 5.3484, longitude: -4.0305, emoji: '🏛️' },
+  { id: 'h2', name: 'Centre de Collecte - Nord', type: 'center', latitude: 5.3850, longitude: -4.0150, emoji: '♻️' },
+  { id: 'h3', name: 'Partenaire - Recy-Pro', type: 'partner', latitude: 5.3200, longitude: -3.9800, emoji: '🏢' },
+];
 
 export default function MapScreen() {
   const { wastes } = useWastes();
   const { location, loading: locLoading } = useLocation();
+  const { profile } = useProfile();
   const router = useRouter();
 
+  const isCitizen = profile?.role === 'vendeur' || profile?.role === 'super_admin';
+
   const initialRegion = {
-    latitude: location?.coords.latitude || 5.3484, // Default to Abidjan if no location
+    latitude: location?.coords.latitude || 5.3484, 
     longitude: location?.coords.longitude || -4.0305,
     latitudeDelta: 0.1,
     longitudeDelta: 0.1,
@@ -34,48 +45,25 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Header title="Radar CITICLINE" subtitle="Déchets à proximité de vous" />
+      <Header 
+        title={isCitizen ? "Radar Éco-Citoyen" : "Radar CITICLINE"} 
+        subtitle={isCitizen ? "Centres de collecte et partenaires" : "Déchets à proximité de vous"} 
+        onBack={() => navigateSafe(router, ROUTES.ESPACE)}
+      />
       
       <View style={styles.mapContainer}>
-        <MapView
-          style={StyleSheet.absoluteFill}
-          initialRegion={initialRegion}
-          showsUserLocation
-          showsMyLocationButton
-          mapPadding={{ top: 0, right: 0, bottom: 100, left: 0 }}
-        >
-          <UrlTile 
-            urlTemplate="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maximumZ={19}
-            flipY={false}
-          />
-          {wastes.map((waste) => (
-            waste.latitude && waste.longitude && (
-              <Marker
-                key={waste.id}
-                coordinate={{ latitude: Number(waste.latitude), longitude: Number(waste.longitude) }}
-                title={waste.waste_types?.name}
-              >
-                <View style={styles.markerContainer}>
-                  <Text style={styles.markerEmoji}>{waste.waste_types?.emoji}</Text>
-                </View>
-                <Callout 
-                    onPress={() => navigateSafe(router, ROUTES.MARKETPLACE_DETAILS(waste.id), { id: waste.id })}
-                    tooltip
-                >
-                    <View style={styles.calloutContainer}>
-                        <Text style={styles.calloutTitle}>
-                            {waste.waste_types?.name}
-                        </Text>
-                        <Text style={styles.calloutSubtitle}>
-                            {waste.estimated_weight} KG • {waste.location}
-                        </Text>
-                    </View>
-                </Callout>
-              </Marker>
-            )
-          ))}
-        </MapView>
+        <MapOSM 
+          userLocation={location ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : null}
+          hubs={CITICLINE_HUBS}
+          wastes={wastes}
+          onMarkerPress={(id: string, type: 'HUB' | 'WASTE') => {
+            if (type === 'WASTE') {
+              navigateSafe(router, ROUTES.MARKETPLACE_DETAILS(id), { id });
+            } else {
+              Alert.alert("Hub Info", "Ce centre de collecte est géré par la mairie.");
+            }
+          }}
+        />
       </View>
     </View>
   );

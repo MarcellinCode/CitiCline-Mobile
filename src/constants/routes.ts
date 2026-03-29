@@ -7,6 +7,7 @@ export const ROUTES = {
   MISSIONS: '/missions' as const,
   NOTIFICATIONS: '/notifications' as const,
   MARKETPLACE: '/marketplace' as const,
+  FLEET: '/fleet' as const,
 
   // Groupe Espace
   ESPACE: '/espace' as const,

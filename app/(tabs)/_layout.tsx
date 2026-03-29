@@ -92,7 +92,6 @@ export default function TabsLayout() {
       },
       headerShown: false,
     }}>
-      {/* 1. ACCUEIL */}
       <Tabs.Screen
         name="marketplace/index"
         options={{
@@ -100,8 +99,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }: { color: string }) => <Home size={22} color={color} strokeWidth={2.5} />,
         }}
       />
-
-      {/* 2. ESPACE (Dashboard central) */}
       <Tabs.Screen
         name="espace/index"
         options={{
@@ -109,8 +106,6 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }: { color: string }) => <LayoutDashboard size={22} color={color} strokeWidth={2.5} />,
         }}
       />
-
-      {/* 3. ACTION CENTRALE (Bouton + ou Loupe selon rôle) */}
       <Tabs.Screen
         name="marketplace/publish"
         options={{
@@ -120,7 +115,7 @@ export default function TabsLayout() {
               <TouchableOpacity 
                 activeOpacity={0.9}
                 onPress={() => {
-                  if (profile?.role === 'vendeur') {
+                  if (profile?.role === 'vendeur' || profile?.role === 'super_admin') {
                     router.push('/marketplace/publish' as any);
                   } else {
                     router.push(ROUTES.MARKETPLACE as any);
@@ -128,7 +123,7 @@ export default function TabsLayout() {
                 }}
                 className="w-16 h-16 rounded-[2rem] bg-zinc-900 items-center justify-center shadow-xl shadow-zinc-400/50 border-[4px] border-white"
               >
-                {profile?.role === 'vendeur' ? (
+                {(profile?.role === 'vendeur' || profile?.role === 'super_admin') ? (
                   <Plus size={32} color="#2A9D8F" strokeWidth={3} />
                 ) : (
                   <Search size={28} color="#2A9D8F" strokeWidth={3} />
@@ -138,8 +133,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-
-      {/* 4. MESSAGES */}
       <Tabs.Screen
         name="chat/index"
         options={{
@@ -149,29 +142,21 @@ export default function TabsLayout() {
           tabBarBadgeStyle: { backgroundColor: '#ef4444', fontSize: 10, fontWeight: 'bold' }
         }}
       />
-
-      {/* 5. GESTION FLOTTE (Visible pour Org Admin et Agent Collecteur) */}
-      {(profile?.role === 'organisation_admin' || profile?.role === 'agent_collecteur') && (
-        <Tabs.Screen
-          name="fleet/index"
-          options={{
-            title: 'Flotte',
-            tabBarIcon: ({ color }: { color: string }) => <Truck size={22} color={color} strokeWidth={2.5} />,
-          }}
-        />
-      )}
-
-      {/* 6. COMPTE */}
-       <Tabs.Screen
+      <Tabs.Screen
+        name="fleet/index"
+        options={{
+          title: 'Flotte',
+          tabBarIcon: ({ color }: { color: string }) => <Truck size={22} color={color} strokeWidth={2.5} />,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="profile/index"
         options={{
           title: 'Compte',
           tabBarIcon: ({ color }: { color: string }) => <User size={22} color={color} strokeWidth={2.5} />,
         }}
       />
-
-
-      {/* ROUTES SECONDAIRES (Masquées de la barre de navigation) */}
       <Tabs.Screen name="map/index" options={{ href: null }} />
       <Tabs.Screen name="chat/[id]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="marketplace/[id]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
@@ -184,6 +169,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="espace/offres" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="espace/analytics" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="settings/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="notifications/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="profile/edit" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
   );
 }

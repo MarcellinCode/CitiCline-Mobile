@@ -10,6 +10,8 @@ interface HubButtonProps extends TouchableOpacityProps {
   icon?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
+  onPress?: () => void;
+  disabled?: boolean;
 }
 
 export function HubButton({ 

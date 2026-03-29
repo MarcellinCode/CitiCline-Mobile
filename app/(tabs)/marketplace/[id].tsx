@@ -11,7 +11,9 @@ import {
   ArrowLeft,
   Scale,
   ChevronRight,
-  Leaf
+  Leaf,
+  Scan,
+  KeyRound
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
@@ -196,6 +198,54 @@ export default function WasteDetail() {
                     <ChevronRight size={16} color="#020617" strokeWidth={3} />
                 </TouchableOpacity>
             </HubCard>
+
+            {/* Collector Validation Section */}
+            {waste.status === 'reserved' && profile?.id === waste.collector_id && (
+                <View className="mb-10">
+                    <HubText variant="label" className="mb-4 ml-2">Validation de la collecte</HubText>
+                    <HubCard className="p-8 border-2 border-emerald-50">
+                        <TouchableOpacity 
+                            onPress={() => {
+                                alert("Simulation : QR Code scanné avec succès !");
+                                const weight = prompt("Confirmez le poids final (KG) :", waste.estimated_weight.toString());
+                                if (weight) {
+                                    alert(`Collecte de ${weight}kg validée ! Paiement en cours...`);
+                                    router.replace(ROUTES.WALLET as any);
+                                }
+                            }}
+                            className="bg-zinc-900 h-16 rounded-2xl flex-row items-center justify-center gap-3 mb-6"
+                        >
+                            <Scan size={20} color="white" />
+                            <HubText className="text-white font-bold text-[10px] tracking-widest uppercase">Scanner le QR Code</HubText>
+                        </TouchableOpacity>
+
+                        <View className="flex-row items-center gap-4 mb-6">
+                            <View className="h-[1px] flex-1 bg-zinc-100" />
+                            <HubText className="text-zinc-300 text-[8px] font-bold">OU PIN CODE</HubText>
+                            <View className="h-[1px] flex-1 bg-zinc-100" />
+                        </View>
+
+                        <TouchableOpacity 
+                            onPress={() => {
+                                const pin = prompt("Saisissez le code PIN du vendeur :");
+                                if (pin?.toUpperCase() === waste.id.slice(0, 6).toUpperCase()) {
+                                    const weight = prompt("Confirmez le poids final (KG) :", waste.estimated_weight.toString());
+                                    if (weight) {
+                                        alert(`Collecte de ${weight}kg validée !`);
+                                        router.replace(ROUTES.WALLET as any);
+                                    }
+                                } else if (pin) {
+                                    alert("Code PIN incorrect.");
+                                }
+                            }}
+                            className="bg-white border-2 border-zinc-100 h-16 rounded-2xl flex-row items-center justify-center gap-3"
+                        >
+                            <KeyRound size={20} color="#020617" />
+                            <HubText className="text-zinc-900 font-bold text-[10px] tracking-widest uppercase">Entrer le PIN manuel</HubText>
+                        </TouchableOpacity>
+                    </HubCard>
+                </View>
+            )}
 
             <HubText variant="label" className="mb-4 ml-2">Description</HubText>
             <HubText variant="body" className="text-zinc-500 leading-relaxed mb-10">

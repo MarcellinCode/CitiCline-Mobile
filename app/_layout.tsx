@@ -108,8 +108,8 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
               { 
                 text: "Répondre", 
                 onPress: () => router.push({
-                  pathname: ROUTES.CHAT_DETAILS('[id]'),
-                  params: { id: payload.new.sender_id, name: data?.full_name }
+                  pathname: ROUTES.CHAT_DETAILS(payload.new.sender_id),
+                  params: { name: data?.full_name }
                 } as any)
               }
             ]

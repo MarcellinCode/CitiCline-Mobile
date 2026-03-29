@@ -10,8 +10,12 @@ import {
   AlertTriangle,
   ChevronRight,
   ClipboardCheck,
-  Fuel
+  Fuel,
+  ArrowLeft
 } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
+import { useRouter } from 'expo-router';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { HubButton } from '@/components/ui/HubButton';
@@ -20,6 +24,7 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 export default function FleetScreen() {
+  const router = useRouter();
   const { profile } = useProfile();
   const [vehicle, setVehicle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +72,15 @@ export default function FleetScreen() {
         headerShown: true,
         headerTitle: () => <HubText variant="label" className="text-zinc-900 italic tracking-[0.2em] mb-0">MA FLOTTE</HubText>,
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: 'white' }
+        headerStyle: { backgroundColor: 'white' },
+        headerLeft: () => (
+          <TouchableOpacity 
+            onPress={() => navigateSafe(router, ROUTES.ESPACE)}
+            className="ml-4 w-10 h-10 bg-zinc-50 rounded-xl items-center justify-center border border-zinc-100"
+          >
+            <ArrowLeft size={20} color="#020617" />
+          </TouchableOpacity>
+        ),
       }} />
 
       <ScrollView className="flex-1 px-8 pt-6" showsVerticalScrollIndicator={false}>

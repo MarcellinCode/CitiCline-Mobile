@@ -3,6 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ArrowLeft, TrendingUp, Package, Users, Zap } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 
 export default function AnalyticsScreen() {
   const router = useRouter();
@@ -22,7 +24,7 @@ export default function AnalyticsScreen() {
         headerTitle: "ANALYTIQUE",
         headerTitleStyle: { fontWeight: '900' },
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerBackBtn}>
+          <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.headerBackBtn}>
             <ArrowLeft size={20} color="#020617" />
           </TouchableOpacity>
         ),

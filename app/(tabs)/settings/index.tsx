@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, Platform, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Platform, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -42,7 +42,7 @@ export default function SettingsScreen() {
       >
         <View style={styles.listContainer}>
           {[
-            { icon: Bell, title: "Notifications", route: '/notifications' },
+            { icon: Bell, title: "Notifications", route: ROUTES.NOTIFICATIONS },
             { icon: Lock, title: "Sécurité" },
             { icon: Shield, title: "Confidentialité" },
             { icon: CircleHelp, title: "Aide & Support" },
@@ -50,13 +50,13 @@ export default function SettingsScreen() {
             <TouchableOpacity 
               key={i} 
               style={styles.listItem}
-              onPress={() => item.route ? router.push(item.route as any) : null}
+              onPress={() => item.route ? router.push(item.route as any) : Alert.alert("Bientôt disponible", "Cette section sera activée dans la prochaine mise à jour.") }
             >
               <View style={styles.listItemLeft}>
                 <item.icon size={20} color="#64748b" />
                 <Text style={styles.listItemText}>{item.title}</Text>
               </View>
-              <ChevronLeft size={16} color="#cbd5e1" style={styles.chevronIcon} />
+              <ChevronRight size={16} color="#cbd5e1" />
             </TouchableOpacity>
           ))}
         </View>

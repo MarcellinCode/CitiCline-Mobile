@@ -9,6 +9,8 @@ import * as Location from 'expo-location';
 import { uploadProofImage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { WasteCard } from '@/components/WasteCard';
 import { FeaturedWasteCard } from '@/components/FeaturedWasteCard';
 import { Waste } from '@/lib/types';
@@ -117,17 +119,26 @@ export default function Marketplace() {
 
        {/* Bento Widget: Impact Ecolo & Urgence */}
        <View className="flex-row gap-4 mb-10">
-          <HubCard className="flex-1 bg-primary border-0 p-6 overflow-hidden min-h-[160px]">
-             <View className="w-10 h-10 bg-white/20 rounded-xl items-center justify-center mb-4">
-                <Leaf size={20} color="white" />
-             </View>
-             <HubText variant="label" className="text-white/80 mb-1">Impact</HubText>
-             <HubText variant="h2" className="text-white text-xl">12.5 <HubText className="text-white/70 text-xs italic normal-case">kg</HubText></HubText>
-             
-             <View className="absolute -bottom-6 -right-6 opacity-10">
-                <Leaf size={100} color="white" />
-             </View>
-          </HubCard>
+          <TouchableOpacity 
+            className="flex-1"
+            activeOpacity={0.9}
+            onPress={() => navigateSafe(router, ROUTES.ESPACE_ANALYTICS)}
+          >
+            <HubCard className="bg-primary border-0 p-6 overflow-hidden min-h-[160px]">
+               <View className="w-10 h-10 bg-white/20 rounded-xl items-center justify-center mb-4">
+                  <Leaf size={20} color="white" />
+               </View>
+               <HubText variant="label" className="text-white/80 mb-1">Impact</HubText>
+               <View className="flex-row items-baseline gap-1">
+                  <HubText variant="h2" className="text-white text-xl">12.5</HubText>
+                  <HubText className="text-white/70 text-xs italic normal-case">kg</HubText>
+               </View>
+               
+               <View className="absolute -bottom-6 -right-6 opacity-10">
+                  <Leaf size={100} color="white" />
+               </View>
+            </HubCard>
+          </TouchableOpacity>
 
           <TouchableOpacity 
             className="flex-1"
@@ -202,7 +213,7 @@ export default function Marketplace() {
         <View className="mb-10">
             <View className="flex-row justify-between items-end mb-6 ml-1">
                 <HubText variant="h3">
-                    {profile?.role === 'vendeur' ? 'Opportunités' : 'Lots en Vedette'}
+                    {(profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Marché du Recyclage' : 'Lots en Vedette'}
                 </HubText>
                 <HubText variant="label" className="text-primary italic">VOIR TOUT</HubText>
             </View>
@@ -217,7 +228,7 @@ export default function Marketplace() {
       )}
 
       <HubText variant="h3" className="mb-6 ml-1">
-        {profile?.role === 'vendeur' ? 'Vos Publications' : 'Nouveaux Arrivages'}
+        {(profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Dernières Offres' : 'Nouveaux Arrivages'}
       </HubText>
     </View>
   );

@@ -64,7 +64,7 @@ export default function MissionsScreen() {
     }
   };
 
-  if (!profileLoading && profile?.role === 'vendeur') {
+  if (!profileLoading && profile?.role !== 'agent_collecteur') {
     return (
       <View className="flex-1 bg-white items-center justify-center px-10">
         <Stack.Screen options={{ headerShown: false }} />
@@ -73,8 +73,14 @@ export default function MissionsScreen() {
         </View>
         <HubText variant="h2" className="text-center mb-2">Accès Limité</HubText>
         <HubText variant="body" className="text-center text-zinc-400">
-          Cet espace est réservé aux agents de collecte officiels de CITICLINE.
+          Cet espace est exclusivement réservé aux agents de collecte officiels de CITICLINE (Salubrité). Les acheteurs indépendants gèrent leurs activités via la Marketplace.
         </HubText>
+        <HubButton 
+          className="mt-8"
+          onPress={() => router.push(ROUTES.ESPACE as any)}
+        >
+          Retour au Hub
+        </HubButton>
       </View>
     );
   }

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, TouchableOpacity, ScrollView, ActivityIndicator, Platform } from 'react-native';
+import * as React from 'react';
+import { View, TouchableOpacity, ScrollView, ActivityIndicator, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ChevronLeft, Wallet as WalletIcon, ArrowDownLeft, ArrowUpRight, Leaf, RefreshCw } from 'lucide-react-native';
@@ -11,6 +11,8 @@ import { HubCard } from '@/components/ui/HubCard';
 import { HubButton } from '@/components/ui/HubButton';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
+import { Header } from '@/components/Header';
+import { navigateSafe } from '@/utils/navigation';
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
@@ -18,28 +20,37 @@ export default function WalletScreen() {
   const { profile, loading: profileLoading } = useProfile();
   const { transactions, loading, refresh } = useWallet(profile?.id);
 
+  const handleWithdraw = () => {
+    Alert.alert(
+      "Demande de Retrait",
+      "Souhaitez-vous retirer vos gains vers votre compte Mobile Money (Wave/Orange/MTN) ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        { 
+          text: "Retirer", 
+          onPress: () => Alert.alert("Succès", "Votre demande de retrait a été transmise au HUB. Traitement en cours (est. 2h).") 
+        }
+      ]
+    );
+  };
+
   return (
     <View className="flex-1 bg-white">
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View 
-        className="px-8 flex-row items-center justify-between mb-8"
-        style={{ paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
-      >
-        <TouchableOpacity 
-            onPress={() => router.push(ROUTES.ESPACE as any)} 
-            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
-        >
-          <ChevronLeft size={24} color="#020617" />
-        </TouchableOpacity>
-        <HubText variant="label" className="text-zinc-900 italic">Portefeuille Hub</HubText>
-        <TouchableOpacity 
-            onPress={refresh} 
-            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
-        >
-          <RefreshCw size={18} color="#020617" />
-        </TouchableOpacity>
-      </View>
+      <Header 
+        title="Portefeuille" 
+        subtitle="SOLDE DISPONIBLE" 
+        onBack={() => navigateSafe(router, ROUTES.ESPACE)}
+        rightAction={
+          <TouchableOpacity 
+              onPress={refresh} 
+              className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+          >
+            <RefreshCw size={18} color="#020617" />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView 
         className="flex-1" 
@@ -78,12 +89,16 @@ export default function WalletScreen() {
             <HubButton 
                 variant="primary" 
                 className="flex-1 h-16 rounded-[1.5rem]" 
-                onPress={() => {}}
+                onPress={handleWithdraw}
+                disabled={(profile?.wallet_balance || 0) < 500}
                 icon={<ArrowDownLeft size={18} color="white" />}
             >
-                RETIRER
+                { (profile?.wallet_balance || 0) < 500 ? 'SOLDE BAS' : 'RETIRER' }
             </HubButton>
-            <TouchableOpacity className="w-16 h-16 bg-zinc-50 rounded-[1.5rem] items-center justify-center border border-zinc-100">
+            <TouchableOpacity 
+                onPress={refresh}
+                className="w-16 h-16 bg-zinc-50 rounded-[1.5rem] items-center justify-center border border-zinc-100"
+            >
                 <ArrowUpRight size={24} color="#475569" strokeWidth={2.5} />
             </TouchableOpacity>
         </View>

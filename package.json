@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@babel/runtime": "^7.20.0",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@supabase/supabase-js": "^2.45.4",
     "clsx": "^2.1.1",
@@ -21,11 +22,14 @@
     "expo-linking": "6.3.1",
     "expo-location": "~17.0.1",
     "expo-notifications": "~0.28.1",
+    "expo-font": "~12.0.7",
+    "expo-splash-screen": "~0.27.5",
     "expo-router": "~3.5.24",
     "expo-status-bar": "1.12.1",
     "lucide-react-native": "^0.441.0",
     "moti": "^0.30.0",
     "nativewind": "4.1.23",
+    "react-native-css-interop": "~0.1.22",
     "react": "18.2.0",
     "react-native": "0.74.5",
     "react-native-gesture-handler": "~2.16.1",
@@ -37,15 +41,17 @@
     "react-native-segmented-control-tab": "^4.0.0",
     "react-native-svg": "15.2.0",
     "react-native-url-polyfill": "^2.0.0",
-    "tailwind-merge": "^3.5.0",
-    "typescript": "~5.3.3"
+    "react-native-webview": "13.8.6",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "babel-preset-expo": "~11.0.15",
     "@types/react": "~18.3.0",
     "@types/react-native": "^0.73.0",
     "postcss": "8.4.49",
-    "tailwindcss": "3.4.17"
+    "tailwindcss": "3.4.17",
+    "typescript": "~5.3.3"
   },
   "private": true
 }

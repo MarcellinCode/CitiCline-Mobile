@@ -20,7 +20,12 @@ import {
   BarChart3,
   Globe,
   ArrowUpRight,
-  Users
+  Users,
+  Calendar,
+  MapPin,
+  Package,
+  Building2,
+  Truck
 } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
 import { useProfile } from '@/hooks/useProfile';
@@ -41,6 +46,7 @@ export default function EspaceDashboard() {
     if (!profile) return [];
 
     switch (profile.role) {
+      case 'super_admin':
       case 'vendeur':
         return [
           {
@@ -89,12 +95,12 @@ export default function EspaceDashboard() {
             route: ROUTES.WALLET
           },
           {
-            id: 'missions',
-            title: 'Ma Mission',
-            subtitle: 'Feuille de route optimisée',
-            icon: Target,
+            id: 'reservations',
+            title: 'Mes Réservations',
+            subtitle: 'Suivez vos lots bloqués',
+            icon: History,
             color: 'bg-primary',
-            route: ROUTES.MISSIONS
+            route: ROUTES.MES_DECHETS
           },
           {
             id: 'bourse',
@@ -105,48 +111,116 @@ export default function EspaceDashboard() {
             route: ROUTES.ESPACE_OFFRES
           },
           {
+            id: 'map',
+            title: 'Carte Live',
+            subtitle: 'Points de collecte',
+            icon: MapIcon,
+            color: 'bg-blue-500',
+            route: ROUTES.MAP
+          }
+        ];
+      case 'agent_collecteur':
+        return [
+          {
+            id: 'missions',
+            title: 'Ma Mission',
+            subtitle: 'Feuille de route du jour',
+            icon: Target,
+            color: 'bg-primary',
+            route: ROUTES.MISSIONS
+          },
+          {
+            id: 'map',
+            title: 'Carte Live',
+            subtitle: 'Bac à proximité',
+            icon: MapIcon,
+            color: 'bg-emerald-500',
+            route: ROUTES.MAP
+          },
+          {
             id: 'history',
-            title: 'Collectes',
-            subtitle: 'Historique complet',
+            title: 'Mon Historique',
+            subtitle: 'Collectes terminées',
             icon: History,
             color: 'bg-amber-500',
             route: ROUTES.MES_DECHETS
+          },
+          {
+            id: 'profile',
+            title: 'Mon Profil',
+            subtitle: 'Paramètres du compte',
+            icon: Settings,
+            color: 'bg-zinc-800',
+            route: ROUTES.SETTINGS
           }
         ];
       case 'organisation_admin':
+      case 'entreprise':
         return [
           {
-            id: 'wallet',
-            title: 'Revenus Zone',
-            subtitle: 'Solde & Abonnements',
-            value: `${formatCurrency(profile.wallet_balance)} FCFA`,
-            icon: Wallet,
+            id: 'reservations',
+            title: 'Réservations',
+            subtitle: 'Suivez vos lots réservés',
+            icon: Calendar,
+            color: 'bg-blue-500',
+            route: ROUTES.MES_DECHETS
+          },
+          {
+            id: 'map',
+            title: 'Carte Live',
+            subtitle: 'Explorer les déchets autour',
+            icon: MapPin,
             color: 'bg-emerald-500',
-            route: ROUTES.WALLET
-          },
-          {
-            id: 'analytics',
-            title: 'Analytique',
-            subtitle: 'Impact & Performance',
-            icon: BarChart3,
-            color: 'bg-indigo-500',
-            route: '/espace/analytics'
-          },
-          {
-            id: 'agents',
-            title: 'Mes Agents',
-            subtitle: 'Gestion de l\'équipe',
-            icon: Users,
-            color: 'bg-primary',
-            route: '/espace/agents'
+            route: ROUTES.MAP
           },
           {
             id: 'history',
-            title: 'Activité',
-            subtitle: 'Lots & Déchets',
-            icon: History,
-            color: 'bg-amber-500',
+            title: 'Mes Déchets',
+            subtitle: 'Gérer vos publications',
+            icon: Package,
+            color: 'bg-orange-500',
             route: ROUTES.MES_DECHETS
+          },
+          {
+            id: 'wallet',
+            title: 'Mon Portefeuille',
+            subtitle: 'Consultez vos gains',
+            value: `${formatCurrency(profile.wallet_balance)} FCFA`,
+            icon: Wallet,
+            color: 'bg-purple-500',
+            route: ROUTES.WALLET
+          },
+          {
+            id: 'bourse',
+            title: 'Appels d\'Offres',
+            subtitle: 'Espace B2B & Marchés',
+            icon: Building2,
+            color: 'bg-indigo-500',
+            route: ROUTES.ESPACE_OFFRES
+          },
+          {
+            id: 'mission-control',
+            title: 'Mission Control',
+            subtitle: 'Gestion agents & concessions',
+            icon: BarChart3,
+            color: 'bg-zinc-900',
+            route: ROUTES.ESPACE_AGENTS
+          },
+          {
+            id: 'fleet',
+            title: 'Carnet d\'Entretien',
+            subtitle: 'Suivi technique & vidange',
+            icon: Truck,
+            color: 'bg-emerald-600',
+            route: ROUTES.FLEET
+          },
+          {
+            id: 'analytics',
+            title: 'Impact RSE',
+            subtitle: 'Bilan Écologique',
+            icon: Leaf,
+            color: 'bg-emerald-500',
+            route: ROUTES.ESPACE_ANALYTICS
           }
         ];
       default:
@@ -250,7 +324,7 @@ export default function EspaceDashboard() {
         <HubText variant="label" className="mb-6 ml-1">Menu Principal</HubText>
         <View className="flex-row flex-wrap justify-between">
             {gridItems.map((item, idx) => (
-                <View className="w-[48%] mb-6">
+                <View key={item.id} className="w-[48%] mb-6">
                     <TouchableOpacity 
                         activeOpacity={0.8}
                         onPress={() => item.route && router.push(item.route as any)}
@@ -264,8 +338,8 @@ export default function EspaceDashboard() {
                             </View>
                             
                             <View>
-                                <HubText variant="h3" className="text-zinc-900 mb-1">{item.title}</HubText>
-                                <HubText variant="caption" className="text-zinc-500" numberOfLines={1}>{item.subtitle}</HubText>
+                                <HubText variant="h3" className="text-zinc-900 mb-1 text-sm">{item.title}</HubText>
+                                <HubText variant="caption" className="text-zinc-500 text-[9px]" numberOfLines={1}>{item.subtitle}</HubText>
                             </View>
 
                             <View className="flex-row items-center gap-1">

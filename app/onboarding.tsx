@@ -56,7 +56,7 @@ export default function Onboarding() {
       <StatusBar style="dark" />
       
       <View className="flex-row justify-between items-center px-8 h-16">
-        <View className="w-10">
+        <View className="w-40 items-start">
             <Logo size="small" />
         </View>
         <HubButton 

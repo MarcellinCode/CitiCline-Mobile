@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import * as React from 'react';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { supabase } from '@/lib/supabase';
+import { Header } from '@/components/Header';
 import { Waste } from '@/lib/types';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -25,10 +26,11 @@ export default function MesDechetsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
-  const [wastes, setWastes] = useState<Waste[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [wastes, setWastes] = React.useState<Waste[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [expandedId, setExpandedId] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!profile) return;
     loadWastes();
   }, [profile]);
@@ -47,6 +49,9 @@ export default function MesDechetsScreen() {
         query = query.eq('seller_id', profile.id);
       } else if (profile?.role === 'collecteur' || profile?.role === 'agent_collecteur') {
         query = query.eq('collector_id', profile.id);
+      } else {
+        // Pour les admins et entreprises, on affiche tout ce qui leur est lié (ventes et achats/collectes)
+        query = query.or(`seller_id.eq.${profile.id},collector_id.eq.${profile.id}`);
       }
 
       const { data } = await query;
@@ -58,9 +63,13 @@ export default function MesDechetsScreen() {
     }
   };
 
-  const title = profile?.role === 'vendeur' ? 'Mes Publications' : 'Mes Collectes';
-  const emptyLabel = profile?.role === 'vendeur' 
-    ? 'Vous n\'avez pas encore publié de déchets'
+  const title = (profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Mes Publications' : 
+                (profile?.role === 'organisation_admin' || profile?.role === 'entreprise') ? 'Mes Réservations' : 'Mes Collectes';
+  
+  const emptyLabel = (profile?.role === 'vendeur' || profile?.role === 'super_admin') 
+    ? 'Vous n\'avez pas encore publié de déchets' :
+    (profile?.role === 'organisation_admin' || profile?.role === 'entreprise')
+    ? 'Vous n\'avez pas encore effectué de réservation'
     : 'Vous n\'avez pas encore effectué de collecte';
 
   const isLoad = profileLoading || loading;
@@ -69,15 +78,15 @@ export default function MesDechetsScreen() {
     <View style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }]}>
-        <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.iconBtn}>
-          <ChevronLeft size={24} color="#020617" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{title}</Text>
-        <TouchableOpacity onPress={loadWastes} style={styles.iconBtn}>
-          <RefreshCw size={18} color="#020617" />
-        </TouchableOpacity>
-      </View>
+      <Header 
+        title={title} 
+        onBack={() => navigateSafe(router, ROUTES.ESPACE)}
+        rightAction={
+          <TouchableOpacity onPress={loadWastes} style={styles.iconBtn}>
+            <RefreshCw size={18} color="#020617" />
+          </TouchableOpacity>
+        }
+      />
 
       {isLoad ? (
         <View style={styles.centerContainer}>
@@ -89,7 +98,7 @@ export default function MesDechetsScreen() {
             <Package size={32} color="#cbd5e1" />
           </View>
           <Text style={styles.emptyText}>{emptyLabel}</Text>
-          {profile?.role === 'vendeur' && (
+          {(profile?.role === 'vendeur' || profile?.role === 'super_admin') && (
             <TouchableOpacity
               onPress={() => navigateSafe(router, '/marketplace/publish')}
               style={styles.actionBtn}
@@ -131,8 +140,11 @@ export default function MesDechetsScreen() {
               const statusCfg = STATUS_CONFIG[waste.status] || STATUS_CONFIG.published;
               const wasteType = waste.waste_types;
               return (
-                <View key={waste.id}>
-                  <TouchableOpacity style={styles.cardItem}>
+                <View key={waste.id} className="mb-4">
+                  <TouchableOpacity 
+                    style={styles.cardItem}
+                    onPress={() => waste.status === 'reserved' && setExpandedId(expandedId === waste.id ? null : waste.id)}
+                  >
                     <View style={styles.cardIconBg}>
                       <Text style={styles.cardEmoji}>{wasteType?.emoji || '♻️'}</Text>
                     </View>
@@ -150,6 +162,23 @@ export default function MesDechetsScreen() {
                       </Text>
                     </View>
                   </TouchableOpacity>
+
+                  {expandedId === waste.id && waste.status === 'reserved' && (profile?.role === 'vendeur' || profile?.role === 'super_admin') && (
+                    <View style={styles.expandedContainer}>
+                       <Text style={styles.expandedTitle}>SCAN DE VALIDATION</Text>
+                       <Text style={styles.expandedSubtitle}>Présentez ce code au collecteur pour valider la pesée.</Text>
+                       <View style={styles.qrContainer}>
+                          <RNImage 
+                            source={{ uri: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=WAVE-${waste.id.slice(0, 8)}` }} 
+                            style={styles.qrImage}
+                          />
+                       </View>
+                       <View style={styles.pinRow}>
+                          <Text style={styles.pinLabel}>CODE PIN : </Text>
+                          <Text style={styles.pinValue}>{waste.id.slice(0, 6).toUpperCase()}</Text>
+                       </View>
+                    </View>
+                  )}
                 </View>
               );
             })}
@@ -190,5 +219,13 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 11, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
   cardSubtitle: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
-  statusBadgeText: { fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 }
+  statusBadgeText: { fontSize: 8, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 2 },
+  expandedContainer: { backgroundColor: '#fdfdfd', borderBottomLeftRadius: 32, borderBottomRightRadius: 32, marginTop: -40, paddingTop: 40, padding: 24, borderWidth: 1, borderColor: '#f1f5f9', alignItems: 'center' },
+  expandedTitle: { fontSize: 10, fontWeight: '900', color: '#0f172a', letterSpacing: 2, marginBottom: 4 },
+  expandedSubtitle: { fontSize: 9, color: '#94a3b8', textAlign: 'center', marginBottom: 20 },
+  qrContainer: { padding: 16, backgroundColor: 'white', borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 5 },
+  qrImage: { width: 180, height: 180, borderRadius: 12 },
+  pinRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 20 },
+  pinLabel: { fontSize: 9, fontWeight: '900', color: '#94a3b8', letterSpacing: 1 },
+  pinValue: { fontSize: 18, fontWeight: '900', color: '#10b981', marginLeft: 8, fontStyle: 'italic' }
 });

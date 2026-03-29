@@ -5,6 +5,8 @@ import { useWastes } from '@/hooks/useWastes';
 import { useProfile } from '@/hooks/useProfile';
 import { WasteCard } from '@/components/WasteCard';
 import { Search, Leaf, Zap, Box, ShoppingBag, ArrowLeft, ShieldCheck } from 'lucide-react-native';
+import { ROUTES } from '@/constants/routes';
+import { navigateSafe } from '@/utils/navigation';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CATEGORIES = [
@@ -46,7 +48,7 @@ export default function AppelsDOffresScreen() {
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <View style={styles.topRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
+        <TouchableOpacity onPress={() => navigateSafe(router, ROUTES.ESPACE)} style={styles.iconBtn}>
           <ArrowLeft size={24} color="#020617" />
         </TouchableOpacity>
         <Text style={styles.mainTitle}>Appels d'Offres</Text>
