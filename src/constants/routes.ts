@@ -14,9 +14,16 @@ export const ROUTES = {
   ESPACE_OFFRES: '/espace/offres' as const,
   ESPACE_AGENTS: '/espace/agents' as const,
   ESPACE_ANALYTICS: '/espace/analytics' as const,
+  ESPACE_RESERVATIONS: '/espace/reservations' as const,
+  ESPACE_IMPACT_RSE: '/espace/impact-rse' as const,
+  ESPACE_FLOTTE: '/espace/flotte' as const,
 
   // Groupe Paramètres et Auth
   SETTINGS: '/settings' as const,
+  SETTINGS_SECURITY: '/settings/security' as const,
+  SETTINGS_PRIVACY: '/settings/privacy' as const,
+  SETTINGS_HELP: '/settings/help' as const,
+  SETTINGS_TERMS: '/settings/terms' as const,
   LOGIN: '/(auth)/login' as const,
   SIGNUP: '/(auth)/signup' as const,
 

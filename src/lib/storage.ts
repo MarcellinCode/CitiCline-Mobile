@@ -1,7 +1,7 @@
 import * as FileSystem from 'expo-file-system';
 
 const CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || 'djaa2lddn';
-const UPLOAD_PRESET = 'ml_default'; 
+const UPLOAD_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_default'; 
 
 /**
  * Uploads an image to Cloudinary using the REST API.

@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { useMemo } from 'react';
-import { View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Platform, Image } from 'react-native';
+import React, { useMemo, useEffect, useState } from 'react';
+import { View, ScrollView, TouchableOpacity, Dimensions, ActivityIndicator, Platform, Image, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 import { 
   User, 
   Wallet, 
@@ -25,7 +25,11 @@ import {
   MapPin,
   Package,
   Building2,
-  Truck
+  Truck,
+  Zap,
+  Scan,
+  QrCode,
+  LifeBuoy
 } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
 import { useProfile } from '@/hooks/useProfile';
@@ -41,6 +45,36 @@ export default function EspaceDashboard() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading } = useProfile();
+  const [totalRecycled, setTotalRecycled] = useState(0);
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchStats();
+    }
+  }, [profile]);
+
+  const fetchStats = async () => {
+    try {
+      // Pour les vendeurs, on compte ce qu'ils ont "vendu" (donné à la collecte)
+      // Pour les collecteurs, ce qu'ils ont "collecté"
+      const field = profile?.role === 'collecteur' ? 'collector_id' : 'seller_id';
+      
+      const { data, error } = await supabase
+        .from('wastes')
+        .select('final_weight, estimated_weight')
+        .eq(field, profile?.id)
+        .eq('status', 'collected');
+      
+      if (error) throw error;
+      
+      if (data) {
+        const total = data.reduce((acc: number, w: any) => acc + (Number(w.final_weight) || Number(w.estimated_weight) || 0), 0);
+        setTotalRecycled(total);
+      }
+    } catch (err) {
+      console.error("fetchStats error:", err);
+    }
+  };
 
   const gridItems = useMemo(() => {
     if (!profile) return [];
@@ -55,7 +89,7 @@ export default function EspaceDashboard() {
             subtitle: 'Consultez vos gains',
             value: `${(profile.wallet_balance || 0).toLocaleString()} FCFA`,
             icon: Wallet,
-            color: 'bg-emerald-500',
+            color: 'bg-purple-500',
             route: ROUTES.WALLET
           },
           {
@@ -63,14 +97,14 @@ export default function EspaceDashboard() {
             title: 'Abonnement',
             subtitle: 'Gestion & Alertes',
             icon: ShieldCheck,
-            color: 'bg-primary',
+            color: 'bg-emerald-600',
             route: ROUTES.ABONNEMENTS
           },
           {
             id: 'history',
             title: 'Mes Déchets',
             subtitle: 'Gérer vos publications',
-            icon: History,
+            icon: Package,
             color: 'bg-amber-500',
             route: ROUTES.MES_DECHETS
           },
@@ -78,8 +112,8 @@ export default function EspaceDashboard() {
             id: 'map',
             title: 'Carte Live',
             subtitle: 'Points de collecte',
-            icon: MapIcon,
-            color: 'bg-blue-500',
+            icon: MapPin,
+            color: 'bg-emerald-500',
             route: ROUTES.MAP
           }
         ];
@@ -90,7 +124,7 @@ export default function EspaceDashboard() {
             title: 'Mes Gains',
             subtitle: 'Revenus générés',
             value: `${formatCurrency(profile.wallet_balance)} FCFA`,
-            icon: TrendingUp,
+            icon: Wallet,
             color: 'bg-emerald-500',
             route: ROUTES.WALLET
           },
@@ -98,15 +132,15 @@ export default function EspaceDashboard() {
             id: 'reservations',
             title: 'Mes Réservations',
             subtitle: 'Suivez vos lots bloqués',
-            icon: History,
-            color: 'bg-primary',
-            route: ROUTES.MES_DECHETS
+            icon: Calendar,
+            color: 'bg-blue-500',
+            route: ROUTES.ESPACE_RESERVATIONS
           },
           {
             id: 'bourse',
             title: 'Appels d\'Offres',
             subtitle: 'Espace B2B & Entreprises',
-            icon: ShieldCheck,
+            icon: Building2,
             color: 'bg-indigo-500',
             route: ROUTES.ESPACE_OFFRES
           },
@@ -114,8 +148,8 @@ export default function EspaceDashboard() {
             id: 'map',
             title: 'Carte Live',
             subtitle: 'Points de collecte',
-            icon: MapIcon,
-            color: 'bg-blue-500',
+            icon: MapPin,
+            color: 'bg-emerald-500',
             route: ROUTES.MAP
           }
         ];
@@ -163,7 +197,7 @@ export default function EspaceDashboard() {
             subtitle: 'Suivez vos lots réservés',
             icon: Calendar,
             color: 'bg-blue-500',
-            route: ROUTES.MES_DECHETS
+            route: ROUTES.ESPACE_RESERVATIONS
           },
           {
             id: 'map',
@@ -202,7 +236,7 @@ export default function EspaceDashboard() {
             id: 'mission-control',
             title: 'Mission Control',
             subtitle: 'Gestion agents & concessions',
-            icon: BarChart3,
+            icon: TrendingUp,
             color: 'bg-zinc-900',
             route: ROUTES.ESPACE_AGENTS
           },
@@ -211,16 +245,16 @@ export default function EspaceDashboard() {
             title: 'Carnet d\'Entretien',
             subtitle: 'Suivi technique & vidange',
             icon: Truck,
-            color: 'bg-emerald-600',
-            route: ROUTES.FLEET
+            color: 'bg-primary',
+            route: ROUTES.ESPACE_FLOTTE
           },
           {
             id: 'analytics',
             title: 'Impact RSE',
             subtitle: 'Bilan Écologique',
             icon: Leaf,
-            color: 'bg-emerald-500',
-            route: ROUTES.ESPACE_ANALYTICS
+            color: 'bg-green-600',
+            route: ROUTES.ESPACE_IMPACT_RSE
           }
         ];
       default:
@@ -243,6 +277,34 @@ export default function EspaceDashboard() {
             route: ROUTES.MES_DECHETS
           }
         ];
+    }
+  }, [profile]);
+  
+  const quickActions = useMemo(() => {
+    if (!profile) return [];
+    
+    // Actions de base pour tout le monde
+    const baseActions = [
+      { id: 'help', label: 'Besoin d\'aide ?', icon: LifeBuoy, route: ROUTES.SETTINGS_HELP }
+    ];
+
+    switch (profile.role) {
+      case 'vendeur':
+      case 'super_admin':
+        return [
+          { id: 'publish', label: 'Vendre un lot', icon: Package, route: '/marketplace/publish' },
+          { id: 'qr', label: 'Mon QR Code', icon: QrCode, action: () => Alert.alert("Identification HUB", `Votre ID unique : ${profile.id?.slice(0,8).toUpperCase()}`) },
+          ...baseActions
+        ];
+      case 'collecteur':
+      case 'agent_collecteur':
+        return [
+          { id: 'scan', label: 'Scanner QR', icon: Scan, action: () => Alert.alert("Scanner", 'Initialisation du scanner de pesée...') },
+          { id: 'map', label: 'Itinéraire', icon: MapIcon, route: ROUTES.MAP },
+          ...baseActions
+        ];
+      default:
+        return baseActions;
     }
   }, [profile]);
 
@@ -270,21 +332,29 @@ export default function EspaceDashboard() {
         {/* Header section with User emphasis */}
         <View className="mb-10">
             <View className="flex-row items-center gap-2 mb-2">
-                <View className="w-8 h-[2px] bg-primary" />
-                <HubText variant="label" className="text-primary italic">CITICLINE CENTRAL HUB</HubText>
+                <MapPin size={12} color="#2A9D8F" />
+                <HubText variant="label" className="text-primary italic tracking-widest">{profile?.city || "Région Non Définie"}, CI</HubText>
             </View>
             <View className="flex-row items-end justify-between">
                 <View>
                     <HubText variant="h1" className="text-zinc-900">
-                        Bonjour, <HubText variant="h1" className="text-primary">{profile?.full_name?.split(' ')[0] || "Eco-Guerrier"}</HubText>
+                        Bonjour, <HubText variant="h1" className="text-primary">{profile?.full_name?.split(' ')[0] || (profile?.role === 'collecteur' ? 'Partenaire' : 'Citoyen')}</HubText>
                     </HubText>
-                    <HubText variant="body" className="text-zinc-400 mt-1">Prêt pour votre prochaine action ?</HubText>
+                    <HubText variant="body" className="text-zinc-400 mt-1">
+                      {profile?.role === 'collecteur' 
+                        ? 'Prêt pour votre prochaine collecte ?'
+                        : profile?.role === 'agent_collecteur'
+                        ? 'Consultez votre itinéraire du jour.'
+                        : profile?.role === 'entreprise'
+                        ? 'Gérez vos flux de déchets.'
+                        : 'Prêt pour votre prochaine action écologique ?'}
+                    </HubText>
                 </View>
             </View>
         </View>
 
         {/* Quick Wallet Summary Card */}
-        <View className="mb-10">
+        <View className="mb-8">
             <HubCard className="bg-zinc-900 border-0 flex-row items-center justify-between p-8">
                 <View className="flex-row items-center gap-4">
                     <View className="w-12 h-12 rounded-full bg-primary items-center justify-center">
@@ -304,17 +374,38 @@ export default function EspaceDashboard() {
             </HubCard>
         </View>
 
+        {/* New Quick Actions Row */}
+        <View className="mb-10">
+            <HubText variant="label" className="mb-4 ml-1">Actions Rapides</HubText>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row overflow-visible">
+                {quickActions.map((action) => (
+                    <TouchableOpacity 
+                        key={action.id}
+                        onPress={() => action.route ? router.push(action.route as any) : action.action?.()}
+                        className="mr-4 items-center"
+                    >
+                        <View className="w-16 h-16 bg-zinc-50 rounded-2xl items-center justify-center border border-zinc-100 shadow-sm shadow-zinc-200/50">
+                            <action.icon size={24} color="#2A9D8F" strokeWidth={2.5} />
+                        </View>
+                        <HubText className="text-[8px] font-black uppercase text-zinc-500 mt-2 tracking-widest text-center">
+                            {action.label}
+                        </HubText>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+
         {/* Quick Stats Grid */}
         <View className="flex-row gap-4 mb-10">
             <MiniStat 
                 label="Recyclé" 
-                value="128kg" 
+                value={`${totalRecycled.toLocaleString()}kg`} 
                 icon={Leaf} 
                 delay={300}
             />
             <MiniStat 
                 label="Points" 
-                value={profile?.eco_points || "450"} 
+                value={profile?.eco_points || "0"} 
                 icon={Crown} 
                 delay={400}
             />

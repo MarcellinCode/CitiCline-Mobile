@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
@@ -41,21 +41,21 @@ export default function AbonnementsScreen() {
   const router = useRouter();
   const { profile, loading: profileLoading, refreshProfile } = useProfile();
   const { location, errorMsg: locationError } = useLocation();
-  const [subscription, setSubscription] = React.useState<Subscription | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [orgLoading, setOrgLoading] = React.useState(false);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [orgLoading, setOrgLoading] = useState(false);
   
   // Wallet & Config State
-  const [topUpModal, setTopUpModal] = React.useState(false);
-  const [amount, setAmount] = React.useState('');
-  const [configModal, setConfigModal] = React.useState(false);
-  const [organizations, setOrganizations] = React.useState<any[]>([]);
-  const [selectedOrg, setSelectedOrg] = React.useState<any | null>(null);
-  const [plans, setPlans] = React.useState<any[]>([]);
-  const [selectedPlan, setSelectedPlan] = React.useState<any | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [topUpModal, setTopUpModal] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [configModal, setConfigModal] = useState(false);
+  const [organizations, setOrganizations] = useState<any[]>([]);
+  const [selectedOrg, setSelectedOrg] = useState<any | null>(null);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!profile) return;
     loadSubscription();
   }, [profile]);

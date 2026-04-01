@@ -49,16 +49,40 @@ export default function MissionsScreen() {
     if (!profile?.id) return;
     try {
       setLoading(true);
-      const { data } = await supabase
+      
+      // 1. Récupérer les lots réservés ou publiés
+      const { data: wastes, error: wError } = await supabase
         .from('wastes')
-        .select('*, waste_types(*), profiles!wastes_seller_id_fkey(*)')
+        .select('*, waste_types(*)')
         .eq('collector_id', profile.id)
         .in('status', ['reserved', 'published'])
         .order('created_at', { ascending: true });
 
-      setMissions((data as Waste[]) || []);
-    } catch (err) {
-      console.error("loadMissions error:", err);
+      if (wError) throw wError;
+
+      if (!wastes || wastes.length === 0) {
+        setMissions([]);
+        return;
+      }
+
+      // 2. Récupérer les profils des vendeurs pour ces lots
+      const sellerIds = [...new Set(wastes.map(w => w.seller_id).filter(Boolean))];
+      const { data: sellers, error: sError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', sellerIds);
+
+      if (sError) throw sError;
+
+      // 3. Fusionner les données
+      const enrichedMissions = wastes.map(waste => ({
+        ...waste,
+        profiles: sellers?.find(s => s.id === waste.seller_id) || null
+      }));
+
+      setMissions(enrichedMissions as Waste[]);
+    } catch (err: any) {
+      console.error("loadMissions error:", err?.message);
     } finally {
       setLoading(false);
     }

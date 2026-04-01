@@ -92,7 +92,11 @@ export const MapOSM = ({ userLocation, hubs, wastes, onMarkerPress }: MapOSMProp
     <View style={styles.container}>
       <WebView
         originWhitelist={['*']}
-        source={{ html: mapHtml }}
+        source={{ 
+          html: mapHtml,
+          headers: { 'Referer': 'https://citicline.com' }
+        }}
+        userAgent="CiticlineMobileApp/1.0 (https://citicline.com)"
         style={styles.map}
         onMessage={(event: any) => {
           try {

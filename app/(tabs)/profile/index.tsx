@@ -1,3 +1,4 @@
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
@@ -41,6 +42,39 @@ export default function ProfileScreen() {
     await supabase.auth.signOut();
     router.replace('/(auth)/login' as any);
   };
+
+  const [impactTotal, setImpactTotal] = useState(0);
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchImpact();
+    }
+  }, [profile]);
+
+  const fetchImpact = async () => {
+    try {
+      const field = profile?.role === 'collecteur' ? 'collector_id' : 'seller_id';
+      const { data, error } = await supabase
+        .from('wastes')
+        .select('final_weight, estimated_weight')
+        .eq(field, profile?.id)
+        .eq('status', 'collected');
+      
+      if (error) throw error;
+      if (data) {
+        const total = data.reduce((acc: number, w: any) => acc + (Number(w.final_weight) || Number(w.estimated_weight) || 0), 0);
+        setImpactTotal(total);
+      }
+    } catch (err) {
+      console.error("fetchImpact error:", err);
+    }
+  };
+
+  const joinDate = useMemo(() => {
+    if (!profile?.created_at) return "Récemment";
+    const date = new Date(profile.created_at);
+    return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }, [profile]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -143,11 +177,11 @@ export default function ProfileScreen() {
                 <View className="mt-8 pt-8 border-t border-zinc-800 flex-row justify-between">
                     <View>
                         <HubText variant="label" className="text-zinc-500 mb-1">Impact Total</HubText>
-                        <HubText variant="h3" className="text-white">1,248 KG</HubText>
+                        <HubText variant="h3" className="text-white">{impactTotal.toLocaleString()} KG</HubText>
                     </View>
                     <View className="items-end">
                         <HubText variant="label" className="text-zinc-500 mb-1">Depuis</HubText>
-                        <HubText variant="h3" className="text-white">Mars 2024</HubText>
+                        <HubText variant="h3" className="text-white capitalize">{joinDate}</HubText>
                     </View>
                 </View>
             </HubCard>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { 
   Truck, 
   Wrench, 
@@ -15,7 +15,6 @@ import {
 } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
 import { navigateSafe } from '@/utils/navigation';
-import { useRouter } from 'expo-router';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { HubButton } from '@/components/ui/HubButton';
@@ -61,7 +60,7 @@ export default function FleetScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator color="#2A9D8F" />
+        <ActivityIndicator color="#2A9D8F" size="large" />
       </View>
     );
   }
@@ -103,9 +102,9 @@ export default function FleetScreen() {
               </View>
               <View className="items-end">
                  <HubText variant="label" className="text-zinc-500 mb-1">Status</HubText>
-                 <View className="bg-emerald-500/20 px-3 py-1 rounded-full">
-                    <HubText variant="label" className="text-emerald-500 text-[10px] mb-0">EN SERVICE</HubText>
-                 </View>
+               <View className="bg-emerald-500/20 px-3 py-1 rounded-full">
+                  <HubText variant="label" className="text-emerald-500 text-[10px] mb-0">EN SERVICE</HubText>
+               </View>
               </View>
            </View>
            

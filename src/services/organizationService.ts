@@ -1,71 +1,72 @@
 import { supabase } from '@/lib/supabase';
 import { safeFetch } from '../utils/safeFetch';
 
-// ============================================================
-// MODE SIMULATION — Données de test pour les organisations
-// ============================================================
-
-const SIMULATION_ORGS = [
-  { id: 'sim_org_1', full_name: 'EcoGreen Abidjan', city: 'Abidjan', avatar_url: null },
-  { id: 'sim_org_2', full_name: 'TrierPro Bouaké', city: 'Bouaké', avatar_url: null },
-  { id: 'sim_org_3', full_name: 'CleanCity Yamoussoukro', city: 'Yamoussoukro', avatar_url: null },
-];
-
-const SIMULATION_PLANS = [
-  { id: 'sim_plan_1', name: 'Foyer Standard', price: 2000, pickup_days: ['Lundi', 'Vendredi'], pickup_time: '08h-10h', zone_name: 'Zone Résidentielle' },
-  { id: 'sim_plan_2', name: 'Entreprise Plus', price: 6000, pickup_days: ['Lundi', 'Mercredi', 'Vendredi'], pickup_time: '07h-09h', zone_name: 'Zone Commerciale' },
-  { id: 'sim_plan_3', name: 'Industrie Premium', price: 15000, pickup_days: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'], pickup_time: '06h-08h', zone_name: 'Zone Industrielle' },
-];
-
+/**
+ * RÉCUPÉRATION DES GESTIONNAIRES (Mairies/Zones)
+ * On récupère les concessions actives et leurs profils associés
+ */
 export const getOrganizationsNearby = async (city?: string) => {
   try {
-    let query = supabase
+    // 1. Récupérer les IDs des organisations ayant des concessions actives
+    let concessionsQuery = supabase
       .from('concessions')
-      .select('*, profiles!organisation_id(*)')
+      .select('organization_id')
       .eq('status', 'active');
     
     if (city) {
-      query = query.ilike('city', `%${city}%`);
+      concessionsQuery = concessionsQuery.ilike('city', `%${city}%`);
     }
     
-    const { data, error } = await query;
-    if (error) throw error;
-    
-    const orgs = data
-      ?.map(c => c.profiles)
-      .filter((v, i, a) => v && a.findIndex(t => t?.id === v.id) === i);
+    const { data: concessions, error: cError } = await concessionsQuery;
+    if (cError) throw cError;
+
+    if (!concessions || concessions.length === 0) {
+      return [];
+    }
+
+    // 2. Extraire les IDs uniques
+    const uniqueOrgIds = [...new Set(concessions.map(c => c.organization_id).filter(Boolean))];
+
+    if (uniqueOrgIds.length === 0) return [];
+
+    // 3. Récupérer les profils complets pour ces IDs
+    const { data: profiles, error: pError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('id', uniqueOrgIds);
+
+    if (pError) throw pError;
       
-    if (orgs && orgs.length > 0) return orgs;
-    
-    // Fallback simulation
-    console.warn('[SIMULATION] getOrganizationsNearby — utilisation des données simulées');
-    return SIMULATION_ORGS;
+    return profiles || [];
   } catch (err: any) {
-    console.warn('[SIMULATION] getOrganizationsNearby fallback:', err?.message);
-    return SIMULATION_ORGS;
+    console.error('getOrganizationsNearby error:', err?.message);
+    throw err;
   }
 };
 
-export const getOrganizationPlans = async (organisationId: string) => {
+/**
+ * RÉCUPÉRATION DES PLANS D'ABONNEMENT POUR UNE ORGANISATION
+ */
+export const getOrganizationPlans = async (organizationId: string) => {
   try {
     const result = await safeFetch<any[]>(() => 
       supabase
         .from('subscription_plans')
         .select('*')
-        .eq('organisation_id', organisationId)
+        .eq('organization_id', organizationId)
     );
     
-    if (result.data && result.data.length > 0) return result.data;
-    
-    // Fallback simulation
-    console.warn('[SIMULATION] getOrganizationPlans — utilisation des plans simulés');
-    return SIMULATION_PLANS;
+    if (result.error) throw result.error;
+    return result.data || [];
   } catch (err: any) {
-    console.warn('[SIMULATION] getOrganizationPlans fallback:', err?.message);
-    return SIMULATION_PLANS;
+    console.error('getOrganizationPlans error:', err?.message);
+    throw err;
   }
 };
 
+/**
+ * CRÉATION D'UNE SOUSCRIPTION RÉELLE
+ */
 export const createSubscription = async (userId: string, plan: any) => {
   try {
     const { data, error } = await supabase
@@ -87,22 +88,14 @@ export const createSubscription = async (userId: string, plan: any) => {
     if (error) throw error;
     return data;
   } catch (err: any) {
-    // Fallback simulation — retourner un objet simulé
-    console.warn('[SIMULATION] createSubscription fallback:', err?.message);
-    return {
-      id: 'sim_sub_' + Date.now(),
-      user_id: userId,
-      zone_name: plan.zone_name || 'Zone Locale (Simulation)',
-      company_name: plan.company_name || 'Organisation Simulée',
-      pickup_days: plan.pickup_days || ['Lundi', 'Mercredi', 'Vendredi'],
-      pickup_time: plan.pickup_time || '08h-10h',
-      price: plan.price,
-      status: 'active',
-      tier: 'standard'
-    };
+    console.error('createSubscription error:', err?.message);
+    throw err;
   }
 };
 
+/**
+ * SIGNALEMENT URGENT
+ */
 export const signalEmergency = async (subscriptionId: string, userId: string) => {
   try {
     const { error } = await supabase
@@ -110,15 +103,14 @@ export const signalEmergency = async (subscriptionId: string, userId: string) =>
       .insert([{
         profile_id: userId,
         title: 'URGENCE : Barque Pleine',
-        content: `Le vendeur ${userId} signale une barque pleine pour son abonnement ${subscriptionId}.`,
+        content: `Le vendeur signale une barque pleine pour son abonnement.`,
         type: 'collection'
       }]);
 
     if (error) throw error;
     return true;
   } catch (err: any) {
-    // Fallback simulation
-    console.warn('[SIMULATION] signalEmergency fallback:', err?.message);
-    return true;
+    console.error('signalEmergency error:', err?.message);
+    throw err;
   }
 };

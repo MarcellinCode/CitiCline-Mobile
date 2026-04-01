@@ -8,11 +8,23 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://pxihinnzsqsrlmrnwpqk.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4aWhpbm56c3Fzcmxtcm53cHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDIxODUsImV4cCI6MjA4ODM3ODE4NX0.JQLvKSu2YNwFGUWWltMlPypceceENVxUOLdaquIzBAo",
+        "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "djaa2lddn",
+        "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "citicline-mobile"
       }
     },
     "production": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://pxihinnzsqsrlmrnwpqk.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4aWhpbm56c3Fzcmxtcm53cHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDIxODUsImV4cCI6MjA4ODM3ODE4NX0.JQLvKSu2YNwFGUWWltMlPypceceENVxUOLdaquIzBAo",
+        "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "djaa2lddn",
+        "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "citicline-mobile"
       }
     }
   },

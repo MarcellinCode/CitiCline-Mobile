@@ -1,4 +1,4 @@
-import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search, Truck } from 'lucide-react-native';
+import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search } from 'lucide-react-native';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -143,14 +143,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="fleet/index"
-        options={{
-          title: 'Flotte',
-          tabBarIcon: ({ color }: { color: string }) => <Truck size={22} color={color} strokeWidth={2.5} />,
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="profile/index"
         options={{
           title: 'Compte',
@@ -168,6 +160,9 @@ export default function TabsLayout() {
       <Tabs.Screen name="espace/agents/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="espace/offres" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="espace/analytics" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="espace/flotte" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="espace/reservations" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="espace/impact-rse" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="settings/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="notifications/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="profile/edit" options={{ href: null, tabBarStyle: { display: 'none' } }} />

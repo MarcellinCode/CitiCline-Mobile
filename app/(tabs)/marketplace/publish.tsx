@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Image as RNImage, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image as RNImage, StyleSheet, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
@@ -51,7 +51,7 @@ export default function PublishWaste() {
 
   const handlePublish = async () => {
     if (!typeId || !weight || !location || !profile?.id) {
-      alert("Veuillez remplir tous les champs obligatoires !");
+      Alert.alert("Champs manquants", "Veuillez remplir tous les champs obligatoires !");
       return;
     }
 
@@ -79,11 +79,14 @@ export default function PublishWaste() {
 
       if (error) throw error;
       
-      alert("Listing publié avec succès !");
-      router.back();
-    } catch (err) {
+      Alert.alert(
+        "Félicitations !", 
+        "Votre lot a été publié sur la Marketplace. Les collecteurs à proximité ont été notifiés.",
+        [{ text: "OK", onPress: () => router.push(ROUTES.MES_DECHETS as any) }]
+      );
+    } catch (err: any) {
       console.error(err);
-      alert("Erreur lors de la publication.");
+      Alert.alert("Erreur", "Impossible de publier votre annonce. Veuillez vérifier votre connexion.");
     } finally {
       setLoading(false);
     }

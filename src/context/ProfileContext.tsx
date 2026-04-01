@@ -51,18 +51,31 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // 1. Initial Session Check
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // 1. Initial Session Check with error handling
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("getSession error (possibly stale token):", error.message);
+        // If the refresh token is invalid, we clear the session locally
+        if (error.message.includes("Invalid Refresh Token") || error.message.includes("not found")) {
+          supabase.auth.signOut();
+        }
+        setLoading(false);
+        return;
+      }
+
       setSession(session);
       if (session?.user?.id) {
         fetchProfile(session.user.id);
       } else {
         setLoading(false);
       }
+    }).catch(err => {
+      console.error("getSession catch-all error:", err);
+      setLoading(false);
     });
 
     // 2. Auth State Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       if (session?.user?.id) {
         setLoading(true);
@@ -70,6 +83,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       } else {
         setProfile(null);
         setLoading(false);
+        
+        // Handle specific event where refresh token might fail
+        if (event === 'TOKEN_REFRESHED' && !session) {
+           console.warn("Auth token refresh failed, signing out...");
+           supabase.auth.signOut();
+        }
       }
     });
 

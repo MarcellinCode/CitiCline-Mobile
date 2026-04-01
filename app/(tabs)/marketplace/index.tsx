@@ -35,6 +35,29 @@ export default function Marketplace() {
   const [search, setSearch] = useState('');
   const [emergencyLoading, setEmergencyLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [impactWeight, setImpactWeight] = useState(0);
+
+  const fetchImpactCounter = async () => {
+    if (!profile?.id) return;
+    try {
+      const { data } = await supabase
+        .from('wastes')
+        .select('final_weight, estimated_weight')
+        .or(`seller_id.eq.${profile.id},collector_id.eq.${profile.id}`)
+        .eq('status', 'collected');
+      
+      if (data) {
+        const total = data.reduce((acc, w) => acc + (Number(w.final_weight) || Number(w.estimated_weight) || 0), 0);
+        setImpactWeight(total);
+      }
+    } catch (e) {
+      console.error("Error fetching impact counter:", e);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchImpactCounter();
+  }, [profile]);
 
   const filteredWastes = useMemo(() => {
     let list = wastes;
@@ -104,8 +127,8 @@ export default function Marketplace() {
       <View className="mb-10 px-8 flex-row items-center justify-between mb-8">
         <View>
           <HubText variant="label" className="text-zinc-400">Bonjour,</HubText>
-          <HubText variant="h2" className="text-zinc-900 leading-tight">
-            {profile?.full_name?.split(' ')[0] || 'Eco-Guerrier'}
+          <HubText variant="h1" className="text-zinc-900 leading-tight">
+            {profile?.full_name?.split(' ')[0] || (profile?.role === 'collecteur' ? 'Partenaire' : 'Citoyen')}
           </HubText>
         </View>
         <TouchableOpacity 
@@ -130,8 +153,12 @@ export default function Marketplace() {
                </View>
                <HubText variant="label" className="text-white/80 mb-1">Impact</HubText>
                <View className="flex-row items-baseline gap-1">
-                  <HubText variant="h2" className="text-white text-xl">12.5</HubText>
-                  <HubText className="text-white/70 text-xs italic normal-case">kg</HubText>
+                  <HubText variant="h2" className="text-white text-xl">
+                    {impactWeight >= 1000 ? (impactWeight/1000).toFixed(1) : impactWeight}
+                  </HubText>
+                  <HubText className="text-white/70 text-xs italic normal-case">
+                    {impactWeight >= 1000 ? 't' : 'kg'}
+                  </HubText>
                </View>
                
                <View className="absolute -bottom-6 -right-6 opacity-10">
