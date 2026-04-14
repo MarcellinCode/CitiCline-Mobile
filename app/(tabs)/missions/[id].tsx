@@ -24,18 +24,47 @@ export default function MissionDetail() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id, name, type, color } = useLocalSearchParams();
+  const [mission, setMission] = useState<any>(null);
   const [step, setStep] = useState<'info' | 'scan' | 'weight' | 'success'>('info');
   const [scanned, setScanned] = useState(false);
   const [weight, setWeight] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = React.useRef<CameraView>(null);
   const [photoBefore, setPhotoBefore] = useState<string | null>(null);
   const [photoAfter, setPhotoAfter] = useState<string | null>(null);
 
-  const isMarketplace = type?.toString().toLowerCase().includes('recyclage') || type?.toString().toLowerCase().includes('bac');
-  
+  useEffect(() => {
+    if (id) {
+        loadMission();
+    }
+  }, [id]);
+
+  const loadMission = async () => {
+    try {
+        setLoading(true);
+        const { data, error } = await supabase
+            .from('wastes')
+            .select('*, waste_types(*), profiles!wastes_seller_id_fkey(*)')
+            .eq('id', id)
+            .single();
+        
+        if (error) throw error;
+        setMission(data);
+    } catch (err) {
+        console.error("loadMission error:", err);
+        Alert.alert("Erreur", "Impossible de charger les détails de la mission.");
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const isMarketplace = mission?.mission_type !== 'subscription_pickup';
+  const displayType = mission?.mission_type === 'subscription_pickup' ? 'Collecte Abonnement' : 'Marketplace';
+  const displayColor = mission?.mission_type === 'subscription_pickup' ? '#2A9D8F' : '#f59e0b';
+
   // Pre-request permissions when entering scan step
   useEffect(() => {
     if (step === 'scan' && (!permission || !permission.granted)) {
@@ -85,12 +114,29 @@ export default function MissionDetail() {
     }
   };
 
-  const handleFinalize = () => {
+  const handleFinalize = async () => {
     if (isMarketplace && !weight) {
       Alert.alert("Erreur", "Veuillez saisir le poids réel du lot.");
       return;
     }
-    setStep('success');
+    
+    try {
+        setUpdating(true);
+        const { data: rpcData, error: rpcError } = await supabase.rpc('fn_finalize_collection', {
+            p_waste_id: id,
+            p_final_weight: isMarketplace ? parseFloat(weight) : 0
+        });
+        
+        if (rpcError) throw rpcError;
+        if (rpcData && rpcData.success === false) throw new Error(rpcData.error);
+        
+        setStep('success');
+    } catch (err: any) {
+        console.error("Finalize error:", err);
+        Alert.alert("Erreur", err.message || "Impossible de valider la mission.");
+    } finally {
+        setUpdating(false);
+    }
   };
 
   return (
@@ -107,15 +153,21 @@ export default function MissionDetail() {
         headerStyle: { backgroundColor: 'white' }
       }} />
 
-      <ScrollView className="flex-1 px-8 pt-6" showsVerticalScrollIndicator={false}>
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+            <ActivityIndicator color="#2A9D8F" size="large" />
+            <HubText variant="label" className="mt-4 text-zinc-400">Chargement de la mission...</HubText>
+        </View>
+      ) : (
+        <ScrollView className="flex-1 px-8 pt-6" showsVerticalScrollIndicator={false}>
           {step === 'info' && (
             <View key="info">
               <HubCard className="p-10 border-0 bg-primary/5 items-center mb-8">
                 <View className="w-20 h-20 bg-white rounded-[2rem] items-center justify-center shadow-xl shadow-zinc-200/50 mb-8">
-                  <MapPin size={32} color={color?.toString() || '#2A9D8F'} strokeWidth={3} />
+                  <MapPin size={32} color={displayColor} strokeWidth={3} />
                 </View>
-                <HubText variant="h2" className="text-zinc-900 mb-1">{name}</HubText>
-                <HubText variant="label" className="text-primary italic tracking-widest">{type}</HubText>
+                <HubText variant="h2" className="text-zinc-900 mb-1">{mission?.profiles?.full_name || 'Citoyen'}</HubText>
+                <HubText variant="label" className="text-primary italic tracking-widest">{displayType}</HubText>
               </HubCard>
 
               <HubCard className="bg-zinc-900 p-8 mb-10 border-0">
@@ -125,8 +177,8 @@ export default function MissionDetail() {
                 </View>
                 <HubText variant="body" className="text-white/80 leading-relaxed italic">
                    {isMarketplace 
-                     ? "Vérifiez la qualité des matières sur place. Le paiement final sera calculé après votre pesée réelle."
-                     : "Scannez le badge QR du foyer pour valider le ramassage. Prenez une photo en cas d'imprévu."}
+                     ? "Vérifiez la qualité des matières sur place. Une photo et la pesée réelle sont obligatoires pour le débit du client."
+                     : "Mission d'abonnement : Collectez le bac du foyer. Une photo 'après' est requise pour confirmer le service."}
                 </HubText>
               </HubCard>
 

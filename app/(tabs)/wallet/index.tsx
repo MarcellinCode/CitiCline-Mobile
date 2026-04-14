@@ -13,12 +13,24 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
 import { Header } from '@/components/Header';
 import { navigateSafe } from '@/utils/navigation';
+import { creditWallet } from '@/services/walletService';
+
+// On simule l'intégration PawaPay pour le moment
+// En production, cela ouvrirait une URL de paiement ou un WebView.
+const PAY_METHODS = [
+    { id: 'mobile_money', label: 'Mobile Money', desc: 'Wave, Orange, MTN, Moov', color: 'bg-emerald-50 text-emerald-600' },
+    { id: 'card', label: 'Carte Bancaire', desc: 'Visa, Mastercard', color: 'bg-blue-50 text-blue-600' }
+];
 
 export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading: profileLoading } = useProfile();
   const { transactions, loading, refresh } = useWallet(profile?.id);
+
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [isCashedIn, setIsCashedIn] = useState(false);
 
   const handleWithdraw = () => {
     Alert.alert(
@@ -32,6 +44,34 @@ export default function WalletScreen() {
         }
       ]
     );
+  };
+
+  const handleTopUp = async () => {
+    if (!amount || parseInt(amount) < 100) {
+        Alert.alert("Erreur", "Le montant minimum est de 100 FCFA.");
+        return;
+    }
+    
+    setLoading(true);
+    // Simulation du flux PawaPay
+    setTimeout(async () => {
+        try {
+            const result = await creditWallet(profile?.id as string, parseInt(amount));
+            if (result.success) {
+                setIsCashedIn(true);
+                setAmount('');
+                setTimeout(() => {
+                    setIsCashedIn(false);
+                    setShowTopUp(false);
+                    refresh();
+                }, 2000);
+            }
+        } catch (err) {
+            Alert.alert("Erreur", "La transaction n'a pas pu être validée.");
+        } finally {
+            setLoading(false);
+        }
+    }, 1500);
   };
 
   return (
@@ -88,18 +128,21 @@ export default function WalletScreen() {
         <View className="flex-row gap-4 px-8 mb-12">
             <HubButton 
                 variant="primary" 
-                className="flex-1 h-16 rounded-[1.5rem]" 
-                onPress={handleWithdraw}
-                disabled={(profile?.wallet_balance || 0) < 500}
-                icon={<ArrowDownLeft size={18} color="white" />}
+                className="flex-1 h-16 rounded-[2.5rem]" 
+                onPress={() => setShowTopUp(true)}
+                icon={<ArrowUpRight size={18} color="white" />}
             >
-                { (profile?.wallet_balance || 0) < 500 ? 'SOLDE BAS' : 'RETIRER' }
+                RECHARGER
             </HubButton>
             <TouchableOpacity 
-                onPress={refresh}
-                className="w-16 h-16 bg-zinc-50 rounded-[1.5rem] items-center justify-center border border-zinc-100"
+                onPress={handleWithdraw}
+                disabled={(profile?.wallet_balance || 0) < 500}
+                className={cn(
+                    "w-16 h-16 rounded-[1.5rem] items-center justify-center border",
+                    (profile?.wallet_balance || 0) < 500 ? "bg-zinc-50 border-zinc-100" : "bg-white border-primary/20"
+                )}
             >
-                <ArrowUpRight size={24} color="#475569" strokeWidth={2.5} />
+                <ArrowDownLeft size={24} color={(profile?.wallet_balance || 0) < 500 ? "#94a3b8" : "#2A9D8F"} strokeWidth={2.5} />
             </TouchableOpacity>
         </View>
 
@@ -123,8 +166,8 @@ export default function WalletScreen() {
           ) : (
             <View className="gap-6">
               {transactions.map((tx: any, i: number) => {
-                const isIncome = !!tx.seller_id && tx.status === 'collected';
-                const amount = (tx.final_weight || tx.estimated_weight) * (tx.waste_types?.price_per_kg || 0);
+                const isIncome = tx.type === 'income' || tx.type === 'deposit';
+                const amount = Math.abs(tx.amount);
                 return (
                   <View key={tx.id}>
                     <HubCard className="p-5 border-0 bg-white shadow-sm flex-row items-center">
@@ -141,10 +184,10 @@ export default function WalletScreen() {
                         </View>
                         <View className="flex-1">
                             <HubText variant="h3" className="text-zinc-900 text-[11px] mb-[-2]">
-                                {tx.waste_types?.name || 'Recyclage'}
+                                {tx.description || 'Transaction'}
                             </HubText>
                             <HubText variant="caption" className="text-zinc-400 text-[8px] uppercase tracking-widest">
-                                {tx.final_weight || tx.estimated_weight} KG · {tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'DATE ?'}
+                                {tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'DATE ?'}
                             </HubText>
                         </View>
                         <HubText 
@@ -164,6 +207,68 @@ export default function WalletScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Top-up Modal */}
+      {showTopUp && (
+          <View className="absolute inset-0 bg-zinc-900/60 items-center justify-end">
+              <TouchableOpacity className="absolute inset-0" onPress={() => !loading && setShowTopUp(false)} />
+              <HubCard className="w-full bg-white rounded-t-[3rem] p-10 pb-16">
+                  {isCashedIn ? (
+                      <View className="items-center py-10">
+                          <View className="w-20 h-20 bg-emerald-50 rounded-full items-center justify-center mb-6">
+                              <RefreshCw size={32} color="#10b981" />
+                          </View>
+                          <HubText variant="h2" className="text-zinc-900 mb-2">Paiement Validé</HubText>
+                          <HubText variant="body" className="text-zinc-400">Votre solde a été mis à jour.</HubText>
+                      </View>
+                  ) : (
+                      <>
+                        <View className="flex-row justify-between items-center mb-10">
+                            <HubText variant="h2" className="text-zinc-900">Recharger</HubText>
+                            <TouchableOpacity onPress={() => setShowTopUp(false)}>
+                                <HubText className="text-zinc-400 text-[10px] uppercase tracking-widest font-black">Fermer</HubText>
+                            </TouchableOpacity>
+                        </View>
+
+                        <HubText variant="label" className="mb-4 text-zinc-400 italic">MONTANT (FCFA)</HubText>
+                        <View className="bg-zinc-50 p-6 rounded-3xl border border-zinc-100 flex-row items-baseline gap-2 mb-10">
+                            <HubText variant="h1" className="text-4xl text-zinc-900 italic mb-[-4]">{amount || '0'}</HubText>
+                            <HubText variant="h3" className="text-primary italic">FCFA</HubText>
+                        </View>
+
+                        {/* Quick Num Pad Simulation */}
+                        <View className="flex-row flex-wrap justify-between gap-4 mb-10">
+                            {['1', '2', '3', '500', '1000', '2000', '5000', '⌫', '0'].map(k => (
+                                <TouchableOpacity 
+                                    key={k} 
+                                    onPress={() => {
+                                        if (k === '⌫') setAmount(prev => prev.slice(0, -1));
+                                        else if (k === '0' || k === '1' || k === '2' || k === '3') setAmount(prev => prev + k);
+                                        else setAmount(k);
+                                    }}
+                                    className="w-[30%] h-14 bg-zinc-50 rounded-2xl items-center justify-center border border-zinc-100"
+                                >
+                                    <HubText className="text-zinc-900 font-bold">{k}</HubText>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <HubButton 
+                            variant="primary" 
+                            size="xl" 
+                            loading={loading}
+                            onPress={handleTopUp}
+                        >
+                            PAYER VIA MOBILE MONEY
+                        </HubButton>
+                        <HubText variant="caption" className="text-center mt-6 text-zinc-400 italic">
+                            Sécurisé par PawaPay · Wave/Orange/MTN/Moov
+                        </HubText>
+                      </>
+                  )}
+              </HubCard>
+          </View>
+      )}
     </View>
   );
 }

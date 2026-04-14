@@ -12,6 +12,13 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
+import * as Location from 'expo-location';
+import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
+import { 
+    LOCATION_TASK_NAME, 
+    startBackgroundTracking, 
+    stopBackgroundTracking 
+} from '../../src/utils/backgroundLocationTask';
 
 const ROLE_LABELS: Record<string, string> = {
   vendeur: 'Citoyen Éco',
@@ -37,13 +44,51 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading, refreshProfile } = useProfile();
+  const { unreadCount } = useUnreadNotifications();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.replace('/(auth)/login' as any);
+  const [isTracking, setIsTracking] = useState(false);
+  const [impactTotal, setImpactTotal] = useState(0);
+
+  const isAgent = profile?.role === 'agent_collecteur' || profile?.role === 'collecteur';
+
+  useEffect(() => {
+    if (isAgent) {
+        checkTrackingStatus();
+    }
+  }, [isAgent]);
+
+  const checkTrackingStatus = async () => {
+    const started = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+    setIsTracking(started);
   };
 
-  const [impactTotal, setImpactTotal] = useState(0);
+  const toggleTracking = async () => {
+    try {
+        if (isTracking) {
+            await stopBackgroundTracking();
+            setIsTracking(false);
+            Alert.alert('Suivi Terminé', 'Votre position n\'est plus partagée.');
+        } else {
+            const { status: foreground } = await Location.requestForegroundPermissionsAsync();
+            if (foreground !== 'granted') {
+                Alert.alert('Permission requise', 'Le suivi nécessite l\'accès à la position.');
+                return;
+            }
+            const { status: background } = await Location.requestBackgroundPermissionsAsync();
+            if (background !== 'granted') {
+                Alert.alert('Accès en arrière-plan requis', 'Pour un suivi optimal, activez "Toujours autoriser" dans les réglages.');
+                return;
+            }
+
+            await startBackgroundTracking();
+            setIsTracking(true);
+            Alert.alert('Suivi Actif', 'Votre position est maintenant partagée avec votre organisation.');
+        }
+    } catch (err) {
+        console.error('Toggle tracking error:', err);
+        Alert.alert('Erreur', 'Impossible de modifier le statut du suivi.');
+    }
+  };
 
   useEffect(() => {
     if (profile?.id) {
@@ -127,11 +172,13 @@ export default function ProfileScreen() {
         style={{ paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
       >
         <HubText variant="label" className="text-zinc-900 italic">Mon Compte</HubText>
-        <TouchableOpacity 
             onPress={() => router.push(ROUTES.NOTIFICATIONS as any)}
-            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50 relative"
         >
           <Bell size={20} color="#020617" strokeWidth={2.5} />
+          {unreadCount > 0 && (
+              <View className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -217,6 +264,48 @@ export default function ProfileScreen() {
                 </HubCard>
             </TouchableOpacity>
         </View>
+
+        {/* Agent Operational Status */}
+        {isAgent && (
+            <View className="mb-10">
+                <HubText variant="label" className="mb-6 ml-1 text-primary">Statut Opérationnel</HubText>
+                <TouchableOpacity 
+                    activeOpacity={0.9}
+                    onPress={toggleTracking}
+                >
+                    <HubCard className={cn(
+                        "p-8 border-2 items-center flex-row justify-between",
+                        isTracking ? "bg-emerald-50 border-emerald-100" : "bg-white border-zinc-50"
+                    )}>
+                        <View className="flex-row items-center gap-4">
+                            <View className={cn(
+                                "w-12 h-12 rounded-2xl items-center justify-center",
+                                isTracking ? "bg-emerald-500 shadow-lg shadow-emerald-200" : "bg-zinc-100"
+                            )}>
+                                <Navigation size={20} color={isTracking ? "white" : "#94a3b8"} />
+                            </View>
+                            <View>
+                                <HubText variant="h3" className={cn("text-[12px] mb-0", isTracking ? "text-emerald-700" : "text-zinc-900")}>
+                                    {isTracking ? "SUIVI EN DIRECT ACTIF" : "SUIVI GPS DÉSACTIVÉ"}
+                                </HubText>
+                                <HubText variant="caption" className="text-[8px] text-zinc-400">
+                                    {isTracking ? "Position partagée avec l'organisation" : "Appuyez pour activer le suivi de mission"}
+                                </HubText>
+                            </View>
+                        </View>
+                        <View className={cn(
+                            "w-14 h-7 rounded-full px-1 justify-center",
+                            isTracking ? "bg-emerald-500" : "bg-zinc-200"
+                        )}>
+                            <View className={cn(
+                                "w-5 h-5 rounded-full bg-white shadow-sm",
+                                isTracking ? "self-end" : "self-start"
+                            )} />
+                        </View>
+                    </HubCard>
+                </TouchableOpacity>
+            </View>
+        )}
 
         {/* Settings Menu */}
         <HubText variant="label" className="mb-6 ml-1">Paramètres du Compte</HubText>

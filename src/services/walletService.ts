@@ -14,24 +14,18 @@ const SIMULATION_TRANSACTIONS = [
   { id: 'sim_5', type: 'outcome', amount: 500, description: 'Frais de service RecyCla', created_at: new Date(Date.now() - 86400000 * 10).toISOString() },
 ];
 
-// 1. Récupération des transactions (historique)
+// 1. Récupération des transactions (historique réel depuis la table transactions)
 export const getTransactions = async (userId: string): Promise<any[] | null> => {
   const result = await safeFetch<any[]>(() => 
     supabase
-      .from('wastes')
-      .select('*, waste_types(*)')
-      .or(`seller_id.eq.${userId},collector_id.eq.${userId}`)
-      .eq('status', 'collected')
+      .from('transactions')
+      .select('*')
+      .eq('profile_id', userId)
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(20)
   );
 
-  // Fallback simulation si pas de données réelles
-  if (!result.data || result.data.length === 0) {
-    return SIMULATION_TRANSACTIONS;
-  }
-
-  return result.data;
+  return result.data || [];
 };
 
 // 2. Créditer le compte (Top-up) — Mode Simulation

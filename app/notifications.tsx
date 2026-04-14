@@ -23,8 +23,30 @@ export default function NotificationsScreen() {
   const { profile } = useProfile();
 
   useEffect(() => {
+    if (!profile?.id) return;
     fetchNotifications();
-  }, [profile?.id]); // Re-fetch when profile ID is available
+
+    // Inscription aux notifications en temps réel
+    const channel = supabase
+      .channel(`notifications-${profile.id}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'notifications',
+          filter: `profile_id=eq.${profile.id}`
+        },
+        (payload) => {
+          setNotifications(prev => [payload.new as Notification, ...prev]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
 
   const fetchNotifications = async () => {
     if (!profile?.id) {
@@ -36,7 +58,7 @@ export default function NotificationsScreen() {
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('profile_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

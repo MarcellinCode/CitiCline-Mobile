@@ -50,12 +50,12 @@ export default function MissionsScreen() {
     try {
       setLoading(true);
       
-      // 1. Récupérer les lots réservés ou publiés
+      // 1. Récupérer les missions (Lots réservés OU Collectes d'abonnements assignées)
       const { data: wastes, error: wError } = await supabase
         .from('wastes')
         .select('*, waste_types(*)')
-        .eq('collector_id', profile.id)
-        .in('status', ['reserved', 'published'])
+        .eq('assigned_agent_id', profile.id) // Utilisation de la nouvelle colonne d'assignation
+        .in('status', ['reserved', 'published', 'assigned'])
         .order('created_at', { ascending: true });
 
       if (wError) throw wError;
@@ -178,7 +178,16 @@ export default function MissionsScreen() {
                       activeOpacity={0.9}
                       onPress={() => router.push(ROUTES.MISSION_DETAILS(mission.id) as any)}
                     >
-                        <HubCard className="p-6 border-2 border-zinc-50">
+                        <HubCard className={cn(
+                            "p-6 border-2",
+                            mission.is_urgent ? "border-red-500 bg-red-50/10 shadow-lg shadow-red-200" : "border-zinc-50"
+                        )}>
+                            {mission.is_urgent && (
+                                <View className="flex-row items-center gap-2 mb-3 bg-red-500 self-start px-3 py-1 rounded-full">
+                                    <AlertCircle size={10} color="white" strokeWidth={3} />
+                                    <HubText variant="label" className="text-white text-[8px] mb-0 tracking-widest font-black">RÉQUISITION MAIRIE — PRIORITAIRE</HubText>
+                                </View>
+                            )}
                             <View className="flex-row items-center justify-between mb-4">
                                 <View className="flex-row items-center gap-3">
                                     <View className="w-12 h-12 bg-zinc-50 rounded-2xl items-center justify-center">
@@ -193,8 +202,19 @@ export default function MissionsScreen() {
                                         </HubText>
                                     </View>
                                 </View>
-                                <View className="bg-emerald-50 px-3 py-1.5 rounded-full">
-                                    <HubText variant="label" className="text-emerald-600 text-[8px] tracking-[0.1em]">ACTIF</HubText>
+                                <View className={cn(
+                                    "px-3 py-1.5 rounded-full",
+                                    mission.mission_type === 'subscription_pickup' ? "bg-primary/10" : "bg-emerald-50"
+                                )}>
+                                    <HubText 
+                                        variant="label" 
+                                        className={cn(
+                                            "text-[8px] tracking-[0.1em]",
+                                            mission.mission_type === 'subscription_pickup' ? "text-primary" : "text-emerald-600"
+                                        )}
+                                    >
+                                        {mission.mission_type === 'subscription_pickup' ? 'ABONNEMENT' : 'MARKETPLACE'}
+                                    </HubText>
                                 </View>
                             </View>
 

@@ -11,9 +11,13 @@ import { Alert } from "react-native";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@supabase/supabase-js";
+import { defineBackgroundLocationTask } from "../src/utils/backgroundLocationTask";
 
 import { ProfileProvider } from "../src/context/ProfileContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+
+// Register background tasks
+defineBackgroundLocationTask();
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
