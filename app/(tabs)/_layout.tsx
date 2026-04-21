@@ -1,4 +1,4 @@
-import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search } from 'lucide-react-native';
+import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search, ShieldAlert, Gavel, History } from 'lucide-react-native';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -93,9 +93,18 @@ export default function TabsLayout() {
       headerShown: false,
     }}>
       <Tabs.Screen
+        name="police/index"
+        options={{
+          title: 'Radar',
+          href: profile?.role === 'agent_police_verte' ? '/police/index' : null,
+          tabBarIcon: ({ color }: { color: string }) => <ShieldAlert size={22} color={color} strokeWidth={2.5} />,
+        }}
+      />
+      <Tabs.Screen
         name="marketplace/index"
         options={{
           title: 'Accueil',
+          href: profile?.role === 'agent_police_verte' ? null : '/marketplace/index',
           tabBarIcon: ({ color }: { color: string }) => <Home size={22} color={color} strokeWidth={2.5} />,
         }}
       />
@@ -107,7 +116,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="marketplace/publish"
+        name="police/report"
         options={{
           title: '',
           tabBarButton: () => (
@@ -115,15 +124,22 @@ export default function TabsLayout() {
               <TouchableOpacity 
                 activeOpacity={0.9}
                 onPress={() => {
-                  if (profile?.role === 'vendeur' || profile?.role === 'super_admin') {
+                  if (profile?.role === 'agent_police_verte') {
+                    router.push(ROUTES.POLICE_REPORT as any);
+                  } else if (profile?.role === 'vendeur' || profile?.role === 'super_admin') {
                     router.push('/marketplace/publish' as any);
                   } else {
                     router.push(ROUTES.MARKETPLACE as any);
                   }
                 }}
-                className="w-16 h-16 rounded-[2rem] bg-zinc-900 items-center justify-center shadow-xl shadow-zinc-400/50 border-[4px] border-white"
+                className={cn(
+                    "w-16 h-16 rounded-[2rem] items-center justify-center shadow-xl border-[4px] border-white",
+                    profile?.role === 'agent_police_verte' ? "bg-red-600 shadow-red-400/50" : "bg-zinc-900 shadow-zinc-400/50"
+                )}
               >
-                {(profile?.role === 'vendeur' || profile?.role === 'super_admin') ? (
+                {profile?.role === 'agent_police_verte' ? (
+                  <Gavel size={32} color="white" strokeWidth={3} />
+                ) : (profile?.role === 'vendeur' || profile?.role === 'super_admin') ? (
                   <Plus size={32} color="#2A9D8F" strokeWidth={3} />
                 ) : (
                   <Search size={28} color="#2A9D8F" strokeWidth={3} />
@@ -166,6 +182,9 @@ export default function TabsLayout() {
       <Tabs.Screen name="settings/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="notifications/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="profile/edit" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="police/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="police/report" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="police/history" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
   );
 }

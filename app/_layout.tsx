@@ -65,7 +65,11 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
     const inIndex = segments.length === 0 || (segments.length === 1 && segments[0] === '');
 
     if (session && (inAuthGroup || inOnboarding || inIndex)) {
-      router.replace(ROUTES.MARKETPLACE);
+      if (profile?.role === 'agent_police_verte') {
+        router.replace(ROUTES.POLICE);
+      } else {
+        router.replace(ROUTES.MARKETPLACE);
+      }
     } else if (!session && !inAuthGroup && !inOnboarding && !inIndex) {
       router.replace('/');
     }

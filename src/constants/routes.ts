@@ -8,6 +8,9 @@ export const ROUTES = {
   NOTIFICATIONS: '/notifications' as const,
   MARKETPLACE: '/marketplace' as const,
   FLEET: '/fleet' as const,
+  POLICE: '/police' as const,
+  POLICE_REPORT: '/police/report' as const,
+  POLICE_HISTORY: '/police/history' as const,
 
   // Groupe Espace
   ESPACE: '/espace' as const,
