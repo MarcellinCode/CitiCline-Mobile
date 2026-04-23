@@ -11,6 +11,8 @@ import { WasteType } from '@/lib/types';
 import { ROUTES } from '@/constants/routes';
 import { useProfile } from '@/hooks/useProfile';
 
+import { uploadProofImage } from '@/lib/storage';
+
 export default function PublishWaste() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -57,6 +59,7 @@ export default function PublishWaste() {
 
     setLoading(true);
     try {
+      // 1. Get Location
       const { status } = await Location.requestForegroundPermissionsAsync();
       let lat = null;
       let lng = null;
@@ -66,6 +69,12 @@ export default function PublishWaste() {
           lng = pos.coords.longitude;
       }
 
+      // 2. Upload all images to Cloudinary
+      const uploadedImageUrls = await Promise.all(
+        images.map(uri => uploadProofImage(uri, 'CITICLINE-marketplace'))
+      );
+
+      // 3. Save to Supabase
       const { error } = await supabase.from('wastes').insert({
         seller_id: profile.id,
         type_id: typeId,
@@ -74,7 +83,8 @@ export default function PublishWaste() {
         latitude: lat,
         longitude: lng,
         status: 'published',
-        images: images,
+        images: uploadedImageUrls,
+        description: description
       });
 
       if (error) throw error;

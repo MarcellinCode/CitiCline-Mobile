@@ -2,7 +2,7 @@ export type Profile = {
   id: string;
   full_name: string;
   email: string;
-  role: 'vendeur' | 'collecteur' | 'entreprise' | 'mairie' | 'organisation_admin' | 'agent_collecteur' | 'super_admin';
+  role: 'vendeur' | 'collecteur' | 'entreprise' | 'mairie' | 'organisation_admin' | 'agent_collecteur' | 'agent_police_verte' | 'super_admin';
   city: string;
   wallet_balance: number;
   eco_points: number;
@@ -18,6 +18,13 @@ export type Profile = {
   contact_person?: string;
   agent_count?: string;
   official_department?: string;
+  zone_id?: string;
+  organization_id?: string;
+  status?: string;
+  app_pin?: string;
+  assigned_vehicle_id?: string;
+  push_token?: string;
+  address?: string;
 };
 
 export type WasteType = {

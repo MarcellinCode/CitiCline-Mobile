@@ -8,6 +8,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import * as Location from 'expo-location';
 import { supabase } from '@/lib/supabase';
+import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
 
 export default function TabsLayout() {

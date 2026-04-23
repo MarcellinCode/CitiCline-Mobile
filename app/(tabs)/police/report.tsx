@@ -17,6 +17,8 @@ const INFRACTION_TYPES = [
   'Violation de planning'
 ];
 
+import { uploadProofImage } from '@/lib/storage';
+
 export default function ReportInfraction() {
   const router = useRouter();
   const { profile } = useProfile();
@@ -62,20 +64,8 @@ export default function ReportInfraction() {
 
     setLoading(true);
     try {
-      // 1. Upload Image to Supabase Storage
-      const fileName = `${Date.now()}.jpg`;
-      const formData = new FormData();
-      formData.append('file', {
-        uri: image,
-        name: fileName,
-        type: 'image/jpeg',
-      } as any);
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('infractions')
-        .upload(`reports/${fileName}`, formData);
-
-      const imageUrl = uploadError ? null : supabase.storage.from('infractions').getPublicUrl(`reports/${fileName}`).data.publicUrl;
+      // 1. Upload Image to Cloudinary (Folder: CITICLINE-infractions)
+      const imageUrl = await uploadProofImage(image, 'CITICLINE-infractions');
 
       // 2. Create Infraction Record
       const { error } = await supabase
@@ -85,8 +75,9 @@ export default function ReportInfraction() {
           description,
           images: imageUrl ? [imageUrl] : [],
           zone_id: profile?.zone_id,
-          reported_by: profile?.id,
-          location: location ? `POINT(${location.coords.longitude} ${location.coords.latitude})` : null,
+          reporter_id: profile?.id,
+          latitude: location ? location.coords.latitude : 0,
+          longitude: location ? location.coords.longitude : 0,
           severity: 'medium', // Default
           status: 'open'
         });
