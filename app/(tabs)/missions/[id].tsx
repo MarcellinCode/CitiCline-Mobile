@@ -19,6 +19,7 @@ import { HubButton } from '@/components/ui/HubButton';
 import { uploadProofImage } from '@/lib/storage';
 import { supabase } from '@/lib/supabase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useProfile } from '@/hooks/useProfile';
 
 export default function MissionDetail() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function MissionDetail() {
   const [weight, setWeight] = useState('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const { profile } = useProfile();
   
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = React.useRef<CameraView>(null);
@@ -71,6 +73,28 @@ export default function MissionDetail() {
         requestPermission();
     }
   }, [step, permission?.granted]);
+
+  const handleStartMission = async () => {
+    // 🛡️ VÉRIFICATION DE LA RÈGLE MÉTIER : ZONE ASSIGNÉE
+    if (mission?.profiles?.zone_id && profile?.zone_id && mission.profiles.zone_id !== profile.zone_id) {
+        Alert.alert(
+            "Action Non Autorisée", 
+            "Vous ne pouvez pas exécuter une mission située en dehors de votre zone d'affectation."
+        );
+        return;
+    }
+
+    try {
+        setLoading(true);
+        // Mettre à jour le statut "en cours" pour la synchronisation Web
+        await supabase.from('wastes').update({ status: 'in_progress' }).eq('id', id);
+        setStep('scan');
+    } catch (err) {
+        console.error("Start mission error:", err);
+    } finally {
+        setLoading(false);
+    }
+  };
 
   const handleScan = async () => {
     if (!permission || !permission.granted) {
@@ -183,9 +207,10 @@ export default function MissionDetail() {
               </HubCard>
 
               <HubButton 
-                onPress={() => setStep('scan')}
+                onPress={handleStartMission}
                 variant="primary"
                 size="xl"
+                loading={loading}
                 icon={<ArrowRight size={20} color="white" />}
               >
                 Lancer l'opération
