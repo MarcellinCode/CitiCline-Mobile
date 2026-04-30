@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, Platform } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -65,29 +65,147 @@ export default function WasteDetail() {
     fetchDetail();
   }, [id]);
 
+  // ✅ Fix race condition : verrou optimiste sur status='published'
   const handleReserve = async () => {
     if (!profile?.id) {
-      alert("Vous devez être connecté pour réserver !");
+      Alert.alert("Non autorisé", "Vous devez être connecté pour réserver !");
       return;
     }
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('wastes')
-        .update({ status: 'reserved', collector_id: profile.id })
-        .eq('id', id);
-      
-      if (error) alert(error.message);
-      else {
-        alert("Félicitations ! Déchet réservé. Contactez le vendeur !");
-        router.push({
-            pathname: `/chat/${waste?.seller_id}`,
-            params: { 
-                name: (waste?.profiles as any)?.full_name || 'Vendeur'
-            }
-        } as any);
+        .update({ status: 'reserved', collector_id: profile.id, reserved_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('status', 'published')   // ← verrou optimiste : échoue si déjà réservé
+        .select()
+        .single();
+
+      if (error || !data) {
+        Alert.alert(
+          "Lot déjà pris",
+          "Ce lot vient d'être réservé par un autre collecteur. Veuillez en choisir un autre."
+        );
+        return;
       }
-    } catch (err) {
-      console.error(err);
+
+      // Notifications
+      await supabase.from('notifications').insert([
+        { profile_id: data.seller_id, title: "Lot Réservé !", content: "Votre lot a été réservé par un collecteur.", type: 'offer' },
+        { profile_id: profile.id,     title: "Réservation confirmée", content: "Vous avez réservé ce lot avec succès.", type: 'collection' }
+      ]);
+
+      Alert.alert("Félicitations !", "Lot réservé avec succès. Contactez le vendeur !");
+      router.push({
+        pathname: `/chat/${waste?.seller_id}`,
+        params: { name: (waste?.profiles as any)?.full_name || 'Vendeur' }
+      } as any);
+    } catch (err: any) {
+      console.error("handleReserve error:", err);
+      Alert.alert("Erreur", err.message || "Une erreur est survenue lors de la réservation.");
+    }
+  };
+
+  // ✅ Fix simulation vide : logique métier réelle de confirmation de collecte
+  const handleConfirmCollection = async (finalWeight: number) => {
+    if (!waste || !profile?.id) return;
+
+    try {
+      // 1. Vérifier que c'est bien ce collecteur qui a le lot
+      if (waste.collector_id !== profile.id) {
+        Alert.alert("Non autorisé", "Seul le collecteur assigné peut confirmer la collecte.");
+        return;
+      }
+      if (waste.status !== 'reserved') {
+        Alert.alert("Erreur", "Ce lot ne peut pas être validé (statut : " + waste.status + ")");
+        return;
+      }
+
+      // 2. Récupérer les wallets + taux fiscaux configurables
+      const pricePerKg    = waste.waste_types?.price_per_kg ?? 150;
+      const totalAmount   = finalWeight * pricePerKg;
+
+      // Lire les taux depuis platform_settings (fallback : 10% commission, 2% éco-taxe)
+      let commissionRate = 0.10;
+      let ecoTaxRate     = 0.02;
+      try {
+        const { data: settings } = await supabase
+          .from('platform_settings')
+          .select('key, value')
+          .in('key', ['commission_rate', 'eco_tax_rate']);
+        if (settings) {
+          for (const s of settings) {
+            const v = parseFloat(s.value);
+            if (!isNaN(v)) {
+              if (s.key === 'commission_rate') commissionRate = v;
+              if (s.key === 'eco_tax_rate')    ecoTaxRate     = v;
+            }
+          }
+        }
+      } catch { /* utilise les valeurs par défaut */ }
+
+      const commission    = totalAmount * commissionRate;
+      const sellerAmount  = totalAmount - commission;
+      const ecoTax        = totalAmount * ecoTaxRate;
+      const ecoPoints     = Math.round(finalWeight);
+
+      const [{ data: sellerProfile }, { data: collectorProfile }] = await Promise.all([
+        supabase.from('profiles').select('wallet_balance, eco_points').eq('id', waste.seller_id).single(),
+        supabase.from('profiles').select('wallet_balance').eq('id', profile.id).single(),
+      ]);
+
+      // 3. Mise à jour statut du lot
+      await supabase.from('wastes').update({
+        status: 'collected',
+        final_weight: finalWeight,
+      }).eq('id', waste.id);
+
+      // 4. Créditer vendeur + débiter collecteur
+      await Promise.all([
+        supabase.from('profiles').update({
+          wallet_balance: Number(sellerProfile?.wallet_balance ?? 0) + sellerAmount,
+          eco_points:     Number(sellerProfile?.eco_points ?? 0) + ecoPoints,
+        }).eq('id', waste.seller_id),
+
+        supabase.from('profiles').update({
+          wallet_balance: Number(collectorProfile?.wallet_balance ?? 0) - totalAmount,
+        }).eq('id', profile.id),
+      ]);
+
+      // 5. Éco-taxe Mairie (premier super_admin)
+      const { data: mairies } = await supabase
+        .from('profiles').select('id, wallet_balance').eq('role', 'super_admin').limit(1);
+      const mairie = mairies?.[0];
+      if (mairie) {
+        await supabase.from('profiles').update({
+          wallet_balance: Number(mairie.wallet_balance ?? 0) + ecoTax,
+        }).eq('id', mairie.id);
+      }
+
+      // 6. Transactions
+      const txs: any[] = [
+        { profile_id: waste.seller_id, amount:  sellerAmount,  type: 'income',  description: `Vente de ${finalWeight}kg de ${waste.waste_types?.name}` },
+        { profile_id: profile.id,      amount: -totalAmount,   type: 'outcome', description: `Achat de ${finalWeight}kg de ${waste.waste_types?.name}` },
+      ];
+      if (mairie) txs.push({ profile_id: mairie.id, amount: ecoTax, type: 'income', description: `Éco-taxe 2% - Lot #${waste.id.slice(0, 6)}` });
+      await supabase.from('transactions').insert(txs);
+
+      // 7. Notifications
+      const notifs: any[] = [
+        { profile_id: waste.seller_id, title: "Paiement Reçu !",   content: `+${sellerAmount.toFixed(0)} FCFA. Votre vente est validée.`,           type: 'payment' },
+        { profile_id: profile.id,      title: "Collecte Terminée", content: `Vous avez finalisé la collecte de ${finalWeight}kg.`,                  type: 'collection' },
+      ];
+      if (mairie) notifs.push({ profile_id: mairie.id, title: "Taxe Urbaine", content: `+${ecoTax.toFixed(0)} FCFA prélevés.`, type: 'system' });
+      await supabase.from('notifications').insert(notifs);
+
+      Alert.alert(
+        "Collecte validée ! ✅",
+        `${finalWeight}kg collectés.\nGain collecteur : -${totalAmount.toFixed(0)} FCFA\nVendeur crédité : +${sellerAmount.toFixed(0)} FCFA`,
+        [{ text: "Voir mon wallet", onPress: () => router.replace(ROUTES.WALLET as any) }]
+      );
+
+    } catch (err: any) {
+      console.error("handleConfirmCollection error:", err);
+      Alert.alert("Erreur", err.message || "Une erreur est survenue lors de la validation.");
     }
   };
 
@@ -204,14 +322,36 @@ export default function WasteDetail() {
                 <View className="mb-10">
                     <HubText variant="label" className="mb-4 ml-2">Validation de la collecte</HubText>
                     <HubCard className="p-8 border-2 border-emerald-50">
+                        {/* QR Code Scanner */}
                         <TouchableOpacity 
                             onPress={() => {
-                                alert("Simulation : QR Code scanné avec succès !");
-                                const weight = prompt("Confirmez le poids final (KG) :", waste.estimated_weight.toString());
-                                if (weight) {
-                                    alert(`Collecte de ${weight}kg validée ! Paiement en cours...`);
-                                    router.replace(ROUTES.WALLET as any);
-                                }
+                                // Simulate QR scan success then ask weight
+                                Alert.alert(
+                                  "QR Code reconnu ✅",
+                                  "Confirmez le poids final de la collecte (KG) :",
+                                  [
+                                    { text: "Annuler", style: "cancel" },
+                                    {
+                                      text: "Confirmer",
+                                      onPress: () => {
+                                        Alert.prompt(
+                                          "Poids final",
+                                          "Entrez le poids en KG :",
+                                          (weightStr) => {
+                                            const w = parseFloat(weightStr);
+                                            if (!isNaN(w) && w > 0) {
+                                              handleConfirmCollection(w);
+                                            } else {
+                                              Alert.alert("Erreur", "Poids invalide.");
+                                            }
+                                          },
+                                          "plain-text",
+                                          waste.estimated_weight.toString()
+                                        );
+                                      }
+                                    }
+                                  ]
+                                );
                             }}
                             className="bg-zinc-900 h-16 rounded-2xl flex-row items-center justify-center gap-3 mb-6"
                         >
@@ -225,18 +365,36 @@ export default function WasteDetail() {
                             <View className="h-[1px] flex-1 bg-zinc-100" />
                         </View>
 
+                        {/* PIN manuel */}
                         <TouchableOpacity 
                             onPress={() => {
-                                const pin = prompt("Saisissez le code PIN du vendeur :");
-                                if (pin?.toUpperCase() === waste.id.slice(0, 6).toUpperCase()) {
-                                    const weight = prompt("Confirmez le poids final (KG) :", waste.estimated_weight.toString());
-                                    if (weight) {
-                                        alert(`Collecte de ${weight}kg validée !`);
-                                        router.replace(ROUTES.WALLET as any);
+                                Alert.prompt(
+                                  "Code PIN Vendeur",
+                                  "Saisissez le code PIN du vendeur (6 caractères) :",
+                                  (pin) => {
+                                    if (!pin) return;
+                                    const expectedPin = waste.id.slice(0, 6).toUpperCase();
+                                    if (pin.toUpperCase() !== expectedPin) {
+                                      Alert.alert("Code PIN incorrect", "Le code saisi ne correspond pas à ce lot.");
+                                      return;
                                     }
-                                } else if (pin) {
-                                    alert("Code PIN incorrect.");
-                                }
+                                    Alert.prompt(
+                                      "Poids final",
+                                      "Confirmez le poids final (KG) :",
+                                      (weightStr) => {
+                                        const w = parseFloat(weightStr);
+                                        if (!isNaN(w) && w > 0) {
+                                          handleConfirmCollection(w);
+                                        } else {
+                                          Alert.alert("Erreur", "Poids invalide.");
+                                        }
+                                      },
+                                      "plain-text",
+                                      waste.estimated_weight.toString()
+                                    );
+                                  },
+                                  "plain-text"
+                                );
                             }}
                             className="bg-white border-2 border-zinc-100 h-16 rounded-2xl flex-row items-center justify-center gap-3"
                         >
@@ -255,24 +413,26 @@ export default function WasteDetail() {
         </View>
       </ScrollView>
 
-      {/* FIXED SWIPE BAR AT BOTTOM */}
-      <View 
-        className="absolute left-8 right-8 h-24 bg-zinc-900 rounded-[3rem] p-2 flex-row items-center border-4 border-white shadow-2xl shadow-zinc-900/50"
-        style={{ bottom: insets.bottom + 40 }}
-      >
-        <Animated.View className="absolute w-full items-center justify-center" style={textOpacity}>
-          <HubText variant="label" className="text-white/40 italic tracking-[0.2em] mb-0">GLISSER POUR RÉSERVER</HubText>
-        </Animated.View>
-        
-        <PanGestureHandler onGestureEvent={gestureHandler}>
-          <Animated.View 
-            className="w-20 h-20 bg-primary rounded-[2.5rem] items-center justify-center shadow-xl shadow-primary/30"
-            style={animatedStyle}
-          >
-            <ChevronRight size={32} color="white" strokeWidth={3} />
+      {/* FIXED SWIPE BAR — visible uniquement si le lot est encore disponible */}
+      {waste?.status === 'published' && (
+        <View 
+          className="absolute left-8 right-8 h-24 bg-zinc-900 rounded-[3rem] p-2 flex-row items-center border-4 border-white shadow-2xl shadow-zinc-900/50"
+          style={{ bottom: insets.bottom + 40 }}
+        >
+          <Animated.View className="absolute w-full items-center justify-center" style={textOpacity}>
+            <HubText variant="label" className="text-white/40 italic tracking-[0.2em] mb-0">GLISSER POUR RÉSERVER</HubText>
           </Animated.View>
-        </PanGestureHandler>
-      </View>
+          
+          <PanGestureHandler onGestureEvent={gestureHandler}>
+            <Animated.View 
+              className="w-20 h-20 bg-primary rounded-[2.5rem] items-center justify-center shadow-xl shadow-primary/30"
+              style={animatedStyle}
+            >
+              <ChevronRight size={32} color="white" strokeWidth={3} />
+            </Animated.View>
+          </PanGestureHandler>
+        </View>
+      )}
     </View>
   );
 }

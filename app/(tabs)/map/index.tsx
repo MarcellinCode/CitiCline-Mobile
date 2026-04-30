@@ -16,6 +16,7 @@ import {
 } from 'lucide-react-native';
 import { useProfile } from '@/hooks/useProfile';
 import { useWastes } from '@/hooks/useWastes';
+import { useInfractions } from '@/hooks/useInfractions';
 import { useLocation } from '@/hooks/useLocation';
 import { Header } from '@/components/Header';
 import { MapOSM } from '@/components/map/MapOSM';
@@ -29,6 +30,7 @@ const CITICLINE_HUBS = [
 
 export default function MapScreen() {
   const { wastes } = useWastes();
+  const { infractions } = useInfractions();
   const { location, loading: locLoading } = useLocation();
   const { profile } = useProfile();
   const router = useRouter();
@@ -56,9 +58,18 @@ export default function MapScreen() {
           userLocation={location ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : null}
           hubs={CITICLINE_HUBS}
           wastes={wastes}
-          onMarkerPress={(id: string, type: 'HUB' | 'WASTE') => {
+          infractions={infractions}
+          city={profile?.city}
+          onMarkerPress={(id: string, type: 'HUB' | 'WASTE' | 'INFRACTION') => {
             if (type === 'WASTE') {
               navigateSafe(router, ROUTES.MARKETPLACE_DETAILS(id), { id });
+            } else if (type === 'INFRACTION') {
+              const inf = infractions.find(i => i.id === id);
+              Alert.alert(
+                `🚨 ${inf?.type || 'Infraction'}`,
+                `${inf?.description || 'Signalement Police Verte'}\n\nGravité: ${inf?.severity || 'N/A'}\nStatus: ${inf?.status || 'N/A'}`,
+                [{ text: "Fermer" }]
+              );
             } else {
               Alert.alert("Hub Info", "Ce centre de collecte est géré par la mairie.");
             }

@@ -18,7 +18,7 @@ export default function PoliceHistory() {
       const { data, error } = await supabase
         .from('environmental_infractions')
         .select('*, zones:zone_id(name)')
-        .eq('reported_by', profile.id)
+        .eq('reporter_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

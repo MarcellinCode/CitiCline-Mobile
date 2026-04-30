@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
-import { ShieldAlert, MapPin, AlertTriangle, TrendingUp, CheckCircle2 } from 'lucide-react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { ShieldAlert, MapPin, AlertTriangle, TrendingUp, CheckCircle2, Wifi, WifiOff } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
+import { uploadProofImage } from '@/lib/storage';
 import { useProfile } from '@/hooks/useProfile';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -37,8 +39,57 @@ export default function PoliceDashboard() {
     }
   };
 
+  const syncOfflineRecords = async () => {
+    try {
+      const offlineStr = await AsyncStorage.getItem('@offline_pvs');
+      if (!offlineStr) return;
+      
+      const offlineRecords = JSON.parse(offlineStr);
+      if (offlineRecords.length === 0) return;
+
+      console.log(`Synchronisation de ${offlineRecords.length} PVs hors-ligne...`);
+      let syncedCount = 0;
+      let remainingRecords = [];
+
+      for (const record of offlineRecords) {
+        try {
+          // 1. Upload local image
+          const imageUrl = record.imageUri ? await uploadProofImage(record.imageUri, 'CITICLINE-infractions') : null;
+          
+          // 2. Insert to Supabase
+          const { error } = await supabase.from('environmental_infractions').insert({
+            type: record.type,
+            description: record.description,
+            images: imageUrl ? [imageUrl] : [],
+            zone_id: record.zone_id,
+            reported_by: record.reported_by,
+            latitude: record.latitude,
+            longitude: record.longitude,
+            severity: record.severity,
+            status: record.status,
+          });
+
+          if (error) throw error;
+          syncedCount++;
+        } catch (e) {
+          console.error("Échec sync d'un PV", e);
+          remainingRecords.push(record); // Garder pour la prochaine fois
+        }
+      }
+
+      await AsyncStorage.setItem('@offline_pvs', JSON.stringify(remainingRecords));
+      
+      if (syncedCount > 0) {
+        Alert.alert('Synchronisation Réussie', `${syncedCount} PV(s) hors-ligne ont été transmis avec succès.`);
+        fetchData(); // Rafraîchir les données
+      }
+    } catch (e) {
+      console.error("Erreur générale sync", e);
+    }
+  };
+
   useEffect(() => {
-    fetchData();
+    syncOfflineRecords().then(() => fetchData());
   }, []);
 
   const onRefresh = () => {

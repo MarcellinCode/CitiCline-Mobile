@@ -9,14 +9,27 @@ export function useWastes() {
 
   const fetchWastes = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase.from('profiles').select('city').eq('id', user.id).single();
+      const userCity = profile?.city;
+
+      let query = supabase
         .from('wastes')
         .select(`
           id, seller_id, collector_id, type_id, estimated_weight, final_weight,
           status, location, latitude, longitude, images, created_at,
-          waste_types (id, name, price_per_kg, emoji)
+          waste_types (id, name, price_per_kg, emoji),
+          profiles!seller_id(city)
         `)
-        .eq('status', 'published')
+        .eq('status', 'published');
+
+      if (userCity) {
+        query = query.filter('profiles!seller_id.city', 'eq', userCity);
+      }
+
+      const { data, error } = await query
         .order('created_at', { ascending: false })
         .limit(30);
 

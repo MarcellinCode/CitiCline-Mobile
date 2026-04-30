@@ -6,11 +6,24 @@ interface MapOSMProps {
   userLocation: { latitude: number; longitude: number } | null;
   hubs: any[];
   wastes: any[];
-  onMarkerPress: (id: string, type: 'HUB' | 'WASTE') => void;
+  infractions?: any[];
+  city?: string;
+  onMarkerPress: (id: string, type: 'HUB' | 'WASTE' | 'INFRACTION') => void;
 }
 
-export const MapOSM = ({ userLocation, hubs, wastes, onMarkerPress }: MapOSMProps) => {
-  const center = userLocation || { latitude: 5.3484, longitude: -4.0305 };
+const CITY_COORDINATES: Record<string, { latitude: number; longitude: number }> = {
+    "Abidjan": { latitude: 5.3484, longitude: -4.0197 },
+    "Bouaké": { latitude: 7.6894, longitude: -5.0303 },
+    "Yamoussoukro": { latitude: 6.8276, longitude: -5.2893 },
+    "San-Pédro": { latitude: 4.7485, longitude: -6.6363 },
+    "Korhogo": { latitude: 9.4580, longitude: -5.6295 },
+    "Daloa": { latitude: 6.8773, longitude: -6.4502 },
+};
+
+export const MapOSM = ({ userLocation, hubs, wastes, infractions = [], city, onMarkerPress }: MapOSMProps) => {
+  const center = userLocation || 
+                 (city && CITY_COORDINATES[city]) || 
+                 { latitude: 5.3484, longitude: -4.0305 };
 
   const mapHtml = `
     <!DOCTYPE html>
@@ -77,6 +90,22 @@ export const MapOSM = ({ userLocation, hubs, wastes, onMarkerPress }: MapOSMProp
               })
             }).addTo(map).on('click', () => {
               window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'WASTE', id: w.id }));
+            });
+          }
+        });
+
+        // Infractions
+        const infractions = ${JSON.stringify(infractions)};
+        infractions.forEach(i => {
+          if (i.latitude && i.longitude) {
+            L.marker([i.latitude, i.longitude], {
+              icon: L.divIcon({ 
+                className: 'custom-marker', 
+                html: '🚨', 
+                iconSize: [38, 38] 
+              })
+            }).addTo(map).on('click', () => {
+              window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'INFRACTION', id: i.id }));
             });
           }
         });
