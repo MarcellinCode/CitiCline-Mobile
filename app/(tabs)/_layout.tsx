@@ -94,6 +94,14 @@ export default function TabsLayout() {
       headerShown: false,
     }}>
       <Tabs.Screen
+        name="marketplace/index"
+        options={{
+          title: 'Accueil',
+          href: profile?.role === 'agent_police_verte' ? null : '/marketplace',
+          tabBarIcon: ({ color }: { color: string }) => <Home size={22} color={color} strokeWidth={2.5} />,
+        }}
+      />
+      <Tabs.Screen
         name="police/index"
         options={{
           title: 'Radar',
@@ -102,17 +110,9 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="marketplace/index"
-        options={{
-          title: 'Accueil',
-          href: profile?.role === 'agent_police_verte' ? null : '/marketplace/index',
-          tabBarIcon: ({ color }: { color: string }) => <Home size={22} color={color} strokeWidth={2.5} />,
-        }}
-      />
-      <Tabs.Screen
         name="espace/index"
         options={{
-          title: 'Espace',
+          title: (profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie') ? 'Gestion' : 'Espace',
           tabBarIcon: ({ color }: { color: string }) => <LayoutDashboard size={22} color={color} strokeWidth={2.5} />,
         }}
       />
@@ -125,20 +125,23 @@ export default function TabsLayout() {
               <TouchableOpacity 
                 activeOpacity={0.9}
                 onPress={() => {
-                  if (profile?.role === 'agent_police_verte') {
+                  const role = profile?.role;
+                  if (role === 'agent_police_verte') {
                     router.push(ROUTES.POLICE_REPORT as any);
+                  } else if (role === 'organisation_admin' || role === 'entreprise' || role === 'mairie') {
+                    router.push(ROUTES.ESPACE as any);
                   } else if (profile?.role === 'vendeur' || profile?.role === 'super_admin') {
                     router.push('/marketplace/publish' as any);
                   } else {
-                    router.push(ROUTES.MARKETPLACE as any);
+                    router.push(ROUTES.POLICE_REPORT as any);
                   }
                 }}
                 className={cn(
                     "w-16 h-16 rounded-[2rem] items-center justify-center shadow-xl border-[4px] border-white",
-                    profile?.role === 'agent_police_verte' ? "bg-red-600 shadow-red-400/50" : "bg-zinc-900 shadow-zinc-400/50"
+                    (profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie') ? "bg-red-600 shadow-red-400/50" : "bg-zinc-900 shadow-zinc-400/50"
                 )}
               >
-                {profile?.role === 'agent_police_verte' ? (
+                {(profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie') ? (
                   <Gavel size={32} color="white" strokeWidth={3} />
                 ) : (profile?.role === 'vendeur' || profile?.role === 'super_admin') ? (
                   <Plus size={32} color="#2A9D8F" strokeWidth={3} />
@@ -169,6 +172,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="map/index" options={{ href: null }} />
       <Tabs.Screen name="chat/[id]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="marketplace/[id]" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="marketplace/publish" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="wallet/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="mes-dechets/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="missions/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
@@ -183,8 +187,6 @@ export default function TabsLayout() {
       <Tabs.Screen name="settings/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="notifications/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="profile/edit" options={{ href: null, tabBarStyle: { display: 'none' } }} />
-      <Tabs.Screen name="police/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
-      <Tabs.Screen name="police/report" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="police/history" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
   );

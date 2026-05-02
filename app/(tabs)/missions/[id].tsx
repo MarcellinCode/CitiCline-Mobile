@@ -338,7 +338,8 @@ export default function MissionDetail() {
           )}
 
         <View style={{ height: 120 }} />
-      </ScrollView>
+        </ScrollView>
+      )}
     </View>
   );
 }

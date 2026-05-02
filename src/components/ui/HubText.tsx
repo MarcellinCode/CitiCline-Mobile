@@ -24,7 +24,6 @@ export function HubText({ children, className, variant = 'body', ...props }: Hub
         variants[variant],
         className
       )} 
-      style={{ includeFontPadding: false }}
       {...props}
     >
       {children}

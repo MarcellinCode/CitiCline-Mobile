@@ -22,8 +22,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { useLocation } from '@/hooks/useLocation';
 import { supabase } from '@/lib/supabase';
 import { Header } from '@/components/Header';
-import { creditWallet, debitWallet } from '@/services/walletService';
-import { getOrganizationsNearby, getOrganizationPlans, createSubscription, signalEmergency } from '@/services/organizationService';
+import { creditWallet } from '@/services/walletService';
+import { getOrganizationsNearby, getOrganizationPlans, createSubscription, signalEmergency, processSubscriptionPayment } from '@/services/organizationService';
 import { Modal, TextInput, Alert, Pressable } from 'react-native';
 
 type Subscription = {
@@ -137,10 +137,17 @@ export default function AbonnementsScreen() {
 
     setIsSubmitting(true);
     try {
-      // 1. Débiter le wallet
-      const debitRes = await debitWallet(profile.id, selectedPlan.price);
-      if (!debitRes.success) {
-        Alert.alert("Erreur", debitRes.error || "Impossible de débiter le portefeuille.");
+      // 1. Gérer le paiement (Débit Citoyen + Crédit Organisation)
+      const paymentRes = await processSubscriptionPayment(
+        profile.id, 
+        selectedOrg.id, 
+        selectedPlan.price,
+        selectedOrg.full_name,
+        profile.full_name
+      );
+
+      if (!paymentRes.success) {
+        Alert.alert("Erreur", "Impossible de valider le paiement.");
         setIsSubmitting(false);
         return;
       }
@@ -155,8 +162,8 @@ export default function AbonnementsScreen() {
       setConfigModal(false);
       loadSubscription();
       refreshProfile();
-    } catch (err) {
-      Alert.alert("Erreur", "Une erreur est survenue lors de la souscription.");
+    } catch (err: any) {
+      Alert.alert("Erreur", err.message || "Une erreur est survenue lors de la souscription.");
     } finally {
       setIsSubmitting(false);
     }

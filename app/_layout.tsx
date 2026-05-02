@@ -54,7 +54,7 @@ export default function RootLayout() {
 import { useProfileContext } from "../src/context/ProfileContext";
 
 function AuthNavigationWrapper({ children, loaded, error, segments }: { children: React.ReactNode, loaded: boolean, error: any, segments: string[] }) {
-  const { session, loading: profileLoading } = useProfileContext();
+  const { session, profile, loading: profileLoading } = useProfileContext();
   const router = useRouter();
 
   useEffect(() => {
@@ -65,8 +65,14 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
     const inIndex = segments.length === 0 || (segments.length === 1 && segments[0] === '');
 
     if (session && (inAuthGroup || inOnboarding || inIndex)) {
-      if (profile?.role === 'agent_police_verte') {
+      const role = profile?.role;
+      
+      if (role === 'agent_police_verte') {
         router.replace(ROUTES.POLICE);
+      } else if (role === 'organisation_admin' || role === 'entreprise' || role === 'mairie') {
+        router.replace(ROUTES.ESPACE);
+      } else if (role === 'collecteur' || role === 'agent_collecteur') {
+        router.replace(ROUTES.MAP);
       } else {
         router.replace(ROUTES.MARKETPLACE);
       }

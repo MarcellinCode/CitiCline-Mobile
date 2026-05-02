@@ -38,6 +38,7 @@ import { HubText } from '@/components/ui/HubText';
 import { HubButton } from '@/components/ui/HubButton';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
+import { getTerritoryStats } from '@/services/mairieService';
 
 const { width } = Dimensions.get('window');
 
@@ -46,12 +47,29 @@ export default function EspaceDashboard() {
   const router = useRouter();
   const { profile, loading } = useProfile();
   const [totalRecycled, setTotalRecycled] = useState(0);
+  const [territoryStats, setTerritoryStats] = useState({ citizenCount: 0 });
+  const [activeSub, setActiveSub] = useState<any>(null);
 
   useEffect(() => {
     if (profile?.id) {
       fetchStats();
+      fetchActiveSub();
     }
   }, [profile]);
+
+  const fetchActiveSub = async () => {
+    try {
+      const { data } = await supabase
+        .from('subscriptions')
+        .select('*, plan:subscription_plans(name, tier)')
+        .eq('user_id', profile?.id)
+        .eq('status', 'active')
+        .maybeSingle();
+      setActiveSub(data);
+    } catch (err) {
+      console.error("fetchActiveSub error:", err);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -71,6 +89,12 @@ export default function EspaceDashboard() {
         const total = data.reduce((acc: number, w: any) => acc + (Number(w.final_weight) || Number(w.estimated_weight) || 0), 0);
         setTotalRecycled(total);
       }
+
+      // Si c'est une mairie, on récupère les stats de la ville
+      if (profile?.role === 'mairie' && profile?.city) {
+        const stats = await getTerritoryStats(profile.city);
+        setTerritoryStats(stats);
+      }
     } catch (err) {
       console.error("fetchStats error:", err);
     }
@@ -82,7 +106,11 @@ export default function EspaceDashboard() {
     switch (profile.role) {
       case 'super_admin':
       case 'vendeur':
-        return [
+        const isProSub = activeSub?.plan?.name?.toLowerCase().includes('entreprise') || 
+                         activeSub?.plan?.name?.toLowerCase().includes('usine') ||
+                         activeSub?.plan?.tier === 'pro';
+        
+        const baseItems = [
           {
             id: 'wallet',
             title: 'Portefeuille',
@@ -95,7 +123,7 @@ export default function EspaceDashboard() {
           {
             id: 'membership',
             title: 'Abonnement',
-            subtitle: 'Gestion & Alertes',
+            subtitle: activeSub?.plan?.name || 'Gestion & Alertes',
             icon: ShieldCheck,
             color: 'bg-emerald-600',
             route: ROUTES.ABONNEMENTS
@@ -117,6 +145,30 @@ export default function EspaceDashboard() {
             route: ROUTES.MAP
           }
         ];
+
+        // Si c'est un abonnement Pro (Entreprise/Usine), on ajoute les outils RSE
+        if (isProSub) {
+          baseItems.push(
+            {
+              id: 'analytics',
+              title: 'Bilan RSE',
+              subtitle: 'Impact Écologique Pro',
+              icon: BarChart3,
+              color: 'bg-zinc-900',
+              route: ROUTES.ESPACE_IMPACT_RSE
+            },
+            {
+              id: 'certifs',
+              title: 'Certificats',
+              subtitle: 'Vos preuves de recyclage',
+              icon: Crown,
+              color: 'bg-amber-600',
+              route: ROUTES.ESPACE_ANALYTICS
+            }
+          );
+        }
+
+        return baseItems;
       case 'collecteur':
         return [
           {
@@ -404,9 +456,9 @@ export default function EspaceDashboard() {
                 delay={300}
             />
             <MiniStat 
-                label="Points" 
-                value={profile?.eco_points || "0"} 
-                icon={Crown} 
+                label={profile?.role === 'mairie' ? "Citoyens" : "Points"} 
+                value={profile?.role === 'mairie' ? territoryStats.citizenCount : (profile?.eco_points || "0")} 
+                icon={profile?.role === 'mairie' ? Users : Crown} 
                 delay={400}
             />
         </View>

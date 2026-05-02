@@ -18,7 +18,7 @@ import {
     LOCATION_TASK_NAME, 
     startBackgroundTracking, 
     stopBackgroundTracking 
-} from '../../src/utils/backgroundLocationTask';
+} from '@/utils/backgroundLocationTask';
 
 const ROLE_LABELS: Record<string, string> = {
   vendeur: 'Citoyen Éco',
@@ -152,6 +152,16 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      router.replace('/(auth)/login');
+    } catch (err: any) {
+      Alert.alert("Erreur", err.message || "Impossible de se déconnecter.");
+    }
+  };
+
   if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
@@ -172,6 +182,7 @@ export default function ProfileScreen() {
         style={{ paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
       >
         <HubText variant="label" className="text-zinc-900 italic">Mon Compte</HubText>
+        <TouchableOpacity
             onPress={() => router.push(ROUTES.NOTIFICATIONS as any)}
             className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50 relative"
         >

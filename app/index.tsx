@@ -37,10 +37,6 @@ export default function Home() {
     return <View className="flex-1 bg-white" />;
   }
 
-  if (session) {
-    return <Redirect href={ROUTES.MARKETPLACE as any} />;
-  }
-
   return (
     <View 
       className="flex-1 bg-white items-center justify-between px-8"

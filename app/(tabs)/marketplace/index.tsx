@@ -56,8 +56,14 @@ export default function Marketplace() {
   };
 
   React.useEffect(() => {
+    if (!profileLoading && profile) {
+      // Sécurité : Seuls les agents de police sont éjectés du Marketplace vers leur Radar
+      if (profile.role === 'agent_police_verte') {
+        router.replace('/police');
+      }
+    }
     fetchImpactCounter();
-  }, [profile]);
+  }, [profile, profileLoading]);
 
   const filteredWastes = useMemo(() => {
     let list = wastes;
@@ -126,7 +132,14 @@ export default function Marketplace() {
     <View className="pb-6 px-6">
       <View className="mb-10 px-8 flex-row items-center justify-between mb-8">
         <View>
-          <HubText variant="label" className="text-zinc-400">Bonjour,</HubText>
+          <View className="flex-row items-center gap-2 mb-1">
+            <HubText variant="label" className="text-zinc-400">Bonjour,</HubText>
+            {(profile?.role === 'organisation_admin' || profile?.role === 'entreprise') && (
+              <View className="bg-violet-100 px-2 py-0.5 rounded-md">
+                <HubText className="text-[7px] font-bold text-violet-600 uppercase tracking-widest">Organisation</HubText>
+              </View>
+            )}
+          </View>
           <HubText variant="h1" className="text-zinc-900 leading-tight">
             {profile?.full_name?.split(' ')[0] || (profile?.role === 'collecteur' ? 'Partenaire' : 'Citoyen')}
           </HubText>
@@ -169,31 +182,18 @@ export default function Marketplace() {
 
           <TouchableOpacity 
             className="flex-1"
-            onPress={handleEmergencyReport}
-            disabled={emergencyLoading}
+            onPress={() => router.push('/police/report' as any)}
           >
-            <HubCard className={cn(
-                "border-amber-200 p-6 overflow-hidden min-h-[160px]",
-                emergencyLoading ? "bg-amber-50" : "bg-amber-100"
-            )}>
-               {emergencyLoading ? (
-                 <View className="flex-1 items-center justify-center">
-                    <ActivityIndicator color="#D97706" />
-                    <HubText variant="label" className="mt-2 text-amber-600">ENVOI...</HubText>
-                 </View>
-               ) : (
-                 <>
-                    <View className="w-10 h-10 bg-amber-500 rounded-xl items-center justify-center mb-4">
-                        <AlertTriangle size={20} color="white" />
-                    </View>
-                    <HubText variant="label" className="text-amber-800 mb-1">URGENCE</HubText>
-                    <HubText variant="h2" className="text-amber-600 text-sm">SIGNALER UN DÉPÔT</HubText>
-                    
-                    <View className="absolute -bottom-4 -right-4 opacity-20">
-                        <Camera size={80} color="#D97706" />
-                    </View>
-                 </>
-               )}
+            <HubCard className="border-amber-200 p-6 overflow-hidden min-h-[160px] bg-amber-100">
+                   <View className="w-10 h-10 bg-amber-500 rounded-xl items-center justify-center mb-4">
+                       <AlertTriangle size={20} color="white" />
+                   </View>
+                   <HubText variant="label" className="text-amber-800 mb-1">SIGNALER</HubText>
+                   <HubText variant="h2" className="text-amber-600 text-sm">DÉPÔT SAUVAGE</HubText>
+                   
+                   <View className="absolute -bottom-4 -right-4 opacity-20">
+                       <Camera size={80} color="#D97706" />
+                   </View>
             </HubCard>
           </TouchableOpacity>
        </View>

@@ -65,6 +65,63 @@ export const getOrganizationPlans = async (organizationId: string) => {
 };
 
 /**
+ * PROCESSUS DE PAIEMENT D'ABONNEMENT
+ * Débite le citoyen et crédite l'organisation
+ */
+export const processSubscriptionPayment = async (userId: string, orgId: string, amount: number, orgName: string, userName: string) => {
+  try {
+    // 1. Débiter le citoyen
+    const { data: profile, error: pError } = await supabase
+      .from('profiles')
+      .select('wallet_balance')
+      .eq('id', userId)
+      .single();
+
+    if (pError) throw pError;
+    if ((profile?.wallet_balance || 0) < amount) {
+      throw new Error("Solde insuffisant");
+    }
+
+    const citizenNewBalance = profile.wallet_balance - amount;
+
+    // 2. Créditer l'organisation (Lucas)
+    const { data: orgProfile, error: oError } = await supabase
+      .from('profiles')
+      .select('wallet_balance')
+      .eq('id', orgId)
+      .single();
+
+    if (oError) throw oError;
+    const orgNewBalance = (orgProfile?.wallet_balance || 0) + amount;
+
+    // 3. Transactions & Updates (Transaction atomique simulée par exécution séquentielle)
+    
+    // Update Citizen
+    await supabase.from('profiles').update({ wallet_balance: citizenNewBalance }).eq('id', userId);
+    await supabase.from('transactions').insert({
+      user_id: userId,
+      type: 'outcome',
+      amount: -amount,
+      description: `Abonnement Service - ${orgName}`
+    });
+
+    // Update Organization
+    await supabase.from('profiles').update({ wallet_balance: orgNewBalance }).eq('id', orgId);
+    await supabase.from('transactions').insert({
+      user_id: orgId,
+      type: 'income',
+      amount: amount,
+      description: `Revenu Abonnement - ${userName}`
+    });
+
+    return { success: true, balance: citizenNewBalance };
+  } catch (err: any) {
+    console.error('processSubscriptionPayment error:', err?.message);
+    throw err;
+  }
+};
+
+/**
  * CRÉATION D'UNE SOUSCRIPTION RÉELLE
  */
 export const createSubscription = async (userId: string, plan: any) => {

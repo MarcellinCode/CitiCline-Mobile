@@ -23,6 +23,7 @@ export default function Signup() {
   const [phone, setPhone] = useState('');
   
   // Citoyen
+  const [commune, setCommune] = useState('');
   const [district, setDistrict] = useState('');
   
   // Collecteur
@@ -52,6 +53,7 @@ export default function Signup() {
               full_name: role === 'organisation_admin' ? orgName : fullName,
               role: role,
               phone: phone,
+              city: commune,
               district: district,
               vehicle_type: vehicleType,
               id_number: idNumber,
@@ -167,6 +169,10 @@ export default function Signup() {
                     <TextInput placeholder="Téléphone" placeholderTextColor="#cbd5e1" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                 </View>
                 <View style={styles.inputBox}>
+                    <Building2 size={18} color="#94a3b8" />
+                    <TextInput placeholder="Commune (ex: Cocody, Yopougon...)" placeholderTextColor="#cbd5e1" style={styles.input} value={commune} onChangeText={setCommune} />
+                </View>
+                <View style={styles.inputBox}>
                     <MapPin size={18} color="#94a3b8" />
                     <TextInput placeholder="Quartier / Adresse" placeholderTextColor="#cbd5e1" style={styles.input} value={district} onChangeText={setDistrict} />
                 </View>
@@ -191,6 +197,10 @@ export default function Signup() {
                     <FileText size={18} color="#94a3b8" />
                     <TextInput placeholder="N° Pièce d'identité" placeholderTextColor="#cbd5e1" style={styles.input} value={idNumber} onChangeText={setIdNumber} />
                 </View>
+                <View style={styles.inputBox}>
+                    <Building2 size={18} color="#94a3b8" />
+                    <TextInput placeholder="Commune d'exercice" placeholderTextColor="#cbd5e1" style={styles.input} value={commune} onChangeText={setCommune} />
+                </View>
               </>
             )}
 
@@ -207,6 +217,10 @@ export default function Signup() {
                 <View style={styles.inputBox}>
                     <FileText size={18} color="#94a3b8" />
                     <TextInput placeholder="N° RCCM / IFU" placeholderTextColor="#cbd5e1" style={styles.input} value={rccm} onChangeText={setRccm} />
+                </View>
+                <View style={styles.inputBox}>
+                    <Building2 size={18} color="#94a3b8" />
+                    <TextInput placeholder="Commune du siège" placeholderTextColor="#cbd5e1" style={styles.input} value={commune} onChangeText={setCommune} />
                 </View>
                 <View style={styles.inputBox}>
                     <Phone size={18} color="#94a3b8" />

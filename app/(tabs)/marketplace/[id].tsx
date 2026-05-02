@@ -318,7 +318,7 @@ export default function WasteDetail() {
             </HubCard>
 
             {/* Collector Validation Section */}
-            {waste.status === 'reserved' && profile?.id === waste.collector_id && (
+            {waste?.status === 'reserved' && profile?.id === waste?.collector_id && (
                 <View className="mb-10">
                     <HubText variant="label" className="mb-4 ml-2">Validation de la collecte</HubText>
                     <HubCard className="p-8 border-2 border-emerald-50">
