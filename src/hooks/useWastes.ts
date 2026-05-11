@@ -21,12 +21,12 @@ export function useWastes() {
           id, seller_id, collector_id, type_id, estimated_weight, final_weight,
           status, location, latitude, longitude, images, created_at,
           waste_types (id, name, price_per_kg, emoji),
-          profiles!seller_id(city)
+          seller:profiles!seller_id!inner(city)
         `)
         .eq('status', 'published');
 
       if (userCity) {
-        query = query.filter('profiles!seller_id.city', 'eq', userCity);
+        query = query.eq('seller.city', userCity);
       }
 
       const { data, error } = await query
