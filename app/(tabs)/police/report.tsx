@@ -52,6 +52,7 @@ export default function ReportInfraction() {
   const [offenderIdentified, setOffenderIdentified] = useState(false);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [address, setAddress] = useState<string | null>(null);
+  const [manualAddress, setManualAddress] = useState('');
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   // Auto-acquire location on mount
@@ -134,6 +135,7 @@ export default function ReportInfraction() {
           latitude: location ? location.coords.latitude : 0,
           longitude: location ? location.coords.longitude : 0,
           address: address || null,
+          manual_address: manualAddress || null,
           severity,
           status: 'open'
         });
@@ -166,6 +168,7 @@ export default function ReportInfraction() {
           latitude: location ? location.coords.latitude : 0,
           longitude: location ? location.coords.longitude : 0,
           address: address || null,
+          manual_address: manualAddress || null,
           severity,
           status: 'open',
           timestamp: new Date().toISOString()
@@ -457,6 +460,27 @@ export default function ReportInfraction() {
               </TouchableOpacity>
             </HubCard>
 
+            {/* Manual Locality Field */}
+            <View className="mb-8">
+              <HubText variant="label" className="text-zinc-900 mb-4 ml-1">Précision de la Localité (Facultatif)</HubText>
+              <HubCard className="p-0 border-2 border-zinc-50 overflow-hidden">
+                <View className="flex-row items-center px-6 py-4 gap-4">
+                  <MapPin size={18} color="#94a3b8" />
+                  <TextInput 
+                    value={manualAddress}
+                    onChangeText={setManualAddress}
+                    placeholder="Ex: Face à la pharmacie, Immeuble bleu..."
+                    className="flex-1 text-zinc-900 font-bold text-sm"
+                    placeholderTextColor="#cbd5e1"
+                    style={{ height: 48 }}
+                  />
+                </View>
+              </HubCard>
+              <HubText variant="caption" className="text-zinc-400 text-[8px] mt-2 italic px-2">
+                Aidez les agents à localiser l'incident plus précisément.
+              </HubText>
+            </View>
+
             {/* Récapitulatif */}
             <HubCard className="bg-zinc-900 p-6 border-0 mb-8">
               <View className="flex-row items-center gap-2 mb-4">
@@ -487,6 +511,12 @@ export default function ReportInfraction() {
                     <HubText variant="caption" className="text-red-400 font-bold text-[10px]">IDENTIFIÉ</HubText>
                   </View>
                 )}
+                {manualAddress ? (
+                  <View className="flex-row items-center justify-between">
+                    <HubText variant="caption" className="text-zinc-500 text-[9px] uppercase">Localité</HubText>
+                    <HubText variant="caption" className="text-emerald-400 font-bold text-[10px] truncate max-w-[150px]">{manualAddress}</HubText>
+                  </View>
+                ) : null}
                 {description ? (
                   <View className="mt-2 pt-3 border-t border-zinc-800">
                     <HubText variant="caption" className="text-zinc-500 text-[9px] uppercase mb-1">Commentaire</HubText>

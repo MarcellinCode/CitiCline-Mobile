@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl, Alert, Image as RNImage } from 'react-native';
 import { ShieldAlert, MapPin, AlertTriangle, TrendingUp, CheckCircle2, Wifi, WifiOff } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
@@ -134,8 +134,12 @@ export default function PoliceDashboard() {
               {profile?.city || 'Zone Alpha-1'}
             </Text>
           </View>
-          <View className="w-12 h-12 bg-red-50 rounded-2xl items-center justify-center border border-red-100">
-            <ShieldAlert size={24} color="#dc2626" />
+          <View className="w-12 h-12 bg-emerald-50 rounded-2xl items-center justify-center border border-emerald-100 overflow-hidden p-2">
+            <RNImage 
+              source={require('../../../assets/police_verte_logo.png')} 
+              className="w-full h-full" 
+              resizeMode="contain" 
+            />
           </View>
         </View>
 

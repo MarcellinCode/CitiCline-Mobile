@@ -56,12 +56,6 @@ export default function Marketplace() {
   };
 
   React.useEffect(() => {
-    if (!profileLoading && profile) {
-      // Sécurité : Seuls les agents de police sont éjectés du Marketplace vers leur Radar
-      if (profile.role === 'agent_police_verte') {
-        router.replace('/police');
-      }
-    }
     fetchImpactCounter();
   }, [profile, profileLoading]);
 

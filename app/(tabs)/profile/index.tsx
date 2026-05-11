@@ -28,6 +28,7 @@ const ROLE_LABELS: Record<string, string> = {
   agent_collecteur: 'Agent Terrain',
   mairie: 'Mairie Vision',
   super_admin: 'Super Admin',
+  agent_police_verte: 'Police Verte',
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -38,6 +39,7 @@ const ROLE_COLORS: Record<string, string> = {
   agent_collecteur: 'text-amber-500 bg-amber-50',
   mairie: 'text-zinc-900 bg-zinc-50',
   super_admin: 'text-red-500 bg-red-50',
+  agent_police_verte: 'text-emerald-500 bg-emerald-50',
 };
 
 export default function ProfileScreen() {
@@ -207,6 +209,8 @@ export default function ProfileScreen() {
                         <View className="w-24 h-24 rounded-[2rem] bg-zinc-800 items-center justify-center border-2 border-zinc-700 overflow-hidden">
                              {profile?.avatar_url ? (
                                 <RNImage source={{ uri: profile.avatar_url }} className="w-full h-full" />
+                             ) : profile?.role === 'agent_police_verte' ? (
+                                <RNImage source={require('../../../assets/police_verte_logo.png')} className="w-full h-full p-4 bg-white" resizeMode="contain" />
                              ) : (
                                 <User size={40} color="#475569" />
                              )}

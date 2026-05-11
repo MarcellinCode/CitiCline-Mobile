@@ -1,5 +1,5 @@
 import { Home, Map, MessageSquare, LayoutDashboard, User, Plus, Search, ShieldAlert, Gavel, History } from 'lucide-react-native';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, ActivityIndicator, Image as RNImage } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
 import { navigateSafe } from '@/utils/navigation';
@@ -62,7 +62,9 @@ export default function TabsLayout() {
   }
 
   return (
-    <Tabs screenOptions={{
+    <Tabs 
+      initialRouteName={profile?.role === 'agent_police_verte' ? 'police/index' : 'marketplace/index'}
+      screenOptions={{
       tabBarActiveTintColor: '#2A9D8F',
       tabBarInactiveTintColor: '#94a3b8',
       tabBarStyle: {
@@ -105,8 +107,14 @@ export default function TabsLayout() {
         name="police/index"
         options={{
           title: 'Radar',
-          href: profile?.role === 'agent_police_verte' ? '/police/index' : null,
-          tabBarIcon: ({ color }: { color: string }) => <ShieldAlert size={22} color={color} strokeWidth={2.5} />,
+          href: profile?.role === 'agent_police_verte' ? '/police' : null,
+          tabBarIcon: ({ color }: { color: string }) => (
+            <RNImage 
+              source={require('../../assets/police_verte_logo.png')} 
+              style={{ width: 22, height: 22, tintColor: color }} 
+              resizeMode="contain" 
+            />
+          ),
         }}
       />
       <Tabs.Screen
