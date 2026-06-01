@@ -21,20 +21,29 @@ export function useWastes() {
           id, seller_id, collector_id, type_id, estimated_weight, final_weight,
           status, location, latitude, longitude, images, created_at,
           waste_types (id, name, price_per_kg, emoji),
-          seller:profiles!seller_id!inner(city)
+          seller:profiles!seller_id(city)
         `)
         .eq('status', 'published');
 
-      if (userCity) {
-        query = query.eq('seller.city', userCity);
-      }
-
       const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(30);
+        .limit(100);
 
       if (error) throw error;
-      setWastes((data || []) as unknown as Waste[]);
+      
+      let filteredData = data || [];
+      if (userCity) {
+        const userCityLower = userCity.toLowerCase();
+        filteredData = filteredData.filter((w: any) => {
+          const sellerCity = w.seller?.city?.toLowerCase();
+          const locationLower = w.location?.toLowerCase() || "";
+          return (sellerCity && sellerCity.includes(userCityLower)) || 
+                 locationLower.includes(userCityLower) ||
+                 !sellerCity;
+        });
+      }
+
+      setWastes(filteredData as unknown as Waste[]);
     } catch (err) {
       console.error('Error fetching wastes:', err);
     } finally {
