@@ -11,7 +11,7 @@ export function useInfractions() {
         .from('environmental_infractions')
         .select(`
           *,
-          profiles:reporter_id(full_name),
+          profiles:reported_by(full_name),
           zones:zone_id(name)
         `)
         .order('created_at', { ascending: false })

@@ -33,7 +33,6 @@ export default function Marketplace() {
   const unreadCount = useUnreadNotifications();
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const [emergencyLoading, setEmergencyLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [impactWeight, setImpactWeight] = useState(0);
 
@@ -75,44 +74,6 @@ export default function Marketplace() {
     return wastes.slice(0, 3);
   }, [wastes]);
 
-  const handleEmergencyReport = async () => {
-    try {
-      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-      const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
-      
-      if (cameraStatus !== 'granted' || locationStatus !== 'granted') {
-        Alert.alert("Permissions requises", "L'accès à la caméra et à la position est nécessaire pour signaler un dépôt sauvage.");
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        quality: 0.5,
-        allowsEditing: false,
-      });
-
-      if (!result.canceled && result.assets[0].uri) {
-        setEmergencyLoading(true);
-        const locationCoords = await Location.getCurrentPositionAsync({});
-        const publicUrl = await uploadProofImage(result.assets[0].uri);
-
-        await supabase.from('emergency_reports').insert({
-          reporter_id: profile?.id,
-          latitude: locationCoords.coords.latitude,
-          longitude: locationCoords.coords.longitude,
-          photo_url: publicUrl,
-          description: 'Signalement urgent via application mobile',
-          status: 'pending'
-        });
-
-        Alert.alert("Signalement envoyé", "Merci ! La mairie a été alertée et interviendra dans les plus brefs délais.");
-      }
-    } catch (error) {
-      console.error("Emergency report error:", error);
-      Alert.alert("Erreur", "Une erreur est survenue lors de l'envoi du signalement.");
-    } finally {
-      setEmergencyLoading(false);
-    }
-  };
 
   if (loading && !refreshing) {
     return (
