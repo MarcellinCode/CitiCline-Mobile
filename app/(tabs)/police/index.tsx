@@ -54,7 +54,7 @@ export default function PoliceDashboard() {
       for (const record of offlineRecords) {
         try {
           // 1. Upload local image
-          const imageUrl = record.imageUri ? await uploadProofImage(record.imageUri, 'CITICLINE-infractions') : null;
+          const imageUrl = record.imageUri ? await uploadProofImage(record.imageUri, 'CleanZone-infractions') : null;
           
           // 2. Insert to Supabase
           const { error } = await supabase.from('environmental_infractions').insert({

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "CITICLINE",
-    "slug": "citicline",
+    "name": "CleanZone",
+    "slug": "cleanzone",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,7 +18,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.recycla.citicline",
+      "package": "com.recycla.cleanzone",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -39,13 +39,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "CITICLINE a besoin de la caméra pour prendre en photo les preuves de travail et dépôts sauvages."
+          "cameraPermission": "CleanZone a besoin de la caméra pour prendre en photo les preuves de travail et dépôts sauvages."
         }
       ],
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "CITICLINE nécessite votre position GPS pour l'itinéraire et les alertes environnement.",
+          "locationAlwaysAndWhenInUsePermission": "CleanZone nécessite votre position GPS pour l'itinéraire et les alertes environnement.",
           "locationAlwaysPermission": "Position vitale pour le suivi des agents en arrière-plan.",
           "locationWhenInUsePermission": "Position nécessaire pour géolocaliser les déchets signalés."
         }
@@ -53,11 +53,11 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "CITICLINE doit accéder à la galerie pour charger les images de signalements."
+          "photosPermission": "CleanZone doit accéder à la galerie pour charger les images de signalements."
         }
       ]
     ],
-    "scheme": "citicline",
+    "scheme": "cleanzone",
     "extra": {
       "router": {
         "origin": false

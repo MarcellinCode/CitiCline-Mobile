@@ -59,7 +59,7 @@ export default function AnalyticsScreen() {
         <View style={styles.noteContainer}>
              <Text style={styles.noteTitle}>Note B2B</Text>
              <Text style={styles.noteText}>
-               "Les rapports détaillés par concession et les exports CSV sont disponibles uniquement sur le tableau de bord Web CITICLINE."
+               "Les rapports détaillés par concession et les exports CSV sont disponibles uniquement sur le tableau de bord Web CleanZone."
              </Text>
         </View>
       </ScrollView>

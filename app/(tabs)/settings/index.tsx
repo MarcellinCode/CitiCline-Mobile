@@ -122,7 +122,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
         
         <Text style={styles.footerText}>
-          RecyCla Mobile — Fièrement propulsé par Citicline
+          RecyCla Mobile — Fièrement propulsé par CleanZone
         </Text>
       </ScrollView>
     </View>

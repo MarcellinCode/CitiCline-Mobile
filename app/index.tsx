@@ -5,7 +5,7 @@ import { Stack, useRouter, Redirect } from 'expo-router';
 import { ROUTES } from "@/constants/routes";
 import { StatusBar } from 'expo-status-bar';
 import { ArrowRight, Leaf } from 'lucide-react-native';
-import { CITICLINE_LOGO_BASE64 } from '@/components/ui/logoBase64';
+import { CleanZone_LOGO_BASE64 } from '@/components/ui/logoBase64';
 import { supabase } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { HubButton } from '@/components/ui/HubButton';
@@ -52,7 +52,7 @@ export default function Home() {
       <View className="items-center justify-center">
         <View className="w-48 h-48 bg-zinc-50 rounded-[4rem] items-center justify-center shadow-2xl shadow-zinc-200/50">
           <RNImage 
-            source={{ uri: CITICLINE_LOGO_BASE64 }} 
+            source={{ uri: CleanZone_LOGO_BASE64 }} 
             className="w-32 h-32"
             resizeMode="contain"
           />
@@ -87,7 +87,7 @@ export default function Home() {
         </HubButton>
         
         <View className="mt-12 items-center">
-            <HubText variant="label" className="text-zinc-300">Powered by Citicline Central</HubText>
+            <HubText variant="label" className="text-zinc-300">Powered by CleanZone Central</HubText>
         </View>
       </View>
 

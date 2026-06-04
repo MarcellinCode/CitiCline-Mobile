@@ -1,4 +1,4 @@
--- 🚚 CITICLINE : Schéma de Gestion du Parc Automobile
+-- 🚚 CleanZone : Schéma de Gestion du Parc Automobile
 
 -- 1. Table des Véhicules
 CREATE TABLE IF NOT EXISTS public.vehicles (

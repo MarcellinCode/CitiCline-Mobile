@@ -150,7 +150,7 @@ export default function Signup() {
 
             <View style={styles.mairieNote}>
                 <Text style={styles.mairieNoteText}>
-                    🏢 Un accès Administrateur Mairie ? Contactez l'assistance technique Citicline.
+                    🏢 Un accès Administrateur Mairie ? Contactez l'assistance technique CleanZone.
                 </Text>
             </View>
           </View>

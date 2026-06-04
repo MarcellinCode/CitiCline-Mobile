@@ -22,7 +22,7 @@ import { Header } from '@/components/Header';
 import { MapOSM } from '@/components/map/MapOSM';
 
 // Fixed points for the Demo Radar (Mairie Hubs & Partners)
-const CITICLINE_HUBS = [
+const CleanZone_HUBS = [
   { id: 'h1', name: 'Hub Principal - Mairie', type: 'office', latitude: 5.3484, longitude: -4.0305, emoji: '🏛️' },
   { id: 'h2', name: 'Centre de Collecte - Nord', type: 'center', latitude: 5.3850, longitude: -4.0150, emoji: '♻️' },
   { id: 'h3', name: 'Partenaire - Recy-Pro', type: 'partner', latitude: 5.3200, longitude: -3.9800, emoji: '🏢' },
@@ -48,7 +48,7 @@ export default function MapScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
       <Header 
-        title={isCitizen ? "Radar Éco-Citoyen" : "Radar CITICLINE"} 
+        title={isCitizen ? "Radar Éco-Citoyen" : "Radar CleanZone"} 
         subtitle={isCitizen ? "Centres de collecte et partenaires" : "Déchets à proximité de vous"} 
         onBack={() => navigateSafe(router, ROUTES.ESPACE)}
       />
@@ -56,7 +56,7 @@ export default function MapScreen() {
       <View style={styles.mapContainer}>
         <MapOSM 
           userLocation={location ? { latitude: location.coords.latitude, longitude: location.coords.longitude } : null}
-          hubs={CITICLINE_HUBS}
+          hubs={CleanZone_HUBS}
           wastes={wastes}
           infractions={infractions}
           city={profile?.city}

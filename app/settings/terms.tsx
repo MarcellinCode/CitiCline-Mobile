@@ -24,7 +24,7 @@ export default function TermsScreen() {
     {
       id: "Article 3",
       title: "Propriété Intellectuelle",
-      content: "Tous les contenus, logos et technologies utilisés sur l'application sont la propriété exclusive de Citicline Hub."
+      content: "Tous les contenus, logos et technologies utilisés sur l'application sont la propriété exclusive de CleanZone Hub."
     },
     {
         id: "Article 4",
@@ -83,7 +83,7 @@ export default function TermsScreen() {
              <View className="flex-1">
                 <HubText variant="h3" className="text-white text-xs mb-1">Assistance Légale</HubText>
                 <HubText variant="body" className="text-zinc-500 text-[9px]">
-                    Pour toute question juridique, contactez legal@citicline.hub
+                    Pour toute question juridique, contactez legal@cleanzone.hub
                 </HubText>
              </View>
         </View>

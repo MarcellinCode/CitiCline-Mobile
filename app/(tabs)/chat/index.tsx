@@ -103,7 +103,7 @@ export default function ChatScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity 
             onPress={() => navigateSafe(router, ROUTES.CHAT_DETAILS(item.otherUser?.id), { 
-              name: item.otherUser?.full_name || 'Utilisateur CITICLINE',
+              name: item.otherUser?.full_name || 'Utilisateur CleanZone',
               waste_id: item.waste_id 
             })} style={styles.chatItem}
           >
@@ -116,7 +116,7 @@ export default function ChatScreen() {
             <View style={styles.chatContent}>
                 <View style={styles.chatHeader}>
                   <Text style={styles.chatName}>
-                      {item.otherUser?.full_name || 'Utilisateur CITICLINE'}
+                      {item.otherUser?.full_name || 'Utilisateur CleanZone'}
                   </Text>
                   <Text style={styles.chatTime}>
                     {item.timestamp ? new Date(item.timestamp).toISOString().split('T')[0].split('-').reverse().slice(0, 2).join(' ') : '--'}

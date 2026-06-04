@@ -97,7 +97,7 @@ export default function MissionsScreen() {
         </View>
         <HubText variant="h2" className="text-center mb-2">Accès Limité</HubText>
         <HubText variant="body" className="text-center text-zinc-400">
-          Cet espace est exclusivement réservé aux agents de collecte officiels de CITICLINE (Salubrité). Les acheteurs indépendants gèrent leurs activités via la Marketplace.
+          Cet espace est exclusivement réservé aux agents de collecte officiels de CleanZone (Salubrité). Les acheteurs indépendants gèrent leurs activités via la Marketplace.
         </HubText>
         <HubButton 
           className="mt-8"

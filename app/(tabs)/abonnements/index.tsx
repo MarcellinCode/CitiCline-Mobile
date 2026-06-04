@@ -246,7 +246,7 @@ export default function AbonnementsScreen() {
                   {subscription.zone_name || 'Zone Assignée'}
                 </Text>
                 <Text style={styles.partnerSubtitle}>
-                  Géré par : {subscription.company_name || 'Partenaire CITICLINE'}
+                  Géré par : {subscription.company_name || 'Partenaire CleanZone'}
                 </Text>
                 <View style={styles.activeBadge}>
                   <Text style={styles.activeBadgeText}>Service Actif</Text>

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Image as RNImage } from 'react-native';
-import { CITICLINE_LOGO_BASE64 } from './logoBase64';
+import { CleanZone_LOGO_BASE64 } from './logoBase64';
 
 interface LogoProps {
   size?: 'small' | 'medium' | 'large';
@@ -24,7 +24,7 @@ export default function Logo({ size = 'medium', color = 'dark' }: LogoProps) {
     <View style={styles.container}>
       <View style={[styles.iconContainer, { width: iconSize * 1.5, height: iconSize * 1.5, borderRadius: iconSize * 0.75 }]}>
         <RNImage 
-          source={{ uri: CITICLINE_LOGO_BASE64 }} 
+          source={{ uri: CleanZone_LOGO_BASE64 }} 
           style={{ width: '100%', height: '100%' }}
           resizeMode="contain"
         />

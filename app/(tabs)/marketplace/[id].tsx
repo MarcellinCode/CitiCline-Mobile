@@ -307,7 +307,7 @@ export default function WasteDetail() {
                     </View>
                     <View>
                         <HubText variant="h3" className="text-zinc-900 text-[13px] mb-0">
-                            {(waste?.profiles as any)?.full_name || 'Utilisateur CITICLINE'}
+                            {(waste?.profiles as any)?.full_name || 'Utilisateur CleanZone'}
                         </HubText>
                         <HubText variant="caption" className="text-primary font-black text-[9px] tracking-widest uppercase">MEMBRE CERTIFIÉ</HubText>
                     </View>
@@ -407,7 +407,7 @@ export default function WasteDetail() {
 
             <HubText variant="label" className="mb-4 ml-2">Description</HubText>
             <HubText variant="body" className="text-zinc-500 leading-relaxed mb-10">
-                Ce lot de <HubText variant="body" className="text-zinc-900 font-bold">{waste?.waste_types?.name.toLowerCase()}</HubText> est trié et prêt à être collecté. CITICLINE garantit la traçabilité de ce lot jusqu'au centre de traitement agréé.
+                Ce lot de <HubText variant="body" className="text-zinc-900 font-bold">{waste?.waste_types?.name.toLowerCase()}</HubText> est trié et prêt à être collecté. CleanZone garantit la traçabilité de ce lot jusqu'au centre de traitement agréé.
             </HubText>
 
         </View>

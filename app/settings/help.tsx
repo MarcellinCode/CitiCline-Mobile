@@ -46,7 +46,7 @@ export default function HelpScreen() {
 
   const contactMethods = [
     { icon: Phone, label: "Appeler le Hub", value: "+225 07 00 00 00 00", color: "#10b981" },
-    { icon: Mail, label: "Email Support", value: "support@citicline.hub", color: "#0ea5e9" },
+    { icon: Mail, label: "Email Support", value: "support@cleanzone.hub", color: "#0ea5e9" },
     { icon: MessageCircle, label: "Chat en direct", value: "Agents disponibles 24/7", color: "#6366f1" }
   ];
 

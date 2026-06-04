@@ -6,8 +6,8 @@ const UPLOAD_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_de
 /**
  * Uploads an image to Cloudinary using the REST API.
  */
-export const uploadProofImage = async (uriPath: string, folder: string = 'CITICLINE-wastes') => {
-  console.log('🚀 [CITICLINE] UPLOAD VIA CLOUDINARY - START');
+export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZone-wastes') => {
+  console.log('🚀 [CleanZone] UPLOAD VIA CLOUDINARY - START');
   console.log('📂 Folder:', folder);
   console.log('☁️ Cloud Name:', CLOUD_NAME);
 
@@ -36,10 +36,10 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CITICL
       throw new Error(data.error.message);
     }
 
-    console.log('✅ [CITICLINE] UPLOAD CLOUDINARY RÉUSSI:', data.secure_url);
+    console.log('✅ [CleanZone] UPLOAD CLOUDINARY RÉUSSI:', data.secure_url);
     return data.secure_url;
   } catch (err) {
-    console.error('❌ [CITICLINE] Cloudinary Upload error:', err);
+    console.error('❌ [CleanZone] Cloudinary Upload error:', err);
     throw err;
   }
 };

@@ -54,7 +54,7 @@ export function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
                     <View className="w-2 h-2 rounded-full bg-primary" />
                 </View>
                 <HubText variant="caption" className="text-[9px] uppercase tracking-tighter decoration-zinc-400">
-                    {waste.profiles?.full_name || 'CITICLINE'}
+                    {waste.profiles?.full_name || 'CleanZone'}
                 </HubText>
             </View>
             <ArrowUpRight size={14} color="#2A9D8F" />

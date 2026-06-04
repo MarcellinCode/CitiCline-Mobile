@@ -121,7 +121,7 @@ export default function ReportInfraction() {
     setLoading(true);
     try {
       // 1. Upload Image
-      const imageUrl = await uploadProofImage(image, 'CITICLINE-infractions');
+      const imageUrl = await uploadProofImage(image, 'CleanZone-infractions');
 
       // 2. Create Record
       const { error } = await supabase

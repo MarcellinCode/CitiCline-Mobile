@@ -123,9 +123,9 @@ export const MapOSM = ({ userLocation, hubs, wastes, infractions = [], city, onM
         originWhitelist={['*']}
         source={{ 
           html: mapHtml,
-          headers: { 'Referer': 'https://citicline.com' }
+          headers: { 'Referer': 'https://cleanzone.com' }
         }}
-        userAgent="CiticlineMobileApp/1.0 (https://citicline.com)"
+        userAgent="CleanZoneMobileApp/1.0 (https://cleanzone.com)"
         style={styles.map}
         onMessage={(event: any) => {
           try {

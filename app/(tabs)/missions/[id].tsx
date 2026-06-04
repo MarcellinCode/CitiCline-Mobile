@@ -323,7 +323,7 @@ export default function MissionDetail() {
                </View>
                <HubText variant="h1" className="text-center mb-4">OPÉRATION RÉUSSIE</HubText>
                <HubText variant="body" className="text-center text-zinc-400 italic mb-12">
-                   Données transmises instantanément{'\n'}au Central Hub CITICLINE.
+                   Données transmises instantanément{'\n'}au Central Hub CleanZone.
                </HubText>
 
                <HubButton 

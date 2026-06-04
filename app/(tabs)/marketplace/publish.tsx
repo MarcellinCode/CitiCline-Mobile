@@ -71,7 +71,7 @@ export default function PublishWaste() {
 
       // 2. Upload all images to Cloudinary
       const uploadedImageUrls = await Promise.all(
-        images.map(uri => uploadProofImage(uri, 'CITICLINE-marketplace'))
+        images.map(uri => uploadProofImage(uri, 'CleanZone-marketplace'))
       );
 
       // 3. Save to Supabase

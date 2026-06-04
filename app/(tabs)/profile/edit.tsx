@@ -35,7 +35,7 @@ export default function EditProfileScreen() {
     if (!result.canceled) {
       setUploadingAvatar(true);
       try {
-        const url = await uploadProofImage(result.assets[0].uri, 'CITICLINE-avatars');
+        const url = await uploadProofImage(result.assets[0].uri, 'CleanZone-avatars');
         setAvatarUrl(url);
       } catch (err) {
         Alert.alert('Erreur', "Échec de l'envoi de la photo.");
