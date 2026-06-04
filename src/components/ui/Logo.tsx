@@ -30,7 +30,7 @@ export default function Logo({ size = 'medium', color = 'dark' }: LogoProps) {
         />
       </View>
       <Text style={[styles.text, { fontSize, color: textColor }]}>
-        CITI<Text style={{ color: '#10b981' }}>CLINE</Text>
+        Clean<Text style={{ color: '#10b981' }}>Zone</Text>
       </Text>
     </View>
   );

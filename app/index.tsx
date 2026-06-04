@@ -67,7 +67,7 @@ export default function Home() {
       <View className="items-center w-full">
         <View>
           <Text className="text-5xl font-black uppercase italic tracking-tighter text-zinc-900 text-center leading-[0.9]">
-            CITI<Text className="text-primary">CLINE</Text>
+            Clean<Text className="text-primary">Zone</Text>
           </Text>
         </View>
         <Text className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mt-4 text-center">
