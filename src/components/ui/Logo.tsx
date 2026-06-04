@@ -10,14 +10,14 @@ export default function Logo({ size = 'medium', color = 'dark' }: LogoProps) {
   const textColor = isLight ? '#ffffff' : '#020617';
   
   let fontSize = 24;
-  let iconSize = 24;
+  let iconSize = 36;
   
   if (size === 'small') {
     fontSize = 18;
-    iconSize = 20;
+    iconSize = 28;
   } else if (size === 'large') {
     fontSize = 32;
-    iconSize = 36;
+    iconSize = 52;
   }
 
   return (
