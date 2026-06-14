@@ -39,16 +39,54 @@ export default function PublishWaste() {
   }, []);
 
   const pickImage = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) {
-      setImages([...images, result.assets[0].uri]);
-    }
+    Alert.alert(
+      "Ajouter une Photo",
+      "Choisissez une source pour l'image du lot :",
+      [
+        {
+          text: "Prendre une photo",
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission requise', 'La caméra est nécessaire pour prendre une photo.');
+              return;
+            }
+            let result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              setImages([...images, result.assets[0].uri]);
+            }
+          }
+        },
+        {
+          text: "Choisir depuis la bibliothèque",
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission requise', 'L\'accès à la galerie est nécessaire.');
+              return;
+            }
+            let result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 0.8,
+            });
+            if (!result.canceled) {
+              setImages([...images, result.assets[0].uri]);
+            }
+          }
+        },
+        {
+          text: "Annuler",
+          style: "cancel"
+        }
+      ]
+    );
   };
 
   const handlePublish = async () => {
