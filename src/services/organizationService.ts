@@ -175,18 +175,60 @@ export const processSubscriptionPayment = async (userId: string, orgId: string, 
  */
 export const createSubscription = async (userId: string, plan: any) => {
   try {
+    let planId = plan.id;
+    
+    // Si c'est un plan de démo (id = '1', '2', '3'), on crée un vrai plan en BDD
+    if (planId === '1' || planId === '2' || planId === '3') {
+      const orgId = plan.company_id || 'e2c7640f-f2e6-4a1b-a062-a0ae7d1f361f';
+      
+      // 1. Récupérer la concession active de l'organisation
+      const { data: concessions } = await supabase
+        .from('concessions')
+        .select('id')
+        .eq('organization_id', orgId)
+        .eq('status', 'active')
+        .limit(1);
+
+      const concessionId = concessions?.[0]?.id || 'e975b702-8359-4280-8f61-8f2bae9129ae';
+
+      // 2. Vérifier si un plan équivalent existe déjà en BDD
+      const { data: existingPlan } = await supabase
+        .from('subscription_plans')
+        .select('id')
+        .eq('concession_id', concessionId)
+        .eq('name', plan.name)
+        .limit(1);
+
+      if (existingPlan && existingPlan.length > 0) {
+        planId = existingPlan[0].id;
+      } else {
+        // 3. Créer le plan dans subscription_plans
+        const { data: newPlan, error: planError } = await supabase
+          .from('subscription_plans')
+          .insert([{
+            concession_id: concessionId,
+            name: plan.name,
+            description: plan.description || `Plan ${plan.name} pour la zone`,
+            price_cfa: plan.price || 1000,
+            frequency_per_week: plan.pickup_days?.length || 1
+          }])
+          .select()
+          .single();
+        
+        if (planError) {
+          console.error("Failed to create demo plan:", planError.message);
+          throw planError;
+        }
+        planId = newPlan.id;
+      }
+    }
+
     const { data, error } = await supabase
-      .from('subscriptions')
+      .from('household_subscriptions')
       .insert([{
-        user_id: userId,
-        plan_id: plan.id,
-        zone_name: plan.zone_name || 'Zone Locale',
-        company_name: plan.company_name || 'Organisation Partenaire',
-        pickup_days: plan.pickup_days,
-        pickup_time: plan.pickup_time,
-        price: plan.price,
-        status: 'active',
-        tier: 'standard'
+        profile_id: userId,
+        plan_id: planId,
+        status: 'active'
       }])
       .select()
       .single();

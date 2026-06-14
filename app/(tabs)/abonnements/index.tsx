@@ -64,14 +64,58 @@ export default function AbonnementsScreen() {
     if (!profile?.id) return;
     try {
       setLoading(true);
-      const { data } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', profile.id)
+      const { data, error } = await supabase
+        .from('household_subscriptions')
+        .select(`
+          *,
+          plan:subscription_plans(
+            *,
+            concessions(
+              *
+            )
+          )
+        `)
+        .eq('profile_id', profile.id)
         .eq('status', 'active')
         .maybeSingle();
 
-      setSubscription(data as Subscription | null);
+      if (error) throw error;
+
+      if (data) {
+        // Obtenir la concession associée
+        const planConcessions = Array.isArray(data.plan?.concessions) 
+          ? data.plan.concessions[0] 
+          : data.plan?.concessions;
+
+        let zoneName = 'Zone Locale';
+        let companyName = 'Organisation Partenaire';
+
+        const zoneId = planConcessions?.zone_id;
+        const orgId = planConcessions?.organization_id;
+
+        if (zoneId) {
+          const { data: zData } = await supabase.from('zones').select('name').eq('id', zoneId).maybeSingle();
+          if (zData) zoneName = zData.name;
+        }
+
+        if (orgId) {
+          const { data: oData } = await supabase.from('profiles').select('full_name').eq('id', orgId).maybeSingle();
+          if (oData) companyName = oData.full_name;
+        }
+
+        const mappedSub: Subscription = {
+          id: data.id,
+          zone_name: zoneName,
+          company_name: companyName,
+          pickup_days: data.plan?.pickup_days || ['Lundi', 'Mercredi', 'Vendredi'],
+          pickup_time: data.plan?.pickup_time || '08h - 10h',
+          status: data.status,
+          tier: data.plan?.name || 'standard',
+        };
+        setSubscription(mappedSub);
+      } else {
+        setSubscription(null);
+      }
     } catch (err) {
       console.error("loadSubscription error:", err);
     } finally {
@@ -155,7 +199,8 @@ export default function AbonnementsScreen() {
       // 2. Créer l'abonnement
       await createSubscription(profile.id, {
         ...selectedPlan,
-        company_name: selectedOrg.full_name
+        company_name: selectedOrg.full_name,
+        company_id: selectedOrg.id
       });
       
       Alert.alert("Félicitations", "Votre abonnement est maintenant actif !");

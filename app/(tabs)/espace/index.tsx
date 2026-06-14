@@ -60,12 +60,25 @@ export default function EspaceDashboard() {
   const fetchActiveSub = async () => {
     try {
       const { data } = await supabase
-        .from('subscriptions')
-        .select('*, plan:subscription_plans(name, tier)')
-        .eq('user_id', profile?.id)
+        .from('household_subscriptions')
+        .select('*, plan:subscription_plans(name)')
+        .eq('profile_id', profile?.id)
         .eq('status', 'active')
         .maybeSingle();
-      setActiveSub(data);
+
+      if (data) {
+        // Déterminer le tier en fonction du nom du plan (pour la compatibilité d'affichage)
+        const tier = (data.plan?.name?.toLowerCase().includes('entreprise') || data.plan?.name?.toLowerCase().includes('usine')) ? 'pro' : 'standard';
+        setActiveSub({
+          ...data,
+          plan: {
+            ...data.plan,
+            tier: tier
+          }
+        });
+      } else {
+        setActiveSub(null);
+      }
     } catch (err) {
       console.error("fetchActiveSub error:", err);
     }
