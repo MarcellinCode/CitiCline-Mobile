@@ -12,9 +12,10 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
   console.log('☁️ Cloud Name:', CLOUD_NAME);
 
   try {
+    const decodedUri = decodeURIComponent(uriPath);
     const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
-    const response = await FileSystem.uploadAsync(apiUrl, uriPath, {
+    const response = await FileSystem.uploadAsync(apiUrl, decodedUri, {
       fieldName: 'file',
       httpMethod: 'POST',
       uploadType: FileSystem.FileSystemUploadType.MULTIPART,
