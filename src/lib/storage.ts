@@ -13,6 +13,14 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
 
   try {
     const decodedUri = decodeURIComponent(uriPath);
+    console.log('📄 Decoded URI Path:', decodedUri);
+    
+    const fileInfo = await FileSystem.getInfoAsync(decodedUri);
+    console.log('ℹ️ Decoded File Info:', fileInfo);
+
+    const fileInfoOrig = await FileSystem.getInfoAsync(uriPath);
+    console.log('ℹ️ Original File Info:', fileInfoOrig);
+
     const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
     const response = await FileSystem.uploadAsync(apiUrl, decodedUri, {
