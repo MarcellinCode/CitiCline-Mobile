@@ -56,7 +56,8 @@
           "photosPermission": "CleanZone doit accéder à la galerie pour charger les images de signalements."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "scheme": "cleanzone",
     "extra": {
