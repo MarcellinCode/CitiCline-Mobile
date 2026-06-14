@@ -7,33 +7,32 @@ const UPLOAD_PRESET = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_de
  * Uploads an image to Cloudinary using the REST API.
  */
 export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZone-wastes') => {
-  console.log('🚀 [CleanZone] UPLOAD VIA CLOUDINARY - START');
+  console.log('🚀 [CleanZone] UPLOAD VIA CLOUDINARY (BASE64) - START');
   console.log('📂 Folder:', folder);
   console.log('☁️ Cloud Name:', CLOUD_NAME);
 
   try {
-    const decodedUri = decodeURIComponent(uriPath);
-    console.log('📄 Decoded URI Path:', decodedUri);
-    
-    const fileInfo = await FileSystem.getInfoAsync(decodedUri);
-    console.log('ℹ️ Decoded File Info:', fileInfo);
-
-    const fileInfoOrig = await FileSystem.getInfoAsync(uriPath);
-    console.log('ℹ️ Original File Info:', fileInfoOrig);
-
+    // 1. Lire le fichier local en base64 (sûr et compatible avec le scoping de dossier d'Expo)
+    const base64Data = await FileSystem.readAsStringAsync(uriPath, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    const fileDataUri = `data:image/jpeg;base64,${base64Data}`;
     const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
-    const response = await FileSystem.uploadAsync(apiUrl, decodedUri, {
-      fieldName: 'file',
-      httpMethod: 'POST',
-      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-      parameters: {
+    // 2. Envoyer en POST JSON standard pour contourner les limitations de FormData et de décodage natif
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        file: fileDataUri,
         upload_preset: UPLOAD_PRESET,
         folder: folder,
-      },
+      }),
     });
 
-    const data = JSON.parse(response.body);
+    const data = await response.json();
 
     if (data.error) {
       console.error('❌ Cloudinary Error message:', data.error.message);
