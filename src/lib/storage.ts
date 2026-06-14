@@ -14,22 +14,17 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
   try {
     const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
-    const formData = new FormData();
-    formData.append('file', {
-      uri: uriPath,
-      type: 'image/jpeg',
-      name: `upload-${Date.now()}.jpg`,
-    } as any);
-    
-    formData.append('upload_preset', UPLOAD_PRESET);
-    formData.append('folder', folder);
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: formData,
+    const response = await FileSystem.uploadAsync(apiUrl, uriPath, {
+      fieldName: 'file',
+      httpMethod: 'POST',
+      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+      parameters: {
+        upload_preset: UPLOAD_PRESET,
+        folder: folder,
+      },
     });
 
-    const data = await response.json();
+    const data = JSON.parse(response.body);
 
     if (data.error) {
       console.error('❌ Cloudinary Error message:', data.error.message);
