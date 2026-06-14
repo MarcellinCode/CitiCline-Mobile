@@ -17,14 +17,18 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
     let base64Data = '';
     let readError = null;
 
-    const formatsToTry = [
+    const rawFormats = [
       uriPath,
+      uriPath.includes('%25') ? uriPath : uriPath.replace(/%/g, '%25'),
       decodeURIComponent(uriPath),
-      decodeURIComponent(decodeURIComponent(uriPath)),
-      uriPath.replace('file://', ''),
-      decodeURIComponent(uriPath).replace('file://', ''),
-      decodeURIComponent(decodeURIComponent(uriPath)).replace('file://', '')
+      decodeURIComponent(decodeURIComponent(uriPath))
     ];
+
+    const formatsToTry = rawFormats.map(f => {
+      if (f.startsWith('file://')) return f;
+      if (f.startsWith('/')) return `file://${f}`;
+      return `file://${f}`;
+    });
 
     const uniqueFormats = [...new Set(formatsToTry)];
 
