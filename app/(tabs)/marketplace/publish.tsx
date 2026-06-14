@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Camera, Plus, Trash2, ArrowRight } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
+import * as FileSystem from 'expo-file-system';
 import { supabase } from '@/lib/supabase';
 import { Header } from '@/components/Header';
 import { WasteType } from '@/lib/types';
@@ -39,6 +40,29 @@ export default function PublishWaste() {
   }, []);
 
   const pickImage = async () => {
+    // S'assurer que le dossier ImagePicker et ses variantes existent dans le cache
+    const cacheDir = FileSystem.cacheDirectory;
+    if (cacheDir) {
+      try {
+        const pickerDir = cacheDir + 'ImagePicker/';
+        const pickerInfo = await FileSystem.getInfoAsync(pickerDir);
+        if (!pickerInfo.exists) {
+          await FileSystem.makeDirectoryAsync(pickerDir, { intermediates: true });
+        }
+      } catch (e) {
+        console.warn('pickerDir creation error:', e);
+      }
+      try {
+        const decodedPickerDir = decodeURIComponent(cacheDir) + 'ImagePicker/';
+        const decodedPickerInfo = await FileSystem.getInfoAsync(decodedPickerDir);
+        if (!decodedPickerInfo.exists) {
+          await FileSystem.makeDirectoryAsync(decodedPickerDir, { intermediates: true });
+        }
+      } catch (e) {
+        console.warn('decodedPickerDir creation error:', e);
+      }
+    }
+
     Alert.alert(
       "Ajouter une Photo",
       "Choisissez une source pour l'image du lot :",
