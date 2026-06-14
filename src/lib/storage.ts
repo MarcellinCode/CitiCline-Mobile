@@ -30,6 +30,8 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
         file: fileDataUri,
         upload_preset: UPLOAD_PRESET,
         folder: folder,
+        filename_override: `waste_img_${Date.now()}`,
+        use_filename_as_display_name: false
       }),
     });
 
