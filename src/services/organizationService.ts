@@ -67,17 +67,34 @@ export const getOrganizationsNearby = async (city?: string) => {
  */
 export const getOrganizationPlans = async (organizationId: string) => {
   try {
-    const result = await safeFetch<any[]>(() => 
-      supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('organization_id', organizationId)
-    );
+    // 1. Récupérer les concessions actives de l'organisation
+    const { data: concessions, error: cError } = await supabase
+      .from('concessions')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .eq('status', 'active');
     
-    if (result.error) throw result.error;
+    if (cError) throw cError;
+
+    if (!concessions || concessions.length === 0) {
+      return [
+        { id: '1', name: 'Foyer', price: 1000, pickup_days: ['Lundi', 'Jeudi'] },
+        { id: '2', name: 'Entreprise', price: 6000, pickup_days: ['Mardi', 'Vendredi'] },
+        { id: '3', name: 'Usine / Industrie', price: 20000, pickup_days: ['Lundi', 'Mercredi', 'Vendredi'] },
+      ];
+    }
+
+    // 2. Récupérer les plans d'abonnements pour ces concessions
+    const concessionIds = concessions.map(c => c.id);
+    const { data: plans, error: pError } = await supabase
+      .from('subscription_plans')
+      .select('*')
+      .in('concession_id', concessionIds);
+    
+    if (pError) throw pError;
     
     // Simulate plans for demo if DB is empty
-    if (!result.data || result.data.length === 0) {
+    if (!plans || plans.length === 0) {
       return [
         { id: '1', name: 'Foyer', price: 1000, pickup_days: ['Lundi', 'Jeudi'] },
         { id: '2', name: 'Entreprise', price: 6000, pickup_days: ['Mardi', 'Vendredi'] },
@@ -85,7 +102,11 @@ export const getOrganizationPlans = async (organizationId: string) => {
       ];
     }
     
-    return result.data;
+    // Adapter le modèle de données (price_cfa -> price)
+    return plans.map(p => ({
+      ...p,
+      price: p.price_cfa || p.price || 0
+    }));
   } catch (err: any) {
     console.error('getOrganizationPlans error:', err?.message);
     throw err;
