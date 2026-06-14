@@ -13,10 +13,41 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
   console.log('📤 Upload Preset:', UPLOAD_PRESET);
 
   try {
-    // 1. Lire le fichier local en base64 (sûr et compatible avec le scoping de dossier d'Expo)
-    const base64Data = await FileSystem.readAsStringAsync(uriPath, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    // 1. Lire le fichier local en base64 (avec gestion de secours pour les encodages Android/Expo Go)
+    let base64Data = '';
+    let readError = null;
+
+    const formatsToTry = [
+      uriPath,
+      decodeURIComponent(uriPath),
+      decodeURIComponent(decodeURIComponent(uriPath)),
+      uriPath.replace('file://', ''),
+      decodeURIComponent(uriPath).replace('file://', ''),
+      decodeURIComponent(decodeURIComponent(uriPath)).replace('file://', '')
+    ];
+
+    const uniqueFormats = [...new Set(formatsToTry)];
+
+    for (const format of uniqueFormats) {
+      try {
+        base64Data = await FileSystem.readAsStringAsync(format, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        if (base64Data) {
+          console.log(`✅ Successfully read file using format: ${format}`);
+          readError = null;
+          break;
+        }
+      } catch (err) {
+        readError = err;
+      }
+    }
+
+    if (readError) {
+      console.error('❌ Failed to read file after trying all URI formats');
+      throw readError;
+    }
+
     const fileDataUri = `data:image/jpeg;base64,${base64Data}`;
     const apiUrl = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
 
