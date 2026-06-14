@@ -74,7 +74,7 @@ export const startBackgroundTracking = async () => {
             notificationBody: "Votre position est partagée avec votre organisation.",
             notificationColor: "#10b981",
         },
-        pausesLocationUpdatesAutomatically: true,
+        pausesUpdatesAutomatically: true,
     });
 };
 

@@ -47,6 +47,8 @@ export type Waste = {
   longitude: number | null;
   images: string[];
   created_at: string;
+  is_urgent?: boolean;
+  mission_type?: string;
   // Joined fields
   waste_types?: WasteType;
   profiles?: Profile;

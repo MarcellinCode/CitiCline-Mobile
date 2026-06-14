@@ -31,6 +31,7 @@ export default function WalletScreen() {
   const [showTopUp, setShowTopUp] = useState(false);
   const [amount, setAmount] = useState('');
   const [isCashedIn, setIsCashedIn] = useState(false);
+  const [topUpLoading, setTopUpLoading] = useState(false);
 
   const handleWithdraw = () => {
     Alert.alert(
@@ -52,7 +53,7 @@ export default function WalletScreen() {
         return;
     }
     
-    setLoading(true);
+    setTopUpLoading(true);
     // Simulation du flux PawaPay
     setTimeout(async () => {
         try {
@@ -69,7 +70,7 @@ export default function WalletScreen() {
         } catch (err) {
             Alert.alert("Erreur", "La transaction n'a pas pu être validée.");
         } finally {
-            setLoading(false);
+            setTopUpLoading(false);
         }
     }, 1500);
   };
@@ -256,7 +257,7 @@ export default function WalletScreen() {
                         <HubButton 
                             variant="primary" 
                             size="xl" 
-                            loading={loading}
+                            loading={topUpLoading}
                             onPress={handleTopUp}
                         >
                             PAYER VIA MOBILE MONEY

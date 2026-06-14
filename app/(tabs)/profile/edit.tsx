@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Alert, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { Camera, Save, User, MapPin, ChevronLeft, Image as ImageIcon } from 'lucide-react-native';

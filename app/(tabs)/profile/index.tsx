@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { View, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet, ArrowUpRight } from 'lucide-react-native';
+import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet, ArrowUpRight, Navigation } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
@@ -46,7 +46,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading, refreshProfile } = useProfile();
-  const { unreadCount } = useUnreadNotifications();
+  const unreadCount = useUnreadNotifications();
 
   const [isTracking, setIsTracking] = useState(false);
   const [impactTotal, setImpactTotal] = useState(0);

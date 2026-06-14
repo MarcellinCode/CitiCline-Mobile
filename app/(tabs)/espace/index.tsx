@@ -110,7 +110,7 @@ export default function EspaceDashboard() {
                          activeSub?.plan?.name?.toLowerCase().includes('usine') ||
                          activeSub?.plan?.tier === 'pro';
         
-        const baseItems = [
+        const baseItems: any[] = [
           {
             id: 'wallet',
             title: 'Portefeuille',
