@@ -119,19 +119,71 @@ export default function ReportInfraction() {
     }
 
     setLoading(true);
+    let resolvedZoneId = profile?.zone_id || null;
+    let resolvedOrgId = null;
+
     try {
-      // 1. Upload Image
+      // 1. Détermination du zone_id et responsible_org_id pour le routage
+      if (!resolvedZoneId) {
+        const userCity = profile?.city;
+        if (userCity) {
+          const cleanCity = userCity.replace(/Mairie de |Commune de |Ville de /gi, "").trim().toLowerCase();
+          
+          // Récupérer toutes les zones pour trouver celle correspondant à la commune
+          const { data: zones } = await supabase
+            .from('zones')
+            .select('id, name, description');
+          
+          if (zones && zones.length > 0) {
+            const matchingZone = zones.find(z => 
+              (z.name && z.name.toLowerCase().includes(cleanCity)) || 
+              (z.description && z.description.toLowerCase().includes(cleanCity))
+            );
+
+            if (matchingZone) {
+              resolvedZoneId = matchingZone.id;
+              
+              // Trouver l'organisation qui a la concession active pour cette zone
+              const { data: concession } = await supabase
+                .from('concessions')
+                .select('organization_id')
+                .eq('zone_id', resolvedZoneId)
+                .eq('status', 'active')
+                .maybeSingle();
+              
+              if (concession) {
+                resolvedOrgId = concession.organization_id;
+              }
+            }
+          }
+        }
+      } else {
+        // Si l'utilisateur (ex: agent) a déjà une zone affectée
+        const { data: concession } = await supabase
+          .from('concessions')
+          .select('organization_id')
+          .eq('zone_id', resolvedZoneId)
+          .eq('status', 'active')
+          .maybeSingle();
+        
+        if (concession) {
+          resolvedOrgId = concession.organization_id;
+        }
+      }
+
+      // 2. Upload Image
       const imageUrl = await uploadProofImage(image, 'CleanZone-infractions');
 
-      // 2. Create Record
+      // 3. Create Record
       const { error } = await supabase
         .from('environmental_infractions')
         .insert({
           type,
           description: offenderIdentified ? `[CONTREVENANT IDENTIFIÉ] ${description}` : description,
           images: imageUrl ? [imageUrl] : [],
-          zone_id: profile?.zone_id,
+          zone_id: resolvedZoneId,
           reported_by: profile?.id,
+          responsible_org_id: resolvedOrgId,
           latitude: location ? location.coords.latitude : 0,
           longitude: location ? location.coords.longitude : 0,
           address: address || null,
@@ -155,16 +207,36 @@ export default function ReportInfraction() {
         }]
       );
     } catch (err: any) {
-      console.log('Erreur de transmission, sauvegarde hors-ligne:', err);
+      console.log('Erreur lors du signalement:', err);
+
+      // Si c'est une erreur logique de base de données (RLS, validation, clés, etc.), on affiche l'erreur
+      const isDatabaseOrAuthError = err.code || (err.message && (
+        err.message.includes('permission') || 
+        err.message.includes('violates') || 
+        err.message.includes('policy') ||
+        err.message.includes('not found') ||
+        err.message.includes('auth')
+      ));
+
+      if (isDatabaseOrAuthError) {
+        Alert.alert(
+          'Erreur de Signalement',
+          `Impossible de transmettre le rapport : ${err.message || 'Problème de permissions ou de structure de données.'}`
+        );
+        setLoading(false);
+        return;
+      }
+
+      // Sinon (échec réseau / hors-ligne), on bascule sur la sauvegarde locale hors-ligne
       try {
-        // Mode Hors-Ligne (Offline Sync)
         const offlineRecord = {
           id: Date.now().toString(),
           type,
           description: offenderIdentified ? `[CONTREVENANT IDENTIFIÉ] ${description}` : description,
           imageUri: image,
-          zone_id: profile?.zone_id,
+          zone_id: resolvedZoneId,
           reported_by: profile?.id,
+          responsible_org_id: resolvedOrgId,
           latitude: location ? location.coords.latitude : 0,
           longitude: location ? location.coords.longitude : 0,
           address: address || null,

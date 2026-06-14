@@ -7,29 +7,47 @@ import { safeFetch } from '../utils/safeFetch';
  */
 export const getOrganizationsNearby = async (city?: string) => {
   try {
-    // 1. Récupérer les IDs des organisations ayant des concessions actives
-    let concessionsQuery = supabase
+    // 1. Récupérer toutes les concessions actives
+    const { data: concessions, error: cError } = await supabase
       .from('concessions')
-      .select('organization_id')
+      .select('organization_id, zone_id')
       .eq('status', 'active');
     
-    if (city) {
-      concessionsQuery = concessionsQuery.ilike('city', `%${city}%`);
-    }
-    
-    const { data: concessions, error: cError } = await concessionsQuery;
     if (cError) throw cError;
 
     if (!concessions || concessions.length === 0) {
       return [];
     }
 
-    // 2. Extraire les IDs uniques
-    const uniqueOrgIds = [...new Set(concessions.map(c => c.organization_id).filter(Boolean))];
+    let filteredConcessions = concessions;
+
+    // 2. Si une ville/commune est spécifiée, on filtre les concessions en fonction de leur zone (name ou description)
+    if (city) {
+      const { data: zones, error: zError } = await supabase
+        .from('zones')
+        .select('id, name, description');
+      
+      if (zError) throw zError;
+
+      if (zones) {
+        const cleanCity = city.replace(/Mairie de |Commune de |Ville de /gi, "").trim().toLowerCase();
+        const matchingZoneIds = zones
+          .filter(z => 
+            (z.name && z.name.toLowerCase().includes(cleanCity)) || 
+            (z.description && z.description.toLowerCase().includes(cleanCity))
+          )
+          .map(z => z.id);
+        
+        filteredConcessions = concessions.filter(c => matchingZoneIds.includes(c.zone_id));
+      }
+    }
+
+    // 3. Extraire les IDs uniques
+    const uniqueOrgIds = [...new Set(filteredConcessions.map(c => c.organization_id).filter(Boolean))];
 
     if (uniqueOrgIds.length === 0) return [];
 
-    // 3. Récupérer les profils complets pour ces IDs
+    // 4. Récupérer les profils complets pour ces IDs
     const { data: profiles, error: pError } = await supabase
       .from('profiles')
       .select('*')
@@ -57,7 +75,17 @@ export const getOrganizationPlans = async (organizationId: string) => {
     );
     
     if (result.error) throw result.error;
-    return result.data || [];
+    
+    // Simulate plans for demo if DB is empty
+    if (!result.data || result.data.length === 0) {
+      return [
+        { id: '1', name: 'Foyer', price: 1000, pickup_days: ['Lundi', 'Jeudi'] },
+        { id: '2', name: 'Entreprise', price: 6000, pickup_days: ['Mardi', 'Vendredi'] },
+        { id: '3', name: 'Usine / Industrie', price: 20000, pickup_days: ['Lundi', 'Mercredi', 'Vendredi'] },
+      ];
+    }
+    
+    return result.data;
   } catch (err: any) {
     console.error('getOrganizationPlans error:', err?.message);
     throw err;

@@ -63,6 +63,7 @@ export default function PoliceDashboard() {
             images: imageUrl ? [imageUrl] : [],
             zone_id: record.zone_id,
             reported_by: record.reported_by,
+            responsible_org_id: record.responsible_org_id,
             latitude: record.latitude,
             longitude: record.longitude,
             severity: record.severity,

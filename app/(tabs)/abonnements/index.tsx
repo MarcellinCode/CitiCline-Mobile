@@ -324,9 +324,9 @@ export default function AbonnementsScreen() {
                 <View style={[styles.proCrownIconBg, { backgroundColor: '#e0f2fe' }]}>
                   <Crown size={40} color="#0284c7" />
                 </View>
-                <Text style={[styles.proSubTitle, { color: '#0c4a6e' }]}>Acheteur Indépendant</Text>
+                <Text style={[styles.proSubTitle, { color: '#0c4a6e' }]}>Marketplace Pro</Text>
                 <View style={[styles.proPriceBadge, { borderColor: '#bae6fd' }]}>
-                  <Text style={[styles.proPriceText, { color: '#0284c7' }]}>6 000 FCFA / MOIS</Text>
+                  <Text style={[styles.proPriceText, { color: '#0284c7' }]}>5 000 FCFA / MOIS</Text>
                 </View>
                 <View style={[styles.proBadge, { backgroundColor: '#0284c7' }]}>
                   <Text style={styles.proBadgeText}>Premium</Text>
@@ -351,7 +351,7 @@ export default function AbonnementsScreen() {
               <View style={{ marginBottom: 40, padding: 20, backgroundColor: '#f8fafc', borderRadius: 24, borderWidth: 1, borderColor: '#f1f5f9' }}>
                 <Text style={{ fontSize: 9, fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>Note sur le plan Gratuit</Text>
                 <Text style={{ fontSize: 13, color: '#64748b', fontWeight: '600', lineHeight: 20 }}>
-                  Sans abonnement, vous êtes limité à <Text style={{ fontWeight: '900' }}>3 réservations par mois</Text>. Passez à Premium pour un accès illimité.
+                  Sans abonnement, vous êtes limité à <Text style={{ fontWeight: '900' }}>3 réservations par mois</Text>. Passez à Marketplace Pro pour un accès illimité.
                 </Text>
               </View>
             </View>
@@ -363,7 +363,7 @@ export default function AbonnementsScreen() {
                 </View>
                 <Text style={[styles.proSubTitle, { color: '#4c1d95' }]}>Mairie (Élite)</Text>
                 <View style={[styles.proPriceBadge, { borderColor: '#e9d5ff' }]}>
-                  <Text style={[styles.proPriceText, { color: '#7c3aed' }]}>200 000 FCFA / MOIS</Text>
+                  <Text style={[styles.proPriceText, { color: '#7c3aed' }]}>20 000 FCFA / MOIS</Text>
                 </View>
                 <View style={[styles.proBadge, { backgroundColor: '#7c3aed' }]}>
                   <Text style={styles.proBadgeText}>Souveraineté</Text>
