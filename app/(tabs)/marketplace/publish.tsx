@@ -121,8 +121,7 @@ export default function PublishWaste() {
         latitude: lat,
         longitude: lng,
         status: 'published',
-        images: uploadedImageUrls,
-        description: description
+        images: uploadedImageUrls
       });
 
       if (error) throw error;
