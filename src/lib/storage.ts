@@ -10,6 +10,7 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
   console.log('🚀 [CleanZone] UPLOAD VIA CLOUDINARY (BASE64) - START');
   console.log('📂 Folder:', folder);
   console.log('☁️ Cloud Name:', CLOUD_NAME);
+  console.log('📤 Upload Preset:', UPLOAD_PRESET);
 
   try {
     // 1. Lire le fichier local en base64 (sûr et compatible avec le scoping de dossier d'Expo)
