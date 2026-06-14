@@ -32,6 +32,40 @@ export const uploadProofImage = async (uriPath: string, folder: string = 'CleanZ
 
     const uniqueFormats = [...new Set(formatsToTry)];
 
+    const cacheDir = FileSystem.cacheDirectory;
+    if (cacheDir) {
+      console.log('🔍 [CleanZone] Cache Directory:', cacheDir);
+      try {
+        const cacheDirContent = await FileSystem.readDirectoryAsync(cacheDir);
+        console.log('🔍 [CleanZone] Cache Dir Contents:', cacheDirContent);
+        
+        // We also check for decoded versions of cache directory
+        const decodedCache = decodeURIComponent(cacheDir);
+        console.log('🔍 [CleanZone] Decoded Cache Directory:', decodedCache);
+        
+        const hasImagePicker = cacheDirContent.includes('ImagePicker') || 
+                               cacheDirContent.some(f => f.toLowerCase().includes('imagepicker'));
+                               
+        if (hasImagePicker) {
+          const pickerDir = cacheDir + 'ImagePicker/';
+          const pickerDirContent = await FileSystem.readDirectoryAsync(pickerDir);
+          console.log('🔍 [CleanZone] ImagePicker Dir Contents:', pickerDirContent);
+        } else {
+          // Let's try reading the decoded path's ImagePicker
+          try {
+            const pickerDirContent = await FileSystem.readDirectoryAsync(decodedCache + 'ImagePicker/');
+            console.log('🔍 [CleanZone] Decoded ImagePicker Dir Contents:', pickerDirContent);
+          } catch (innerErr) {
+            // Ignore inner error
+          }
+        }
+      } catch (e: any) {
+        console.warn('🔍 [CleanZone] Cache diagnostic error:', e.message);
+      }
+    } else {
+      console.log('🔍 [CleanZone] Cache Directory is null!');
+    }
+
     for (const format of uniqueFormats) {
       try {
         base64Data = await FileSystem.readAsStringAsync(format, {
