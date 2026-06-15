@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Dimensions, Modal, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
@@ -8,6 +8,8 @@ import { Mail, Lock, User, ArrowRight, Truck, Building2, ChevronLeft, Phone, Map
 import { supabase } from '@/lib/supabase';
 import { StatusBar } from 'expo-status-bar';
 import Logo from '@/components/ui/Logo';
+import { GEOGRAPHY_HIERARCHY } from '@/constants/geography';
+
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +27,10 @@ export default function Signup() {
   // Citoyen
   const [commune, setCommune] = useState('');
   const [district, setDistrict] = useState('');
+  const [selectedCommune, setSelectedCommune] = useState('');
+  const [selectedQuartier, setSelectedQuartier] = useState('');
+  const [selectedSousQuartier, setSelectedSousQuartier] = useState('');
+  const [activeModal, setActiveModal] = useState<'commune' | 'quartier' | 'sousQuartier' | null>(null);
   
   // Collecteur
   const [vehicleType, setVehicleType] = useState('');
@@ -43,8 +49,36 @@ export default function Signup() {
         alert("Veuillez remplir les champs obligatoires");
         return;
     }
+    
+    if (role === 'vendeur' && (!selectedCommune || !selectedQuartier || !selectedSousQuartier)) {
+        alert("Veuillez sélectionner votre commune, quartier et sous-quartier");
+        return;
+    }
+
     setLoading(true);
     try {
+        let resolvedZoneId = null;
+        let resolvedDistrict = district;
+        let resolvedCity = commune;
+
+        if (role === 'vendeur' && selectedSousQuartier) {
+            resolvedDistrict = `${selectedQuartier} (${selectedSousQuartier})`;
+            resolvedCity = "Abidjan";
+            
+            try {
+                const { data: matchedZones } = await supabase
+                    .from('zones')
+                    .select('id')
+                    .contains('boundaries', { sous_quartiers: [selectedSousQuartier] });
+
+                if (matchedZones && matchedZones.length > 0) {
+                    resolvedZoneId = matchedZones[0].id;
+                }
+            } catch (e) {
+                console.error("Error matching zone on mobile:", e);
+            }
+        }
+
         const { data: { session }, error } = await supabase.auth.signUp({
           email,
           password,
@@ -53,8 +87,10 @@ export default function Signup() {
               full_name: role === 'organisation_admin' ? orgName : fullName,
               role: role,
               phone: phone,
-              city: commune,
-              district: district,
+              city: resolvedCity,
+              district: resolvedDistrict,
+              municipality_name: role === 'vendeur' ? selectedCommune : undefined,
+              zone_id: resolvedZoneId,
               vehicle_type: vehicleType,
               id_number: idNumber,
               rccm: rccm,
@@ -168,14 +204,43 @@ export default function Signup() {
                     <Phone size={18} color="#94a3b8" />
                     <TextInput placeholder="Téléphone" placeholderTextColor="#cbd5e1" style={styles.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                 </View>
-                <View style={styles.inputBox}>
+                
+                {/* Sélecteur de Commune */}
+                <TouchableOpacity 
+                  onPress={() => setActiveModal('commune')} 
+                  style={styles.inputBox}
+                >
                     <Building2 size={18} color="#94a3b8" />
-                    <TextInput placeholder="Commune (ex: Cocody, Yopougon...)" placeholderTextColor="#cbd5e1" style={styles.input} value={commune} onChangeText={setCommune} />
-                </View>
-                <View style={styles.inputBox}>
-                    <MapPin size={18} color="#94a3b8" />
-                    <TextInput placeholder="Quartier / Adresse" placeholderTextColor="#cbd5e1" style={styles.input} value={district} onChangeText={setDistrict} />
-                </View>
+                    <Text style={[styles.input, !selectedCommune && { color: '#cbd5e1' }]}>
+                      {selectedCommune || "Choisir la Commune *"}
+                    </Text>
+                </TouchableOpacity>
+
+                {/* Sélecteur de Quartier */}
+                {selectedCommune ? (
+                  <TouchableOpacity 
+                    onPress={() => setActiveModal('quartier')} 
+                    style={styles.inputBox}
+                  >
+                      <MapPin size={18} color="#94a3b8" />
+                      <Text style={[styles.input, !selectedQuartier && { color: '#cbd5e1' }]}>
+                        {selectedQuartier || "Choisir le Quartier *"}
+                      </Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                {/* Sélecteur de Sous-quartier */}
+                {selectedQuartier ? (
+                  <TouchableOpacity 
+                    onPress={() => setActiveModal('sousQuartier')} 
+                    style={styles.inputBox}
+                  >
+                      <MapPin size={18} color="#94a3b8" />
+                      <Text style={[styles.input, !selectedSousQuartier && { color: '#cbd5e1' }]}>
+                        {selectedSousQuartier || "Choisir le Sous-quartier *"}
+                      </Text>
+                  </TouchableOpacity>
+                ) : null}
               </>
             )}
 
@@ -260,10 +325,77 @@ export default function Signup() {
             </Text>
           </TouchableOpacity>
         )}
+        {/* Modals de sélection géographique */}
+        <SelectorModal
+          visible={activeModal === 'commune'}
+          onClose={() => setActiveModal(null)}
+          title="Choisir la Commune"
+          options={Object.keys(GEOGRAPHY_HIERARCHY)}
+          onSelect={(val: string) => {
+            setSelectedCommune(val);
+            setSelectedQuartier('');
+            setSelectedSousQuartier('');
+          }}
+        />
+        
+        <SelectorModal
+          visible={activeModal === 'quartier'}
+          onClose={() => setActiveModal(null)}
+          title="Choisir le Quartier"
+          options={selectedCommune ? Object.keys(GEOGRAPHY_HIERARCHY[selectedCommune] || {}) : []}
+          onSelect={(val: string) => {
+            setSelectedQuartier(val);
+            setSelectedSousQuartier('');
+          }}
+        />
+        
+        <SelectorModal
+          visible={activeModal === 'sousQuartier'}
+          onClose={() => setActiveModal(null)}
+          title="Choisir le Sous-quartier"
+          options={(selectedCommune && selectedQuartier) ? (GEOGRAPHY_HIERARCHY[selectedCommune]?.[selectedQuartier] || []) : []}
+          onSelect={(val: string) => {
+            setSelectedSousQuartier(val);
+          }}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+// Composant réutilisable pour la sélection géodépendante premium
+const SelectorModal = ({ visible, onClose, title, options, onSelect }: any) => (
+  <Modal
+    visible={visible}
+    transparent
+    animationType="slide"
+    onRequestClose={onClose}
+  >
+    <View style={{ flex: 1, backgroundColor: 'rgba(2, 6, 23, 0.4)', justifyContent: 'flex-end' }}>
+      <View style={{ backgroundColor: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, maxHeight: '75%' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <Text style={{ fontSize: 13, fontWeight: '900', color: '#020617', textTransform: 'uppercase', letterSpacing: 1 }}>{title}</Text>
+          <TouchableOpacity onPress={onClose} style={{ padding: 4 }}>
+            <Text style={{ fontSize: 11, fontWeight: '900', color: '#ef4444', textTransform: 'uppercase' }}>Fermer</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={options}
+          keyExtractor={(item) => item}
+          renderItem={({ item }) => (
+            <TouchableOpacity 
+              onPress={() => { onSelect(item); onClose(); }}
+              style={{ paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#334155', textTransform: 'uppercase' }}>{item}</Text>
+            </TouchableOpacity>
+          )}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    </View>
+  </Modal>
+);
 
 const styles = StyleSheet.create({
   backButton: {
