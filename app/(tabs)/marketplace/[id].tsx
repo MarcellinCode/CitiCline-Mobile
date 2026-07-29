@@ -73,24 +73,32 @@ export default function WasteDetail() {
     }
     try {
       const { data, error } = await supabase
-        .from('wastes')
-        .update({ status: 'reserved', collector_id: profile.id, reserved_at: new Date().toISOString() })
-        .eq('id', id)
-        .eq('status', 'published')   // ← verrou optimiste : échoue si déjà réservé
-        .select()
+        .rpc('reserve_waste', { p_waste_id: id, p_collecteur_id: profile.id })
         .single();
 
-      if (error || !data) {
-        Alert.alert(
-          "Lot déjà pris",
-          "Ce lot vient d'être réservé par un autre collecteur. Veuillez en choisir un autre."
-        );
+      if (error) {
+        const msg = error.message || '';
+        if (msg.includes('WASTE_ALREADY_RESERVED')) {
+          Alert.alert("Lot déjà pris", "Ce lot vient d'être réservé par quelqu'un d'autre");
+        } else if (msg.includes('WASTE_UNAVAILABLE')) {
+          Alert.alert("Non disponible", "Ce lot n'est plus disponible");
+        } else if (msg.includes('ROLE_NOT_ALLOWED')) {
+          console.error("Rôle non autorisé pour la réservation :", error);
+          Alert.alert("Action non autorisée", "Votre rôle ne vous permet pas de réserver un lot.");
+        } else if (msg.includes('Non autorisé')) {
+          console.error("Accès non autorisé :", error);
+          Alert.alert("Non autorisé", "Session expirée ou non autorisée.");
+        } else {
+          console.error("Supabase reserve RPC error:", error);
+          Alert.alert("Erreur", `Erreur lors de la réservation : ${msg}`);
+        }
         return;
       }
 
       // Notifications
+      const reservedWaste = data as any;
       await supabase.from('notifications').insert([
-        { profile_id: data.seller_id, title: "Lot Réservé !", content: "Votre lot a été réservé par un collecteur.", type: 'offer' },
+        { profile_id: reservedWaste.seller_id, title: "Lot Réservé !", content: "Votre lot a été réservé par un collecteur.", type: 'offer' },
         { profile_id: profile.id,     title: "Réservation confirmée", content: "Vous avez réservé ce lot avec succès.", type: 'collection' }
       ]);
 
