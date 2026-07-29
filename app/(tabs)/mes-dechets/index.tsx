@@ -45,7 +45,7 @@ export default function MesDechetsScreen() {
         .select('*, waste_types(*)')
         .order('created_at', { ascending: false });
 
-      if (profile?.role === 'vendeur') {
+      if (profile?.role === 'producteur') {
         query = query.eq('seller_id', profile.id);
       } else if (profile?.role === 'collecteur' || profile?.role === 'agent_collecteur') {
         query = query.eq('collector_id', profile.id);
@@ -63,12 +63,12 @@ export default function MesDechetsScreen() {
     }
   };
 
-  const title = (profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Mes Publications' : 
-                (profile?.role === 'organisation_admin' || profile?.role === 'entreprise') ? 'Mes Réservations' : 'Mes Collectes';
+  const title = (profile?.role === 'producteur' || profile?.role === 'super_admin') ? 'Mes Publications' : 
+                (profile?.role === 'organisation_admin') ? 'Mes Réservations' : 'Mes Collectes';
   
-  const emptyLabel = (profile?.role === 'vendeur' || profile?.role === 'super_admin') 
+  const emptyLabel = (profile?.role === 'producteur' || profile?.role === 'super_admin') 
     ? 'Vous n\'avez pas encore publié de déchets' :
-    (profile?.role === 'organisation_admin' || profile?.role === 'entreprise')
+    (profile?.role === 'organisation_admin')
     ? 'Vous n\'avez pas encore effectué de réservation'
     : 'Vous n\'avez pas encore effectué de collecte';
 
@@ -98,7 +98,7 @@ export default function MesDechetsScreen() {
             <Package size={32} color="#cbd5e1" />
           </View>
           <Text style={styles.emptyText}>{emptyLabel}</Text>
-          {(profile?.role === 'vendeur' || profile?.role === 'super_admin') && (
+          {(profile?.role === 'producteur' || profile?.role === 'super_admin') && (
             <TouchableOpacity
               onPress={() => navigateSafe(router, '/marketplace/publish')}
               style={styles.actionBtn}
@@ -163,7 +163,7 @@ export default function MesDechetsScreen() {
                     </View>
                   </TouchableOpacity>
 
-                  {expandedId === waste.id && waste.status === 'reserved' && (profile?.role === 'vendeur' || profile?.role === 'super_admin') && (
+                  {expandedId === waste.id && waste.status === 'reserved' && (profile?.role === 'producteur' || profile?.role === 'super_admin') && (
                     <View style={styles.expandedContainer}>
                        <Text style={styles.expandedTitle}>SCAN DE VALIDATION</Text>
                        <Text style={styles.expandedSubtitle}>Présentez ce code au collecteur pour valider la pesée.</Text>

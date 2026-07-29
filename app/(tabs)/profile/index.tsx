@@ -22,9 +22,9 @@ import {
 import { HamburgerMenu } from '@/components/HamburgerMenu';
 
 const ROLE_LABELS: Record<string, string> = {
-  vendeur: 'Citoyen Éco',
+  producteur: 'Citoyen',
   collecteur: 'Collecteur Pro',
-  entreprise: 'Entreprise Hub',
+  
   organisation_admin: 'Admin Org',
   agent_collecteur: 'Agent Terrain',
   mairie: 'Mairie Vision',
@@ -33,9 +33,9 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  vendeur: 'text-emerald-500 bg-emerald-50',
+  producteur: 'text-emerald-500 bg-emerald-50',
   collecteur: 'text-primary bg-primary/10',
-  entreprise: 'text-indigo-500 bg-indigo-50',
+  
   organisation_admin: 'text-violet-500 bg-violet-50',
   agent_collecteur: 'text-amber-500 bg-amber-50',
   mairie: 'text-zinc-900 bg-zinc-50',
@@ -174,8 +174,8 @@ export default function ProfileScreen() {
     );
   }
 
-  const roleStyle = ROLE_COLORS[profile?.role || 'vendeur'] || 'text-emerald-500 bg-emerald-50';
-  const roleLabel = ROLE_LABELS[profile?.role || 'vendeur'] || 'Membre Hub';
+  const roleStyle = ROLE_COLORS[profile?.role || 'producteur'] || 'text-emerald-500 bg-emerald-50';
+  const roleLabel = ROLE_LABELS[profile?.role || 'producteur'] || 'Membre Hub';
 
   return (
     <View className="flex-1 bg-white">

@@ -108,7 +108,7 @@ export default function Marketplace() {
         <View>
           <View className="flex-row items-center gap-2 mb-1">
             <HubText variant="label" className="text-zinc-400">Bonjour,</HubText>
-            {(profile?.role === 'organisation_admin' || profile?.role === 'entreprise') && (
+            {(profile?.role === 'organisation_admin') && (
               <View className="bg-violet-100 px-2 py-0.5 rounded-md">
                 <HubText className="text-[7px] font-bold text-violet-600 uppercase tracking-widest">Organisation</HubText>
               </View>
@@ -207,7 +207,7 @@ export default function Marketplace() {
         <View className="mb-10">
             <View className="flex-row justify-between items-end mb-6 ml-1">
                 <HubText variant="h3">
-                    {(profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Marché du Recyclage' : 'Lots en Vedette'}
+                    {(profile?.role === 'producteur' || profile?.role === 'super_admin') ? 'Marché du Recyclage' : 'Lots en Vedette'}
                 </HubText>
                 <HubText variant="label" className="text-primary italic">VOIR TOUT</HubText>
             </View>
@@ -222,7 +222,7 @@ export default function Marketplace() {
       )}
 
       <HubText variant="h3" className="mb-6 ml-1">
-        {(profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Dernières Offres' : 'Nouveaux Arrivages'}
+        {(profile?.role === 'producteur' || profile?.role === 'super_admin') ? 'Dernières Offres' : 'Nouveaux Arrivages'}
       </HubText>
     </View>
   );

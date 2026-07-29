@@ -94,7 +94,7 @@ export default function PoliceDashboard() {
     
     // Sécurité stricte : Si ce n'est pas un agent, on l'expulse vers son univers
     if (profile.role !== 'agent_police_verte') {
-      if (profile.role === 'organisation_admin' || profile.role === 'entreprise' || profile.role === 'mairie') {
+      if (profile.role === 'organisation_admin' || profile.role === 'mairie') {
         router.replace('/espace');
       } else if (profile.role === 'collecteur' || profile.role === 'agent_collecteur') {
         router.replace(ROUTES.MAP);

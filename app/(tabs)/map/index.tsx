@@ -35,7 +35,7 @@ export default function MapScreen() {
   const { profile } = useProfile();
   const router = useRouter();
 
-  const isCitizen = profile?.role === 'vendeur' || profile?.role === 'super_admin';
+  const isCitizen = profile?.role === 'producteur' || profile?.role === 'super_admin';
 
   const initialRegion = {
     latitude: location?.coords.latitude || 5.3484, 

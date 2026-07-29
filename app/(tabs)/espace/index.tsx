@@ -121,7 +121,7 @@ export default function EspaceDashboard() {
 
     switch (profile.role) {
       case 'super_admin':
-      case 'vendeur':
+      case 'producteur':
         const isProSub = activeSub?.plan?.name?.toLowerCase().includes('entreprise') || 
                          activeSub?.plan?.name?.toLowerCase().includes('usine') ||
                          activeSub?.plan?.tier === 'pro';
@@ -257,7 +257,6 @@ export default function EspaceDashboard() {
           }
         ];
       case 'organisation_admin':
-      case 'entreprise':
         return [
           {
             id: 'reservations',
@@ -357,11 +356,16 @@ export default function EspaceDashboard() {
     ];
 
     switch (profile.role) {
-      case 'vendeur':
+      case 'producteur':
+        return [
+          { id: 'qr', label: 'Mon QR Code', icon: QrCode, action: () => Alert.alert("Identification HUB", `Votre ID unique : ${profile.id?.slice(0,8).toUpperCase()}`) },
+          ...baseActions
+        ];
+      case 'organisation_admin':
       case 'super_admin':
         return [
-          { id: 'publish', label: 'Vendre un lot', icon: Package, route: '/marketplace/publish' },
-          { id: 'qr', label: 'Mon QR Code', icon: QrCode, action: () => Alert.alert("Identification HUB", `Votre ID unique : ${profile.id?.slice(0,8).toUpperCase()}`) },
+          { id: 'publish', label: 'Publier un lot', icon: Package, route: '/marketplace/publish' },
+          { id: 'qr', label: 'QR Code Organisation', icon: QrCode, action: () => Alert.alert("Identification HUB", `Organisation ID : ${profile.id?.slice(0,8).toUpperCase()}`) },
           ...baseActions
         ];
       case 'collecteur':
@@ -422,7 +426,7 @@ export default function EspaceDashboard() {
                         ? 'Prêt pour votre prochaine collecte ?'
                         : profile?.role === 'agent_collecteur'
                         ? 'Consultez votre itinéraire du jour.'
-                        : profile?.role === 'entreprise'
+                        : false
                         ? 'Gérez vos flux de déchets.'
                         : 'Prêt pour votre prochaine action écologique ?'}
                     </HubText>

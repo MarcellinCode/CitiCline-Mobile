@@ -240,7 +240,7 @@ export default function AbonnementsScreen() {
     );
   };
 
-  const title = (profile?.role === 'vendeur' || profile?.role === 'super_admin') ? 'Service de Collecte' : 'Abonnement';
+  const title = (profile?.role === 'producteur' || profile?.role === 'super_admin') ? 'Service de Collecte' : 'Abonnement';
   const isLoad = profileLoading || loading;
 
   return (
@@ -262,7 +262,7 @@ export default function AbonnementsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
         >
-          {(profile?.role === 'vendeur' || profile?.role === 'super_admin') && (
+          {(profile?.role === 'producteur' || profile?.role === 'super_admin') && (
             <View style={styles.walletCard}>
               <View style={styles.walletHeader}>
                 <View style={styles.walletIconBg}>
@@ -281,7 +281,7 @@ export default function AbonnementsScreen() {
             </View>
           )}
 
-          {(profile?.role === 'vendeur' || profile?.role === 'super_admin') && subscription ? (
+          {(profile?.role === 'producteur' || profile?.role === 'super_admin') && subscription ? (
             <View>
               <View style={styles.activeSubCard}>
                 <View style={styles.crownIconBg}>
@@ -327,7 +327,7 @@ export default function AbonnementsScreen() {
                 <Text style={styles.reportBtnText}>Signaler un Problème</Text>
               </TouchableOpacity>
             </View>
-          ) : (profile?.role === 'vendeur' || profile?.role === 'super_admin') && !subscription ? (
+          ) : (profile?.role === 'producteur' || profile?.role === 'super_admin') && !subscription ? (
             <View>
               <View style={styles.noSubCard}>
                 <View style={styles.emptyCrownIconBg}>

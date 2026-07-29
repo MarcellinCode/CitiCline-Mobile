@@ -17,7 +17,7 @@ export default function Signup() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [role, setRole] = useState<'vendeur' | 'collecteur' | 'organisation_admin' | null>(null);
+  const [role, setRole] = useState<'producteur' | 'collecteur' | 'organisation_admin' | null>(null);
   
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -50,7 +50,7 @@ export default function Signup() {
         return;
     }
     
-    if (role === 'vendeur' && (!selectedCommune || !selectedQuartier || !selectedSousQuartier)) {
+    if (role === 'producteur' && (!selectedCommune || !selectedQuartier || !selectedSousQuartier)) {
         alert("Veuillez sélectionner votre commune, quartier et sous-quartier");
         return;
     }
@@ -61,7 +61,7 @@ export default function Signup() {
         let resolvedDistrict = district;
         let resolvedCity = commune;
 
-        if (role === 'vendeur' && selectedSousQuartier) {
+        if (role === 'producteur' && selectedSousQuartier) {
             resolvedDistrict = `${selectedQuartier} (${selectedSousQuartier})`;
             resolvedCity = "Abidjan";
             
@@ -89,7 +89,7 @@ export default function Signup() {
               phone: phone,
               city: resolvedCity,
               district: resolvedDistrict,
-              municipality_name: role === 'vendeur' ? selectedCommune : undefined,
+              municipality_name: role === 'producteur' ? selectedCommune : undefined,
               zone_id: resolvedZoneId,
               vehicle_type: vehicleType,
               id_number: idNumber,
@@ -163,7 +163,7 @@ export default function Signup() {
           <View style={styles.roleSection}>
             <Text style={styles.sectionLabel}>Choisissez votre rôle</Text>
             <RoleCard 
-              type="vendeur"
+              type="producteur"
               title="CITOYEN"
               desc="Recyclez et gagnez des récompenses"
               icon={User}
@@ -192,9 +192,9 @@ export default function Signup() {
           </View>
         ) : (
           <View style={styles.formContainer}>
-            <Text style={styles.sectionLabel}>Informations {role === 'vendeur' ? 'Personnelles' : 'Professionnelles'}</Text>
+            <Text style={styles.sectionLabel}>Informations {role === 'producteur' ? 'Personnelles' : 'Professionnelles'}</Text>
             
-            {role === 'vendeur' && (
+            {role === 'producteur' && (
               <>
                 <View style={styles.inputBox}>
                     <User size={18} color="#94a3b8" />

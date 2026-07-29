@@ -69,7 +69,7 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
       
       if (role === 'agent_police_verte') {
         router.replace(ROUTES.POLICE);
-      } else if (role === 'organisation_admin' || role === 'entreprise' || role === 'mairie') {
+      } else if (role === 'organisation_admin' || role === 'mairie') {
         router.replace(ROUTES.ESPACE);
       } else if (role === 'collecteur' || role === 'agent_collecteur') {
         router.replace(ROUTES.MAP);

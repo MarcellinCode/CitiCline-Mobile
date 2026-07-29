@@ -18,6 +18,12 @@ export default function PublishWaste() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile } = useProfile();
+  useEffect(() => {
+    if (profile && profile.role === 'producteur') {
+      Alert.alert("Accès Non Autorisé", "Seules les organisations agréées peuvent publier des lots.");
+      router.replace('/marketplace');
+    }
+  }, [profile]);
   const [images, setImages] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [weight, setWeight] = useState('');

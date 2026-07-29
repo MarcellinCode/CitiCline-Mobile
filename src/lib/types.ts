@@ -2,7 +2,7 @@ export type Profile = {
   id: string;
   full_name: string;
   email: string;
-  role: 'vendeur' | 'collecteur' | 'entreprise' | 'mairie' | 'organisation_admin' | 'agent_collecteur' | 'agent_police_verte' | 'super_admin';
+  role: 'producteur' | 'collecteur' | 'mairie' | 'organisation_admin' | 'agent_collecteur' | 'agent_police_verte' | 'super_admin';
   city: string;
   wallet_balance: number;
   eco_points: number;

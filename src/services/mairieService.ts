@@ -11,7 +11,7 @@ export const getTerritoryStats = async (city: string) => {
     const { count, error } = await supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'vendeur') // 'vendeur' est le rôle interne des citoyens
+      .eq('role', 'producteur') // 'producteur' est le rôle interne des citoyens/producteurs
       .ilike('city', `%${city}%`);
 
     if (error) throw error;

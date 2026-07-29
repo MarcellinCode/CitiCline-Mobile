@@ -106,7 +106,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
 
   // Define navigation items based on role
   const isAgentPV = profile?.role === 'agent_police_verte';
-  const isOrg = profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie';
+  const isOrg = profile?.role === 'organisation_admin' || profile?.role === 'mairie';
 
   const menuItems = [
     ...(!isAgentPV ? [{
@@ -184,7 +184,9 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
                   {profile?.role === 'agent_police_verte' ? 'Police Verte' :
                    profile?.role === 'collecteur' ? 'Collecteur' :
                    profile?.role === 'agent_collecteur' ? 'Agent Terrain' :
-                   profile?.role === 'entreprise' ? 'Partenaire Pro' : 'Citoyen'}
+                   profile?.role === 'organisation_admin' ? 'Organisation' :
+                   profile?.role === 'mairie' ? 'Mairie' :
+                   (profile?.subscription_tier === 'pro' || profile?.subscription_tier === 'business') ? 'Producteur Pro' : 'Citoyen'}
                 </Text>
               </View>
             </View>

@@ -105,7 +105,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="espace/index"
         options={{
-          title: (profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie') ? 'Gestion' : 'Espace',
+          title: (profile?.role === 'organisation_admin' || profile?.role === 'mairie') ? 'Gestion' : 'Espace',
           tabBarIcon: ({ color }: { color: string }) => <LayoutDashboard size={22} color={color} strokeWidth={2.5} />,
         }}
       />
@@ -121,9 +121,9 @@ export default function TabsLayout() {
                   const role = profile?.role;
                   if (role === 'agent_police_verte') {
                     router.push(ROUTES.POLICE_REPORT as any);
-                  } else if (role === 'organisation_admin' || role === 'entreprise' || role === 'mairie') {
+                  } else if (role === 'organisation_admin' || role === 'mairie') {
                     router.push(ROUTES.ESPACE as any);
-                  } else if (profile?.role === 'vendeur' || profile?.role === 'super_admin') {
+                  } else if (profile?.role === 'producteur' || profile?.role === 'super_admin') {
                     router.push('/marketplace/publish' as any);
                   } else {
                     router.push(ROUTES.POLICE_REPORT as any);
@@ -131,12 +131,12 @@ export default function TabsLayout() {
                 }}
                 className={cn(
                     "w-16 h-16 rounded-[2rem] items-center justify-center shadow-xl border-[4px] border-white",
-                    (profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie') ? "bg-red-600 shadow-red-400/50" : "bg-zinc-900 shadow-zinc-400/50"
+                    (profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'mairie') ? "bg-red-600 shadow-red-400/50" : "bg-zinc-900 shadow-zinc-400/50"
                 )}
               >
-                {(profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'entreprise' || profile?.role === 'mairie') ? (
+                {(profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'mairie') ? (
                   <Gavel size={32} color="white" strokeWidth={3} />
-                ) : (profile?.role === 'vendeur' || profile?.role === 'super_admin') ? (
+                ) : (profile?.role === 'producteur' || profile?.role === 'super_admin') ? (
                   <Plus size={32} color="#2A9D8F" strokeWidth={3} />
                 ) : (
                   <Search size={28} color="#2A9D8F" strokeWidth={3} />
