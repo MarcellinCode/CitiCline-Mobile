@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { View, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet, ArrowUpRight, Navigation } from 'lucide-react-native';
+import { User, Mail, Shield, Bell, ChevronRight, LogOut, Camera, Crown, Settings, Leaf, Wallet, ArrowUpRight, Navigation, Menu } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';
@@ -19,6 +19,7 @@ import {
     startBackgroundTracking, 
     stopBackgroundTracking 
 } from '@/utils/backgroundLocationTask';
+import { HamburgerMenu } from '@/components/HamburgerMenu';
 
 const ROLE_LABELS: Record<string, string> = {
   vendeur: 'Citoyen Éco',
@@ -47,6 +48,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { profile, loading, refreshProfile } = useProfile();
   const unreadCount = useUnreadNotifications();
+  const [isMenuOpen, setMenuOpen] = useState(false);
 
   const [isTracking, setIsTracking] = useState(false);
   const [impactTotal, setImpactTotal] = useState(0);
@@ -183,7 +185,15 @@ export default function ProfileScreen() {
         className="px-8 flex-row items-center justify-between mb-8"
         style={{ paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0) }}
       >
+        <TouchableOpacity 
+            onPress={() => setMenuOpen(true)}
+            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+        >
+          <Menu size={22} color="#020617" strokeWidth={2.5} />
+        </TouchableOpacity>
+        
         <HubText variant="label" className="text-zinc-900 italic">Mon Compte</HubText>
+        
         <TouchableOpacity
             onPress={() => router.push(ROUTES.NOTIFICATIONS as any)}
             className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50 relative"
@@ -198,7 +208,7 @@ export default function ProfileScreen() {
       <ScrollView 
         className="px-8" 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
       >
 
         {/* Profile Card Emphasis */}
@@ -372,6 +382,8 @@ export default function ProfileScreen() {
         </TouchableOpacity>
 
       </ScrollView>
+
+      <HamburgerMenu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} />
     </View>
   );
 }

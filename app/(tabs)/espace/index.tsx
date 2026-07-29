@@ -29,7 +29,8 @@ import {
   Zap,
   Scan,
   QrCode,
-  LifeBuoy
+  LifeBuoy,
+  Menu
 } from 'lucide-react-native';
 import { ROUTES } from '@/constants/routes';
 import { useProfile } from '@/hooks/useProfile';
@@ -39,10 +40,12 @@ import { HubButton } from '@/components/ui/HubButton';
 import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/utils/format';
 import { getTerritoryStats } from '@/services/mairieService';
+import { HamburgerMenu } from '@/components/HamburgerMenu';
 
 const { width } = Dimensions.get('window');
 
 export default function EspaceDashboard() {
+  const [isMenuOpen, setMenuOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { profile, loading } = useProfile();
@@ -390,9 +393,18 @@ export default function EspaceDashboard() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ 
           paddingTop: insets.top + 20,
-          paddingBottom: insets.bottom + 140
+          paddingBottom: insets.bottom + 40
         }}
       >
+        {/* Top Header Navigation Bar */}
+        <View className="mb-6 flex-row items-center justify-between">
+          <TouchableOpacity 
+              onPress={() => setMenuOpen(true)}
+              className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+          >
+            <Menu size={22} color="#0f172a" strokeWidth={2.5} />
+          </TouchableOpacity>
+        </View>
 
         {/* Header section with User emphasis */}
         <View className="mb-10">
@@ -530,6 +542,8 @@ export default function EspaceDashboard() {
         )}
 
       </ScrollView>
+
+      <HamburgerMenu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} />
     </View>
   );
 }

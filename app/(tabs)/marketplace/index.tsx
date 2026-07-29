@@ -14,10 +14,11 @@ import { navigateSafe } from '@/utils/navigation';
 import { WasteCard } from '@/components/WasteCard';
 import { FeaturedWasteCard } from '@/components/FeaturedWasteCard';
 import { Waste } from '@/lib/types';
-import { Search, Leaf, Zap, Box, ShoppingBag, Bell, AlertTriangle, Camera } from 'lucide-react-native';
+import { Search, Leaf, Zap, Box, ShoppingBag, Bell, AlertTriangle, Camera, Menu } from 'lucide-react-native';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { cn } from '@/lib/utils';
+import { HamburgerMenu } from '@/components/HamburgerMenu';
 
 const CATEGORIES = [
   { id: 'all', name: 'Tous', icon: Leaf },
@@ -35,6 +36,7 @@ export default function Marketplace() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [impactWeight, setImpactWeight] = useState(0);
+  const [isMenuOpen, setMenuOpen] = useState(false);
 
   const fetchImpactCounter = async () => {
     if (!profile?.id) return;
@@ -85,7 +87,24 @@ export default function Marketplace() {
 
   const renderHeader = () => (
     <View className="pb-6 px-6">
-      <View className="mb-10 px-8 flex-row items-center justify-between mb-8">
+      <View className="mb-6 flex-row items-center justify-between">
+        <TouchableOpacity 
+            onPress={() => setMenuOpen(true)}
+            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+        >
+          <Menu size={22} color="#0f172a" strokeWidth={2.5} />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+            onPress={() => router.push('/notifications' as any)}
+            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
+        >
+          <Bell size={20} color="#0f172a" strokeWidth={2.5} />
+          {unreadCount > 0 && <View className="absolute top-3 right-3 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />}
+        </TouchableOpacity>
+      </View>
+
+      <View className="mb-8 flex-row items-center justify-between">
         <View>
           <View className="flex-row items-center gap-2 mb-1">
             <HubText variant="label" className="text-zinc-400">Bonjour,</HubText>
@@ -99,13 +118,6 @@ export default function Marketplace() {
             {profile?.full_name?.split(' ')[0] || (profile?.role === 'collecteur' ? 'Partenaire' : 'Citoyen')}
           </HubText>
         </View>
-        <TouchableOpacity 
-            onPress={() => router.push('/notifications' as any)}
-            className="w-12 h-12 bg-white rounded-2xl items-center justify-center shadow-xl shadow-zinc-200/50 border border-zinc-50"
-        >
-          <Bell size={20} color="#0f172a" strokeWidth={2.5} />
-          {unreadCount > 0 && <View className="absolute top-3 right-3 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />}
-        </TouchableOpacity>
       </View>
 
        {/* Bento Widget: Impact Ecolo & Urgence */}
@@ -228,7 +240,7 @@ export default function Marketplace() {
         columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 24, paddingBottom: 24 }}
         contentContainerStyle={{ 
           paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0),
-          paddingBottom: insets.bottom + 160 
+          paddingBottom: insets.bottom + 40 
         }}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -242,6 +254,8 @@ export default function Marketplace() {
           </View>
         )}
       />
+
+      <HamburgerMenu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} />
     </View>
   );
 }
