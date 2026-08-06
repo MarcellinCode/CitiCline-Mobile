@@ -151,63 +151,20 @@ export default function WasteDetail() {
         }
       } catch { /* utilise les valeurs par défaut */ }
 
-      const commission    = totalAmount * commissionRate;
-      const sellerAmount  = totalAmount - commission;
-      const ecoTax        = totalAmount * ecoTaxRate;
-      const ecoPoints     = Math.round(finalWeight);
+      // 3. Finaliser la collecte via RPC sécurisé
+      const { data: rpcData, error: rpcError } = await supabase.rpc('fn_finalize_collection', {
+        p_waste_id: waste.id,
+        p_final_weight: finalWeight,
+      });
 
-      const [{ data: sellerProfile }, { data: collectorProfile }] = await Promise.all([
-        supabase.from('profiles').select('wallet_balance, eco_points').eq('id', waste.seller_id).single(),
-        supabase.from('profiles').select('wallet_balance').eq('id', profile.id).single(),
-      ]);
-
-      // 3. Mise à jour statut du lot
-      await supabase.from('wastes').update({
-        status: 'collected',
-        final_weight: finalWeight,
-      }).eq('id', waste.id);
-
-      // 4. Créditer vendeur + débiter collecteur
-      await Promise.all([
-        supabase.from('profiles').update({
-          wallet_balance: Number(sellerProfile?.wallet_balance ?? 0) + sellerAmount,
-          eco_points:     Number(sellerProfile?.eco_points ?? 0) + ecoPoints,
-        }).eq('id', waste.seller_id),
-
-        supabase.from('profiles').update({
-          wallet_balance: Number(collectorProfile?.wallet_balance ?? 0) - totalAmount,
-        }).eq('id', profile.id),
-      ]);
-
-      // 5. Éco-taxe Mairie (premier super_admin)
-      const { data: mairies } = await supabase
-        .from('profiles').select('id, wallet_balance').eq('role', 'super_admin').limit(1);
-      const mairie = mairies?.[0];
-      if (mairie) {
-        await supabase.from('profiles').update({
-          wallet_balance: Number(mairie.wallet_balance ?? 0) + ecoTax,
-        }).eq('id', mairie.id);
+      if (rpcError) throw rpcError;
+      if (rpcData && !rpcData.success) {
+        throw new Error(rpcData.error || "Échec de la validation de la collecte");
       }
-
-      // 6. Transactions
-      const txs: any[] = [
-        { profile_id: waste.seller_id, amount:  sellerAmount,  type: 'income',  description: `Vente de ${finalWeight}kg de ${waste.waste_types?.name}` },
-        { profile_id: profile.id,      amount: -totalAmount,   type: 'outcome', description: `Achat de ${finalWeight}kg de ${waste.waste_types?.name}` },
-      ];
-      if (mairie) txs.push({ profile_id: mairie.id, amount: ecoTax, type: 'income', description: `Éco-taxe 2% - Lot #${waste.id.slice(0, 6)}` });
-      await supabase.from('transactions').insert(txs);
-
-      // 7. Notifications
-      const notifs: any[] = [
-        { profile_id: waste.seller_id, title: "Paiement Reçu !",   content: `+${sellerAmount.toFixed(0)} FCFA. Votre vente est validée.`,           type: 'payment' },
-        { profile_id: profile.id,      title: "Collecte Terminée", content: `Vous avez finalisé la collecte de ${finalWeight}kg.`,                  type: 'collection' },
-      ];
-      if (mairie) notifs.push({ profile_id: mairie.id, title: "Taxe Urbaine", content: `+${ecoTax.toFixed(0)} FCFA prélevés.`, type: 'system' });
-      await supabase.from('notifications').insert(notifs);
 
       Alert.alert(
         "Collecte validée ! ✅",
-        `${finalWeight}kg collectés.\nGain collecteur : -${totalAmount.toFixed(0)} FCFA\nVendeur crédité : +${sellerAmount.toFixed(0)} FCFA`,
+        `${finalWeight}kg collectés.\nLe solde a été ajusté et la transaction a été enregistrée en toute sécurité.`,
         [{ text: "Voir mon wallet", onPress: () => router.replace(ROUTES.WALLET as any) }]
       );
 

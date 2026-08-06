@@ -119,51 +119,34 @@ export const getOrganizationPlans = async (organizationId: string) => {
  */
 export const processSubscriptionPayment = async (userId: string, orgId: string, amount: number, orgName: string, userName: string) => {
   try {
-    // 1. Débiter le citoyen
-    const { data: profile, error: pError } = await supabase
-      .from('profiles')
-      .select('wallet_balance')
-      .eq('id', userId)
-      .single();
+    // 1. Débiter le citoyen via RPC
+    const { data: newCitizenBalance, error: debitError } = await supabase.rpc('fn_adjust_wallet_balance', {
+      p_user_id: userId,
+      p_amount: -amount,
+      p_operation_type: 'debit'
+    });
 
-    if (pError) throw pError;
-    if ((profile?.wallet_balance || 0) < amount) {
-      throw new Error("Solde insuffisant");
+    if (debitError) throw debitError;
+
+    // 2. Créditer l'organisation via RPC
+    const { error: creditError } = await supabase.rpc('fn_adjust_wallet_balance', {
+      p_user_id: orgId,
+      p_amount: amount,
+      p_operation_type: 'credit'
+    });
+
+    if (creditError) {
+      // Annuler le débit si le crédit échoue
+      console.error("Credit failed, rolling back debit...", creditError.message);
+      await supabase.rpc('fn_adjust_wallet_balance', {
+        p_user_id: userId,
+        p_amount: amount,
+        p_operation_type: 'credit'
+      });
+      throw creditError;
     }
 
-    const citizenNewBalance = profile.wallet_balance - amount;
-
-    // 2. Créditer l'organisation (Lucas)
-    const { data: orgProfile, error: oError } = await supabase
-      .from('profiles')
-      .select('wallet_balance')
-      .eq('id', orgId)
-      .single();
-
-    if (oError) throw oError;
-    const orgNewBalance = (orgProfile?.wallet_balance || 0) + amount;
-
-    // 3. Transactions & Updates (Transaction atomique simulée par exécution séquentielle)
-    
-    // Update Citizen
-    await supabase.from('profiles').update({ wallet_balance: citizenNewBalance }).eq('id', userId);
-    await supabase.from('transactions').insert({
-      user_id: userId,
-      type: 'outcome',
-      amount: -amount,
-      description: `Abonnement Service - ${orgName}`
-    });
-
-    // Update Organization
-    await supabase.from('profiles').update({ wallet_balance: orgNewBalance }).eq('id', orgId);
-    await supabase.from('transactions').insert({
-      user_id: orgId,
-      type: 'income',
-      amount: amount,
-      description: `Revenu Abonnement - ${userName}`
-    });
-
-    return { success: true, balance: citizenNewBalance };
+    return { success: true, balance: Number(newCitizenBalance) };
   } catch (err: any) {
     console.error('processSubscriptionPayment error:', err?.message);
     throw err;

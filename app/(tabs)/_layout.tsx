@@ -121,9 +121,9 @@ export default function TabsLayout() {
                   const role = profile?.role;
                   if (role === 'agent_police_verte') {
                     router.push(ROUTES.POLICE_REPORT as any);
-                  } else if (role === 'organisation_admin' || role === 'mairie') {
+                  } else if (role === 'organisation_admin' || role === 'mairie' || role === 'producteur') {
                     router.push(ROUTES.ESPACE as any);
-                  } else if (profile?.role === 'producteur' || profile?.role === 'super_admin') {
+                  } else if (profile?.role === 'super_admin') {
                     router.push('/marketplace/publish' as any);
                   } else {
                     router.push(ROUTES.POLICE_REPORT as any);
