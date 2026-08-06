@@ -16,15 +16,13 @@ import {
   KeyRound
 } from 'lucide-react-native';
 import { StatusBar } from 'expo-status-bar';
-import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { 
-  useAnimatedGestureHandler, 
   useAnimatedStyle, 
   useSharedValue, 
   withSpring,
   runOnJS,
-  interpolate,
-  Extrapolate
+  interpolate
 } from 'react-native-reanimated';
 
 import { useProfile } from '@/hooks/useProfile';
@@ -174,27 +172,29 @@ export default function WasteDetail() {
     }
   };
 
-  const gestureHandler = useAnimatedGestureHandler<PanGestureHandlerGestureEvent, { startX: number }>({
-    onStart: (_, ctx) => { ctx.startX = translateX.value; },
-    onActive: (event, ctx) => {
-      translateX.value = Math.max(0, ctx.startX + event.translationX);
-    },
-    onEnd: () => {
+  const contextX = useSharedValue(0);
+  const gesture = Gesture.Pan()
+    .onStart(() => {
+      contextX.value = translateX.value;
+    })
+    .onUpdate((event) => {
+      translateX.value = Math.max(0, contextX.value + event.translationX);
+    })
+    .onEnd(() => {
       if (translateX.value > SWIPE_THRESHOLD) {
         translateX.value = withSpring(width - 80);
         runOnJS(handleReserve)();
       } else {
         translateX.value = withSpring(0);
       }
-    },
-  });
+    });
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
 
   const textOpacity = useAnimatedStyle(() => ({
-    opacity: interpolate(translateX.value, [0, SWIPE_THRESHOLD / 2], [1, 0], Extrapolate.CLAMP),
+    opacity: interpolate(translateX.value, [0, SWIPE_THRESHOLD / 2], [1, 0], 'clamp'),
   }));
 
   if (loading) {
@@ -388,14 +388,14 @@ export default function WasteDetail() {
             <HubText variant="label" className="text-white/40 italic tracking-[0.2em] mb-0">GLISSER POUR RÉSERVER</HubText>
           </Animated.View>
           
-          <PanGestureHandler onGestureEvent={gestureHandler}>
+          <GestureDetector gesture={gesture}>
             <Animated.View 
               className="w-20 h-20 bg-primary rounded-[2.5rem] items-center justify-center shadow-xl shadow-primary/30"
               style={animatedStyle}
             >
               <ChevronRight size={32} color="white" strokeWidth={3} />
             </Animated.View>
-          </PanGestureHandler>
+          </GestureDetector>
         </View>
       )}
     </View>

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Camera, Plus, Trash2, ArrowRight } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from '@/lib/supabase';
 import { Header } from '@/components/Header';
 import { WasteType } from '@/lib/types';
