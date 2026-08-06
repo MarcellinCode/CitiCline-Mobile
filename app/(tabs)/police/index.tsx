@@ -7,6 +7,7 @@ import { uploadProofImage } from '@/lib/storage';
 import { useProfile } from '@/hooks/useProfile';
 import { useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
+import { cn } from '@/lib/utils';
 
 export default function PoliceDashboard() {
   const router = useRouter();
@@ -210,8 +211,4 @@ export default function PoliceDashboard() {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
 }

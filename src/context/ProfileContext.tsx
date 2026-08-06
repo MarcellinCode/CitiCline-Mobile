@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Profile } from '../lib/types';
 import { Session } from '@supabase/supabase-js';
@@ -26,6 +27,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         .single();
       
       if (data) {
+        if (data.role === 'mairie') {
+          Alert.alert(
+            "Accès Refusé 🚫",
+            "L'accès à l'application mobile est réservé aux agents de terrain. Pour le rôle Mairie, veuillez vous connecter sur la plateforme web.",
+            [{ text: "OK", onPress: () => supabase.auth.signOut() }]
+          );
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
         setProfile(data as Profile);
         setLoading(false);
       } else if (retries > 0) {
