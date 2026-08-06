@@ -119,32 +119,15 @@ export const getOrganizationPlans = async (organizationId: string) => {
  */
 export const processSubscriptionPayment = async (userId: string, orgId: string, amount: number, orgName: string, userName: string) => {
   try {
-    // 1. Débiter le citoyen via RPC
-    const { data: newCitizenBalance, error: debitError } = await supabase.rpc('fn_adjust_wallet_balance', {
-      p_user_id: userId,
-      p_amount: -amount,
-      p_operation_type: 'debit'
-    });
-
-    if (debitError) throw debitError;
-
-    // 2. Créditer l'organisation via RPC
-    const { error: creditError } = await supabase.rpc('fn_adjust_wallet_balance', {
-      p_user_id: orgId,
+    const { data: newCitizenBalance, error } = await supabase.rpc('fn_pay_subscription', {
+      p_citizen_id: userId,
+      p_org_id: orgId,
       p_amount: amount,
-      p_operation_type: 'credit'
+      p_org_name: orgName,
+      p_user_name: userName
     });
 
-    if (creditError) {
-      // Annuler le débit si le crédit échoue
-      console.error("Credit failed, rolling back debit...", creditError.message);
-      await supabase.rpc('fn_adjust_wallet_balance', {
-        p_user_id: userId,
-        p_amount: amount,
-        p_operation_type: 'credit'
-      });
-      throw creditError;
-    }
+    if (error) throw error;
 
     return { success: true, balance: Number(newCitizenBalance) };
   } catch (err: any) {
