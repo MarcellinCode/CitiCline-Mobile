@@ -37,7 +37,7 @@ async function ensureAndroidChannel() {
     name: 'Notifications CleanZone',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#2A9D8F',
+    lightColor: '#017A35',
   });
 }
 

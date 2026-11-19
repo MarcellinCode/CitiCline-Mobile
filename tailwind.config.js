@@ -7,7 +7,7 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#2A9D8F", // Emerald from web
+          DEFAULT: "#017A35", // Emerald from web
           foreground: "#f8fafc",
         },
         secondary: {

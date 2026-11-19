@@ -226,7 +226,7 @@ export default function WasteDetail() {
           ) : (
              <View className="w-full h-full items-center justify-center bg-emerald-50/30">
                 <HubText className="text-9xl opacity-10">{waste?.waste_types?.emoji}</HubText>
-                <Leaf size={120} color="#2A9D8F" className="absolute opacity-5" />
+                <Leaf size={120} color="#017A35" className="absolute opacity-5" />
              </View>
           )}
 
@@ -253,19 +253,19 @@ export default function WasteDetail() {
             </View>
 
             <View className="flex-row items-center gap-2 mb-10">
-                <MapPin size={16} color="#2A9D8F" />
+                <MapPin size={16} color="#017A35" />
                 <HubText variant="caption" className="text-zinc-400 text-sm italic">{waste?.location}</HubText>
             </View>
 
             {/* Stats Bento Grid */}
             <View className="flex-row gap-4 mb-10">
                 <HubCard className="flex-1 p-6 bg-zinc-50 border-0 items-center justify-center">
-                    <Scale size={24} color="#2A9D8F" className="mb-4" />
+                    <Scale size={24} color="#017A35" className="mb-4" />
                     <HubText variant="h2" className="text-zinc-900 text-xl mb-1">{waste?.estimated_weight} KG</HubText>
                     <HubText variant="label" className="text-zinc-400 text-[8px] tracking-widest">POIDS ESTIMÉ</HubText>
                 </HubCard>
                 <HubCard className="flex-1 p-6 bg-zinc-50 border-0 items-center justify-center">
-                    <ShieldCheck size={24} color="#2A9D8F" className="mb-4" />
+                    <ShieldCheck size={24} color="#017A35" className="mb-4" />
                     <HubText variant="h2" className="text-zinc-900 text-xl mb-1">VÉRIFIÉ</HubText>
                     <HubText variant="label" className="text-zinc-400 text-[8px] tracking-widest">QUALITÉ HUB</HubText>
                 </HubCard>

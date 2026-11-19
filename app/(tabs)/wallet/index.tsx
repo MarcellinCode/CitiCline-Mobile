@@ -116,12 +116,12 @@ export default function WalletScreen() {
         {/* Main Balance Section */}
         <View className="px-8 mb-12 items-center">
             <View className="w-20 h-20 bg-emerald-50 rounded-[2.5rem] items-center justify-center mb-8 shadow-sm">
-              <WalletIcon size={32} color="#2A9D8F" strokeWidth={2.5} />
+              <WalletIcon size={32} color="#017A35" strokeWidth={2.5} />
             </View>
             <HubText variant="label" className="text-zinc-400 italic mb-4">SOLDE DISPONIBLE</HubText>
             
             {profileLoading ? (
-              <ActivityIndicator color="#2A9D8F" />
+              <ActivityIndicator color="#017A35" />
             ) : (
               <View className="flex-row items-baseline gap-2 mb-8">
                 <HubText variant="h1" className="text-6xl text-zinc-900 italic">
@@ -158,7 +158,7 @@ export default function WalletScreen() {
                     (profile?.wallet_balance || 0) < 500 ? "bg-zinc-50 border-zinc-100" : "bg-white border-primary/20"
                 )}
             >
-                <ArrowDownLeft size={24} color={(profile?.wallet_balance || 0) < 500 ? "#94a3b8" : "#2A9D8F"} strokeWidth={2.5} />
+                <ArrowDownLeft size={24} color={(profile?.wallet_balance || 0) < 500 ? "#94a3b8" : "#017A35"} strokeWidth={2.5} />
             </TouchableOpacity>
         </View>
 
@@ -173,7 +173,7 @@ export default function WalletScreen() {
           
           {loading ? (
             <View className="py-20 items-center">
-              <ActivityIndicator color="#2A9D8F" />
+              <ActivityIndicator color="#017A35" />
             </View>
           ) : transactions.length === 0 ? (
             <View className="py-20 items-center">
@@ -232,7 +232,7 @@ export default function WalletScreen() {
                   {isCashedIn ? (
                       <View className="items-center py-8">
                           <View className="w-16 h-16 bg-emerald-50 rounded-full items-center justify-center mb-4">
-                              <RefreshCw size={28} color="#2A9D8F" />
+                              <RefreshCw size={28} color="#017A35" />
                           </View>
                           <HubText variant="h2" className="text-slate-900 mb-1">Paiement validé</HubText>
                           <HubText variant="body" className="text-slate-500">Votre solde a été mis à jour.</HubText>

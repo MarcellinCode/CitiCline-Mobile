@@ -83,7 +83,7 @@ export default function Marketplace() {
   if (loading && !refreshing) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator color="#2A9D8F" size="large" />
+        <ActivityIndicator color="#017A35" size="large" />
       </View>
     );
   }
@@ -191,7 +191,7 @@ export default function Marketplace() {
                   activeCategory === cat.id.toString() ? "bg-zinc-900 border-zinc-900 shadow-lg shadow-zinc-400/30" : "bg-white border-zinc-50"
                 )}
             >
-                <cat.icon size={16} color={activeCategory === cat.id.toString() ? '#2A9D8F' : '#94a3b8'} strokeWidth={3} />
+                <cat.icon size={16} color={activeCategory === cat.id.toString() ? '#017A35' : '#94a3b8'} strokeWidth={3} />
                 <HubText 
                     variant="label" 
                     className={cn(
@@ -252,7 +252,7 @@ export default function Marketplace() {
         }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2A9D8F" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#017A35" />
         }
         ListEmptyComponent={() => (
           <View className="py-20 items-center">

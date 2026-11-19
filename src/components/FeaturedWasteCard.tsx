@@ -57,7 +57,7 @@ export const FeaturedWasteCard = React.memo(function FeaturedWasteCard({ waste }
                     {waste.profiles?.full_name || 'CleanZone'}
                 </HubText>
             </View>
-            <ArrowUpRight size={14} color="#2A9D8F" />
+            <ArrowUpRight size={14} color="#017A35" />
           </View>
         </View>
       </HubCard>

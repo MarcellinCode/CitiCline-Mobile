@@ -345,7 +345,7 @@ export default function ReportInfraction() {
             <HubCard className="mt-6 p-5 border-0 bg-zinc-50 flex-row items-center gap-3">
               {loadingLocation ? (
                 <>
-                  <ActivityIndicator size="small" color="#2A9D8F" />
+                  <ActivityIndicator size="small" color="#017A35" />
                   <HubText variant="caption" className="text-zinc-400 italic flex-1">
                     Acquisition GPS en cours...
                   </HubText>
@@ -525,7 +525,7 @@ export default function ReportInfraction() {
                 onPress={acquireLocation}
                 className="mt-4 flex-row items-center gap-2 bg-white px-4 py-2 rounded-full border border-zinc-100"
               >
-                <RefreshCw size={12} color="#2A9D8F" />
+                <RefreshCw size={12} color="#017A35" />
                 <HubText variant="caption" className="text-primary text-[9px] font-black uppercase tracking-wider">
                   Recalibrer GPS
                 </HubText>

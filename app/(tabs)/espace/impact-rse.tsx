@@ -59,7 +59,7 @@ export default function ImpactRSEScreen() {
     };
 
     const metrics = [
-        { label: "CO2 Évité", value: `${stats.co2Saved.toFixed(1)}kg`, icon: Globe, color: "#2A9D8F" },
+        { label: "CO2 Évité", value: `${stats.co2Saved.toFixed(1)}kg`, icon: Globe, color: "#017A35" },
         { label: "Plastique", value: stats.totalWeight >= 1000 ? `${(stats.totalWeight/1000).toFixed(1)}t` : `${stats.totalWeight}kg`, icon: Package, color: "#E9C46A" },
         { label: "Points Eco", value: stats.ecoPoints >= 1000 ? `${(stats.ecoPoints/1000).toFixed(1)}k` : stats.ecoPoints.toString(), icon: Award, color: "#6366f1" },
         { label: "Arbres", value: stats.trees.toString(), icon: Leaf, color: "#22c55e" },
@@ -87,7 +87,7 @@ export default function ImpactRSEScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2A9D8F" />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#017A35" />
                 }
             >
                 <View className="mb-10">
@@ -97,7 +97,7 @@ export default function ImpactRSEScreen() {
 
                 {loading ? (
                     <View className="py-20 items-center justify-center">
-                        <ActivityIndicator size="large" color="#2A9D8F" />
+                        <ActivityIndicator size="large" color="#017A35" />
                     </View>
                 ) : (
                     <View className="flex-row flex-wrap justify-between gap-y-6">
@@ -116,7 +116,7 @@ export default function ImpactRSEScreen() {
                 {/* Progress Card */}
                 <View className="mt-10 mb-8 p-10 bg-zinc-900 rounded-[3rem] items-center">
                     <View className="w-20 h-20 rounded-full bg-primary/20 items-center justify-center mb-6">
-                        <Globe size={40} color="#2A9D8F" />
+                        <Globe size={40} color="#017A35" />
                     </View>
                     <HubText variant="h2" className="text-white text-center mb-2 italic">Vision Globale</HubText>
                     <HubText variant="body" className="text-zinc-500 text-center text-xs px-4">

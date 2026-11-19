@@ -60,7 +60,7 @@ export default function FleetScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator color="#2A9D8F" size="large" />
+        <ActivityIndicator color="#017A35" size="large" />
       </View>
     );
   }
@@ -149,7 +149,7 @@ export default function FleetScreen() {
         
         <HubCard className="p-8 border-2 border-dashed border-zinc-200 bg-white mb-20 items-center">
            <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-6">
-              <ClipboardCheck size={32} color="#2A9D8F" />
+              <ClipboardCheck size={32} color="#017A35" />
            </View>
            <HubText variant="h3" className="text-zinc-900 text-center mb-2">Checklist Prise de Poste</HubText>
            <HubText variant="body" className="text-zinc-400 text-center text-xs mb-8">

@@ -138,7 +138,7 @@ export default function MissionsScreen() {
 
       {(profileLoading || loading) ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#2A9D8F" size="large" />
+          <ActivityIndicator color="#017A35" size="large" />
         </View>
       ) : (
         <ScrollView 
@@ -235,7 +235,7 @@ export default function MissionsScreen() {
                                         </View>
                                     )}
                                 </View>
-                                <ArrowUpRight size={16} color="#2A9D8F" />
+                                <ArrowUpRight size={16} color="#017A35" />
                             </View>
                         </HubCard>
                     </TouchableOpacity>

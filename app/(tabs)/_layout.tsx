@@ -56,7 +56,7 @@ export default function TabsLayout() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-        <ActivityIndicator color="#2A9D8F" />
+        <ActivityIndicator color="#017A35" />
       </View>
     );
   }
@@ -65,7 +65,7 @@ export default function TabsLayout() {
     <Tabs 
       initialRouteName={profile?.role === 'agent_police_verte' ? 'police/index' : 'marketplace/index'}
       screenOptions={{
-      tabBarActiveTintColor: '#2A9D8F',
+      tabBarActiveTintColor: '#017A35',
       tabBarInactiveTintColor: '#94a3b8',
       tabBarStyle: {
         backgroundColor: '#ffffff',
@@ -149,9 +149,9 @@ export default function TabsLayout() {
                 ) : profile?.role === 'producteur' ? (
                   <ShieldAlert size={30} color="white" strokeWidth={2.5} />
                 ) : (profile?.role === 'organisation_admin' || profile?.role === 'super_admin') ? (
-                  <Plus size={32} color="#2A9D8F" strokeWidth={3} />
+                  <Plus size={32} color="#017A35" strokeWidth={3} />
                 ) : (
-                  <Search size={28} color="#2A9D8F" strokeWidth={3} />
+                  <Search size={28} color="#017A35" strokeWidth={3} />
                 )}
               </TouchableOpacity>
             </View>

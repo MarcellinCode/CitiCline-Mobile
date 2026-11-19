@@ -58,7 +58,7 @@ export default function Home() {
           />
         </View>
         <View className="bg-primary/10 px-4 py-2 rounded-full mt-8 flex-row items-center">
-          <Leaf size={14} color="#2A9D8F" />
+          <Leaf size={14} color="#017A35" />
           <HubText variant="label" className="ml-2 text-primary">ECO-ENGINEERING HUB</HubText>
         </View>
       </View>

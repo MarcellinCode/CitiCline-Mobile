@@ -181,7 +181,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
                 {profile?.full_name || 'Utilisateur'}
               </Text>
               <View style={styles.roleContainer}>
-                <ShieldCheck size={10} color="#2A9D8F" />
+                <ShieldCheck size={10} color="#017A35" />
                 <Text style={styles.profileRole}>
                   {profile?.role === 'agent_police_verte' ? 'Police Verte' :
                    profile?.role === 'collecteur' ? 'Collecteur' :
@@ -213,7 +213,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
               >
                 <Icon 
                   size={20} 
-                  color={item.active ? '#2A9D8F' : '#64748b'} 
+                  color={item.active ? '#017A35' : '#64748b'} 
                   strokeWidth={2.5}
                 />
                 <Text 
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#2A9D8F',
+    backgroundColor: '#017A35',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   activeMenuItemText: {
-    color: '#2A9D8F',
+    color: '#017A35',
     fontWeight: '700',
   },
   footer: {

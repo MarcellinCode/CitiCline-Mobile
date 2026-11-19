@@ -383,7 +383,7 @@ export default function EspaceDashboard() {
   if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator color="#2A9D8F" size="large" />
+        <ActivityIndicator color="#017A35" size="large" />
       </View>
     );
   }
@@ -413,7 +413,7 @@ export default function EspaceDashboard() {
         {/* Header section with User emphasis */}
         <View className="mb-10">
             <View className="flex-row items-center gap-2 mb-2">
-                <MapPin size={12} color="#2A9D8F" />
+                <MapPin size={12} color="#017A35" />
                 <HubText variant="label" className="text-primary italic tracking-widest">{profile?.city || "Région Non Définie"}, CI</HubText>
             </View>
             <View className="flex-row items-end justify-between">
@@ -466,7 +466,7 @@ export default function EspaceDashboard() {
                         className="mr-4 items-center"
                     >
                         <View className="w-16 h-16 bg-zinc-50 rounded-2xl items-center justify-center border border-zinc-100 shadow-sm shadow-zinc-200/50">
-                            <action.icon size={24} color="#2A9D8F" strokeWidth={2.5} />
+                            <action.icon size={24} color="#017A35" strokeWidth={2.5} />
                         </View>
                         <HubText className="text-[8px] font-black uppercase text-zinc-500 mt-2 tracking-widest text-center">
                             {action.label}
@@ -516,7 +516,7 @@ export default function EspaceDashboard() {
 
                             <View className="flex-row items-center gap-1">
                                 <HubText variant="label" className="text-primary text-[8px] tracking-[0.2em]">EXPLORER</HubText>
-                                <ArrowUpRight size={10} color="#2A9D8F" />
+                                <ArrowUpRight size={10} color="#017A35" />
                             </View>
                         </HubCard>
                     </TouchableOpacity>
@@ -556,7 +556,7 @@ function MiniStat({ label, value, icon: Icon, delay }: any) {
     return (
         <View className="flex-1 p-4 bg-zinc-50 rounded-3xl border border-zinc-100 flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-xl bg-white items-center justify-center shadow-sm">
-                <Icon size={18} color="#2A9D8F" />
+                <Icon size={18} color="#017A35" />
             </View>
             <View>
                 <HubText variant="label" className="text-[8px] mb-0">{label}</HubText>

@@ -55,11 +55,11 @@ export const WasteCard = React.memo(function WasteCard({ waste }: WasteCardProps
 
             <View className="flex-row items-center justify-between border-t border-slate-100 pt-2.5">
                 <View className="flex-row items-center gap-1.5">
-                    <Scale size={13} color="#2A9D8F" />
+                    <Scale size={13} color="#017A35" />
                     <HubText className="text-xs font-semibold text-slate-800">{waste.estimated_weight} kg</HubText>
                 </View>
                 <View className="w-7 h-7 rounded-full bg-primary/10 items-center justify-center">
-                    <ArrowRight size={14} color="#2A9D8F" />
+                    <ArrowRight size={14} color="#017A35" />
                 </View>
             </View>
         </View>

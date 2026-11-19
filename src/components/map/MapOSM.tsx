@@ -32,7 +32,7 @@ const STATIC_MAP_HTML = `
       #map { height: 100vh; width: 100vw; background: #f8fafc; }
       .custom-marker {
         display: flex; justify-content: center; align-items: center;
-        background: white; border-radius: 12px; border: 2px solid #2A9D8F;
+        background: white; border-radius: 12px; border: 2px solid #017A35;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 20px;
       }
       .user-marker {

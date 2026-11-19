@@ -16,7 +16,7 @@ const SLIDES = [
     id: 1,
     title: "Collecte\nIntelligente",
     description: "Vendez vos ressources recyclables en quelques clics et participez à l'économie circulaire.",
-    color: "#2A9D8F",
+    color: "#017A35",
     Icon: Recycle,
   },
   {
@@ -30,7 +30,7 @@ const SLIDES = [
     id: 3,
     title: "Planète\nProtégée",
     description: "Faites partie du changement. Réduisez votre empreinte carbone tout en optimisant votre gestion locale.",
-    color: "#2A9D8F",
+    color: "#017A35",
     Icon: Globe,
   }
 ];

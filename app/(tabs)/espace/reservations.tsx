@@ -79,7 +79,7 @@ export default function ReservationsScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2A9D8F" />
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#017A35" />
                 }
             >
                 <View className="mb-10">
@@ -89,7 +89,7 @@ export default function ReservationsScreen() {
 
                 {loading ? (
                     <View className="py-20 items-center justify-center">
-                        <ActivityIndicator size="large" color="#2A9D8F" />
+                        <ActivityIndicator size="large" color="#017A35" />
                         <HubText variant="caption" className="mt-4 text-zinc-400 uppercase tracking-widest">Chargement...</HubText>
                     </View>
                 ) : reservations.length > 0 ? (

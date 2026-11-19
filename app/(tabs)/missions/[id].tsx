@@ -65,7 +65,7 @@ export default function MissionDetail() {
 
   const isMarketplace = mission?.mission_type !== 'subscription_pickup';
   const displayType = mission?.mission_type === 'subscription_pickup' ? 'Collecte Abonnement' : 'Marketplace';
-  const displayColor = mission?.mission_type === 'subscription_pickup' ? '#2A9D8F' : '#f59e0b';
+  const displayColor = mission?.mission_type === 'subscription_pickup' ? '#017A35' : '#f59e0b';
 
   // Pre-request permissions when entering scan step
   useEffect(() => {
@@ -187,7 +187,7 @@ export default function MissionDetail() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-            <ActivityIndicator color="#2A9D8F" size="large" />
+            <ActivityIndicator color="#017A35" size="large" />
             <HubText variant="label" className="mt-4 text-zinc-400">Chargement de la mission...</HubText>
         </View>
       ) : (
@@ -204,7 +204,7 @@ export default function MissionDetail() {
 
               <HubCard className="bg-zinc-900 p-8 mb-10 border-0">
                 <View className="flex-row items-center gap-2 mb-4">
-                  <Info size={16} color="#2A9D8F" strokeWidth={3} />
+                  <Info size={16} color="#017A35" strokeWidth={3} />
                   <HubText variant="label" className="text-primary italic tracking-widest mb-0">INSTRUCTIONS</HubText>
                 </View>
                 <HubText variant="body" className="text-white/80 leading-relaxed italic">
@@ -288,7 +288,7 @@ export default function MissionDetail() {
           {step === 'weight' && (
             <View key="weight">
                <HubCard className="bg-zinc-50 border-0 p-10 items-center mb-10">
-                 <Weight size={48} color="#2A9D8F" strokeWidth={1.5} />
+                 <Weight size={48} color="#017A35" strokeWidth={1.5} />
                  <HubText variant="label" className="mt-6 text-zinc-400 italic mb-8">SAISIE DE LA PESÉE RÉELLE</HubText>
                  
                  <View className="flex-row items-end gap-3">
