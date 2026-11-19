@@ -84,6 +84,10 @@ export default function WasteDetail() {
           Alert.alert("Lot déjà pris", "Ce lot vient d'être réservé par quelqu'un d'autre");
         } else if (msg.includes('WASTE_UNAVAILABLE')) {
           Alert.alert("Non disponible", "Ce lot n'est plus disponible");
+        } else if (msg.includes('QUOTA_REACHED')) {
+          Alert.alert("Quota atteint", "Le plan gratuit limite à 3 réservations par mois. Passez à l'abonnement Acheteur Premium.");
+        } else if (msg.toLowerCase().includes('suspendu')) {
+          Alert.alert("Compte suspendu", "Votre compte est suspendu : réservation impossible.");
         } else if (msg.includes('ROLE_NOT_ALLOWED')) {
           console.error("Rôle non autorisé pour la réservation :", error);
           Alert.alert("Action non autorisée", "Votre rôle ne vous permet pas de réserver un lot.");
@@ -97,12 +101,12 @@ export default function WasteDetail() {
         return;
       }
 
-      // Notifications
-      const reservedWaste = data as any;
-      await supabase.from('notifications').insert([
-        { profile_id: reservedWaste.seller_id, title: "Lot Réservé !", content: "Votre lot a été réservé par un collecteur.", type: 'offer' },
-        { profile_id: profile.id,     title: "Réservation confirmée", content: "Vous avez réservé ce lot avec succès.", type: 'collection' }
-      ]);
+      // Le vendeur est notifié par la RPC ; confirmation à l'acheteur
+      if (data) {
+        await supabase.from('notifications').insert(
+          { profile_id: profile.id, title: "Réservation confirmée", content: "Vous avez réservé ce lot avec succès.", type: 'collection' }
+        );
+      }
 
       Alert.alert("Félicitations !", "Lot réservé avec succès. Contactez le vendeur !");
       router.push({

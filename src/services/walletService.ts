@@ -85,9 +85,23 @@ export const withdrawToMobile = async (
   if (!Number.isFinite(amount) || amount < 500) {
     return { success: false, error: 'Le montant minimum de retrait est de 500 FCFA.' };
   }
-  if (phone !== undefined && phone.trim().length < 6) {
+  if (!phone || phone.replace(/\D/g, '').length < 8) {
     return { success: false, error: 'Numéro Mobile Money invalide.' };
   }
+  if (!userId) return { success: false, error: 'Utilisateur non identifié.' };
 
-  return debitWallet(userId, amount);
+  try {
+    // Débit + demande « En attente » validée ensuite par l'administration
+    const { data: newBalance, error } = await supabase.rpc('fn_request_withdrawal', {
+      p_amount: amount,
+      p_phone: phone,
+    });
+    if (error) throw error;
+    const balance = Number(newBalance);
+    return { success: true, balance, data: { balance } };
+  } catch (err: unknown) {
+    const message = getErrorMessage(err, 'Demande de retrait impossible.');
+    console.error('withdrawToMobile error:', message);
+    return { success: false, error: message };
+  }
 };

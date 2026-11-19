@@ -23,7 +23,6 @@ defineBackgroundLocationTask();
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { expoPushToken, notification } = usePushNotifications();
   const [loaded, error] = useFonts({});
   const segments = useSegments();
 // Auth logic is now handled in ProfileProvider via Context
@@ -56,6 +55,8 @@ import { useProfileContext } from "../src/context/ProfileContext";
 function AuthNavigationWrapper({ children, loaded, error, segments }: { children: React.ReactNode, loaded: boolean, error: any, segments: string[] }) {
   const { session, profile, loading: profileLoading } = useProfileContext();
   const router = useRouter();
+  // Push : (ré)enregistrement de l'appareil à chaque connexion + ouverture au toucher
+  usePushNotifications(session?.user?.id ?? null);
   const segmentsRef = useRef(segments);
   segmentsRef.current = segments;
 

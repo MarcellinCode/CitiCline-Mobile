@@ -124,24 +124,31 @@ export default function TabsLayout() {
                 activeOpacity={0.9}
                 onPress={() => {
                   const role = profile?.role;
-                  if (role === 'agent_police_verte') {
+                  if (role === 'agent_police_verte' || role === 'producteur') {
+                    // PV (Police Verte) / signalement citoyen d'un dépôt sauvage
                     router.push(ROUTES.POLICE_REPORT as any);
-                  } else if (role === 'organisation_admin' || role === 'mairie' || role === 'producteur') {
-                    router.push(ROUTES.ESPACE as any);
-                  } else if (profile?.role === 'super_admin') {
-                    router.push('/marketplace/publish' as any);
+                  } else if (role === 'organisation_admin' || role === 'super_admin') {
+                    // Action clé de l'organisation : publier un lot
+                    router.push(ROUTES.MARKETPLACE_PUBLISH as any);
+                  } else if (role === 'collecteur' || role === 'agent_collecteur') {
+                    // Trouver des lots / missions autour de soi
+                    router.push(ROUTES.MAP as any);
                   } else {
-                    router.push(ROUTES.POLICE_REPORT as any);
+                    router.push(ROUTES.ESPACE as any);
                   }
                 }}
                 className={cn(
                     "w-16 h-16 rounded-[2rem] items-center justify-center shadow-xl border-[4px] border-white",
-                    (profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'mairie') ? "bg-red-600 shadow-red-400/50" : "bg-zinc-900 shadow-zinc-400/50"
+                    profile?.role === 'agent_police_verte' ? "bg-red-600 shadow-red-400/50"
+                      : profile?.role === 'producteur' ? "bg-amber-500 shadow-amber-400/50"
+                      : "bg-zinc-900 shadow-zinc-400/50"
                 )}
               >
-                {(profile?.role === 'agent_police_verte' || profile?.role === 'organisation_admin' || profile?.role === 'mairie') ? (
+                {profile?.role === 'agent_police_verte' ? (
                   <Gavel size={32} color="white" strokeWidth={3} />
-                ) : (profile?.role === 'producteur' || profile?.role === 'super_admin') ? (
+                ) : profile?.role === 'producteur' ? (
+                  <ShieldAlert size={30} color="white" strokeWidth={2.5} />
+                ) : (profile?.role === 'organisation_admin' || profile?.role === 'super_admin') ? (
                   <Plus size={32} color="#2A9D8F" strokeWidth={3} />
                 ) : (
                   <Search size={28} color="#2A9D8F" strokeWidth={3} />

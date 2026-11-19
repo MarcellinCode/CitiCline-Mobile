@@ -1,4 +1,5 @@
 import React from 'react';
+import { unregisterPushToken } from '../../../hooks/usePushNotifications';
 import { View, Text, TouchableOpacity, ScrollView, Platform, StyleSheet, Alert, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
@@ -35,6 +36,7 @@ export default function SettingsScreen() {
           text: "Déconnexion", 
           style: "destructive",
           onPress: async () => {
+            await unregisterPushToken();
             await supabase.auth.signOut();
             router.replace('/');
           }

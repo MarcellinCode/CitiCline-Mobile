@@ -64,7 +64,7 @@ export default function MesDechetsScreen() {
   };
 
   const title = (profile?.role === 'producteur' || profile?.role === 'super_admin') ? 'Mes Publications' : 
-                (profile?.role === 'organisation_admin') ? 'Mes Réservations' : 'Mes Collectes';
+                (profile?.role === 'organisation_admin') ? 'Mes Lots & Réservations' : 'Mes Collectes';
   
   const emptyLabel = (profile?.role === 'producteur' || profile?.role === 'super_admin') 
     ? 'Vous n\'avez pas encore publié de déchets' :

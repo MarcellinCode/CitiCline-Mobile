@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { unregisterPushToken } from '../../hooks/usePushNotifications';
 import { 
   View, 
   Text, 
@@ -94,6 +95,7 @@ export function HamburgerMenu({ isOpen, onClose }: HamburgerMenuProps) {
           style: "destructive",
           onPress: async () => {
             onClose();
+            await unregisterPushToken();
             await supabase.auth.signOut();
             router.replace('/');
           }

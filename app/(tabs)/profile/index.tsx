@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { unregisterPushToken } from '../../../hooks/usePushNotifications';
 import { View, TouchableOpacity, ScrollView, ActivityIndicator, Linking, Platform, Image as RNImage } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
@@ -158,6 +159,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
+      await unregisterPushToken();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       router.replace('/(auth)/login');
