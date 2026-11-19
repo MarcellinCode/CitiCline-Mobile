@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { History, ShieldAlert, CheckCircle2, Gavel, Clock } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useProfile } from '@/hooks/useProfile';

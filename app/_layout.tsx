@@ -6,7 +6,7 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import "../src/styles/global.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Alert } from "react-native";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { supabase } from "@/lib/supabase";
@@ -56,6 +56,8 @@ import { useProfileContext } from "../src/context/ProfileContext";
 function AuthNavigationWrapper({ children, loaded, error, segments }: { children: React.ReactNode, loaded: boolean, error: any, segments: string[] }) {
   const { session, profile, loading: profileLoading } = useProfileContext();
   const router = useRouter();
+  const segmentsRef = useRef(segments);
+  segmentsRef.current = segments;
 
   useEffect(() => {
     if (profileLoading || (!loaded && !error)) return;
@@ -86,11 +88,9 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
       } catch (e) {}
     };
 
-    // Only hide splash when profile is loaded (or error)
-    if (!profileLoading) {
-      setTimeout(hideSplash, 300);
-    }
-  }, [session, profileLoading, loaded, segments]);
+    const splashTimer = setTimeout(hideSplash, 300);
+    return () => clearTimeout(splashTimer);
+  }, [session, profile?.role, profileLoading, loaded, error, segments]);
 
   // Global Message Listener - Staticized to avoid re-renders on every scroll/nav
   useEffect(() => {
@@ -107,7 +107,13 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
           filter: `receiver_id=eq.${session.user.id}`
         },
         async (payload: any) => {
-          // Verify path without depending on segments array to avoid re-running effect
+          const currentSegments = segmentsRef.current;
+          const isInSameChat =
+            currentSegments[0] === '(tabs)' &&
+            currentSegments[1] === 'chat' &&
+            currentSegments[2] === '[id]';
+          if (isInSameChat) return;
+
           const { data } = await supabase
             .from('profiles')
             .select('full_name')
@@ -135,7 +141,7 @@ function AuthNavigationWrapper({ children, loaded, error, segments }: { children
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id]); // Only depend on User ID, NOT segments
+  }, [session?.user?.id]);
 
   if (!loaded && !error) return null;
 

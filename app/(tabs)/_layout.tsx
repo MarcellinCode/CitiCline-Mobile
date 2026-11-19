@@ -56,7 +56,7 @@ export default function TabsLayout() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
-        <ActivityIndicator color="#2aa275" />
+        <ActivityIndicator color="#2A9D8F" />
       </View>
     );
   }
@@ -68,7 +68,12 @@ export default function TabsLayout() {
       tabBarActiveTintColor: '#2A9D8F',
       tabBarInactiveTintColor: '#94a3b8',
       tabBarStyle: {
-        display: 'none',
+        backgroundColor: '#ffffff',
+        borderTopWidth: 1,
+        borderTopColor: '#e2e8f0',
+        height: Platform.OS === 'ios' ? 84 : 66,
+        paddingBottom: Platform.OS === 'ios' ? 24 : 10,
+        paddingTop: 8,
       },
       tabBarLabelStyle: {
         fontSize: 9,
@@ -178,7 +183,6 @@ export default function TabsLayout() {
       <Tabs.Screen name="espace/reservations" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="espace/impact-rse" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="settings/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
-      <Tabs.Screen name="notifications/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="profile/edit" options={{ href: null, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="police/history" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>

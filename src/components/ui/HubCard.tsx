@@ -10,16 +10,16 @@ interface HubCardProps extends ViewProps {
 
 export function HubCard({ children, className, variant = 'default', ...props }: HubCardProps) {
   const variants = {
-    default: 'bg-white border-2 border-zinc-50 shadow-lg shadow-zinc-200/50',
-    outline: 'bg-transparent border-2 border-zinc-200',
-    ghost: 'bg-zinc-50/50 border-0',
-    accent: 'bg-primary border-0 shadow-lg shadow-primary/20',
+    default: 'bg-white border border-slate-200/80 shadow-sm shadow-slate-200/50',
+    outline: 'bg-transparent border border-slate-200',
+    ghost: 'bg-slate-50 border-0',
+    accent: 'bg-primary border-0 shadow-sm shadow-primary/20',
   };
 
   return (
     <View 
       className={cn(
-        "rounded-6xl p-6 overflow-hidden relative",
+        "rounded-2xl p-5 overflow-hidden relative",
         variants[variant],
         className
       )} 

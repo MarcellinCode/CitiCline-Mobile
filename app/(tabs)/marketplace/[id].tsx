@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, Platform, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Dimensions, Image as RNImage, Platform, Alert, Modal, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ROUTES } from '@/constants/routes';
@@ -40,6 +40,10 @@ export default function WasteDetail() {
   const { profile } = useProfile();
   const [waste, setWaste] = useState<Waste | null>(null);
   const [loading, setLoading] = useState(true);
+  const [validationModalVisible, setValidationModalVisible] = useState(false);
+  const [validationMode, setValidationMode] = useState<'qr' | 'pin'>('pin');
+  const [pinInput, setPinInput] = useState('');
+  const [weightInput, setWeightInput] = useState('');
 
   // Swipe Animation logic
   const translateX = useSharedValue(0);
@@ -287,84 +291,38 @@ export default function WasteDetail() {
                 <View className="mb-10">
                     <HubText variant="label" className="mb-4 ml-2">Validation de la collecte</HubText>
                     <HubCard className="p-8 border-2 border-emerald-50">
-                        {/* QR Code Scanner */}
+                        {/* QR / Validation directe */}
                         <TouchableOpacity 
                             onPress={() => {
-                                // Simulate QR scan success then ask weight
-                                Alert.alert(
-                                  "QR Code reconnu ✅",
-                                  "Confirmez le poids final de la collecte (KG) :",
-                                  [
-                                    { text: "Annuler", style: "cancel" },
-                                    {
-                                      text: "Confirmer",
-                                      onPress: () => {
-                                        Alert.prompt(
-                                          "Poids final",
-                                          "Entrez le poids en KG :",
-                                          (weightStr) => {
-                                            const w = parseFloat(weightStr);
-                                            if (!isNaN(w) && w > 0) {
-                                              handleConfirmCollection(w);
-                                            } else {
-                                              Alert.alert("Erreur", "Poids invalide.");
-                                            }
-                                          },
-                                          "plain-text",
-                                          waste.estimated_weight.toString()
-                                        );
-                                      }
-                                    }
-                                  ]
-                                );
+                                setValidationMode('qr');
+                                setPinInput('');
+                                setWeightInput(waste.estimated_weight?.toString() || '');
+                                setValidationModalVisible(true);
                             }}
-                            className="bg-zinc-900 h-16 rounded-2xl flex-row items-center justify-center gap-3 mb-6"
+                            className="bg-zinc-900 h-14 rounded-2xl flex-row items-center justify-center gap-3 mb-4"
                         >
                             <Scan size={20} color="white" />
-                            <HubText className="text-white font-bold text-[10px] tracking-widest uppercase">Scanner le QR Code</HubText>
+                            <HubText className="text-white font-bold text-xs tracking-wider uppercase">Valider avec poids final</HubText>
                         </TouchableOpacity>
 
-                        <View className="flex-row items-center gap-4 mb-6">
+                        <View className="flex-row items-center gap-4 mb-4">
                             <View className="h-[1px] flex-1 bg-zinc-100" />
-                            <HubText className="text-zinc-300 text-[8px] font-bold">OU PIN CODE</HubText>
+                            <HubText className="text-zinc-400 text-[10px] font-bold">OU PIN CODE</HubText>
                             <View className="h-[1px] flex-1 bg-zinc-100" />
                         </View>
 
-                        {/* PIN manuel */}
+                        {/* PIN manuel cross-platform (Android & iOS) */}
                         <TouchableOpacity 
                             onPress={() => {
-                                Alert.prompt(
-                                  "Code PIN Vendeur",
-                                  "Saisissez le code PIN du vendeur (6 caractères) :",
-                                  (pin) => {
-                                    if (!pin) return;
-                                    const expectedPin = waste.id.slice(0, 6).toUpperCase();
-                                    if (pin.toUpperCase() !== expectedPin) {
-                                      Alert.alert("Code PIN incorrect", "Le code saisi ne correspond pas à ce lot.");
-                                      return;
-                                    }
-                                    Alert.prompt(
-                                      "Poids final",
-                                      "Confirmez le poids final (KG) :",
-                                      (weightStr) => {
-                                        const w = parseFloat(weightStr);
-                                        if (!isNaN(w) && w > 0) {
-                                          handleConfirmCollection(w);
-                                        } else {
-                                          Alert.alert("Erreur", "Poids invalide.");
-                                        }
-                                      },
-                                      "plain-text",
-                                      waste.estimated_weight.toString()
-                                    );
-                                  },
-                                  "plain-text"
-                                );
+                                setValidationMode('pin');
+                                setPinInput('');
+                                setWeightInput(waste.estimated_weight?.toString() || '');
+                                setValidationModalVisible(true);
                             }}
-                            className="bg-white border-2 border-zinc-100 h-16 rounded-2xl flex-row items-center justify-center gap-3"
+                            className="bg-white border-2 border-zinc-200 h-14 rounded-2xl flex-row items-center justify-center gap-3"
                         >
                             <KeyRound size={20} color="#020617" />
-                            <HubText className="text-zinc-900 font-bold text-[10px] tracking-widest uppercase">Entrer le PIN manuel</HubText>
+                            <HubText className="text-zinc-900 font-bold text-xs tracking-wider uppercase">Entrer le PIN vendeur</HubText>
                         </TouchableOpacity>
                     </HubCard>
                 </View>
@@ -398,6 +356,82 @@ export default function WasteDetail() {
           </GestureDetector>
         </View>
       )}
+
+      {/* Cross-platform (Android & iOS) Collection Validation Modal */}
+      <Modal
+        visible={validationModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setValidationModalVisible(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="w-full bg-white rounded-3xl p-6 border border-zinc-200">
+            <HubText variant="h3" className="text-zinc-900 mb-2">
+              {validationMode === 'pin' ? 'Validation par code PIN' : 'Validation de la collecte'}
+            </HubText>
+            <HubText variant="body" className="text-zinc-500 mb-5">
+              {validationMode === 'pin'
+                ? 'Saisissez le code PIN du vendeur (6 caractères) et le poids final pesé.'
+                : 'Confirmez le poids final pesé (en kg) pour finaliser la collecte.'}
+            </HubText>
+
+            {validationMode === 'pin' && (
+              <View className="mb-4">
+                <HubText variant="caption" className="text-zinc-700 mb-1.5">Code PIN vendeur</HubText>
+                <TextInput
+                  value={pinInput}
+                  onChangeText={setPinInput}
+                  placeholder="Ex: A1B2C3"
+                  autoCapitalize="characters"
+                  maxLength={6}
+                  className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 h-12 text-zinc-900 font-semibold"
+                />
+              </View>
+            )}
+
+            <View className="mb-6">
+              <HubText variant="caption" className="text-zinc-700 mb-1.5">Poids final (kg)</HubText>
+              <TextInput
+                value={weightInput}
+                onChangeText={setWeightInput}
+                placeholder="Ex: 12.5"
+                keyboardType="decimal-pad"
+                className="bg-zinc-50 border border-zinc-200 rounded-xl px-4 h-12 text-zinc-900 font-semibold"
+              />
+            </View>
+
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => setValidationModalVisible(false)}
+                className="flex-1 h-12 rounded-xl border border-zinc-200 items-center justify-center"
+              >
+                <HubText className="text-zinc-700 font-semibold text-sm">Annuler</HubText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (validationMode === 'pin' && waste) {
+                    const expectedPin = waste.id.slice(0, 6).toUpperCase();
+                    if (pinInput.trim().toUpperCase() !== expectedPin) {
+                      Alert.alert('Code PIN incorrect', 'Le code saisi ne correspond pas à ce lot.');
+                      return;
+                    }
+                  }
+                  const parsedWeight = parseFloat(weightInput.replace(',', '.'));
+                  if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+                    Alert.alert('Erreur', 'Veuillez entrer un poids valide supérieur à 0.');
+                    return;
+                  }
+                  setValidationModalVisible(false);
+                  handleConfirmCollection(parsedWeight);
+                }}
+                className="flex-1 h-12 rounded-xl bg-primary items-center justify-center"
+              >
+                <HubText className="text-white font-semibold text-sm">Confirmer</HubText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

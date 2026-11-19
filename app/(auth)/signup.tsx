@@ -105,9 +105,8 @@ export default function Signup() {
         } else if (!session) {
             alert("Vérifiez votre boîte mail pour confirmer l'inscription !");
             router.replace('/(auth)/login');
-        } else {
-            router.replace(ROUTES.MARKETPLACE);
         }
+        // When session is active, AuthNavigationWrapper routes by role once ProfileContext loads
     } catch (err: any) {
         alert(err.message || "Une erreur est survenue");
     } finally {

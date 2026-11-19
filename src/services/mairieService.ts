@@ -1,26 +1,33 @@
 import { supabase } from '@/lib/supabase';
+import { getErrorMessage } from '../utils/safeFetch';
+
+export interface TerritoryStats {
+  citizenCount: number;
+  error?: string;
+}
 
 /**
  * RÉCUPÉRATION DES STATISTIQUES TERRITORIALES
  * Compte les citoyens inscrits dans une ville spécifique
  */
-export const getTerritoryStats = async (city: string) => {
+export const getTerritoryStats = async (city: string): Promise<TerritoryStats> => {
   try {
-    if (!city) return { citizenCount: 0 };
+    if (!city?.trim()) return { citizenCount: 0 };
 
     const { count, error } = await supabase
       .from('profiles')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('role', 'producteur') // 'producteur' est le rôle interne des citoyens/producteurs
-      .ilike('city', `%${city}%`);
+      .ilike('city', `%${city.trim()}%`);
 
     if (error) throw error;
 
     return {
-      citizenCount: count || 0
+      citizenCount: count || 0,
     };
-  } catch (err: any) {
-    console.error('getTerritoryStats error:', err?.message);
-    return { citizenCount: 0 };
+  } catch (err: unknown) {
+    const message = getErrorMessage(err);
+    console.error('getTerritoryStats error:', message);
+    return { citizenCount: 0, error: message };
   }
 };

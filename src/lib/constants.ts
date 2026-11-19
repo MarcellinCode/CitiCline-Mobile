@@ -1,7 +1,7 @@
 export const COLORS = {
-  primary: '#2aa275', // Emerald Green from Web (hsl(153, 60%, 41%))
-  secondary: '#eab308', // Yellow 500
-  accent: '#10b981', // Emerald 500
+  primary: '#2A9D8F',
+  secondary: '#E9C46A',
+  accent: '#2A9D8F',
   background: '#ffffff',
   surface: '#f8fafc', // Slate 50
   border: '#f1f5f9', // Slate 100

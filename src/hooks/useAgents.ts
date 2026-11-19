@@ -1,27 +1,37 @@
-import { useEffect, useState } from 'react';
-import { getAgents } from '../services/agentService';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AgentProfile, getAgents } from '../services/agentService';
 
-export const useAgents = () => {
-  const [agents, setAgents] = useState<any[]>([]);
+export const useAgents = (organizationId?: string) => {
+  const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const data = await getAgents();
-      setAgents(Array.isArray(data) ? data : []);
-      setLoading(false);
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
     };
-
-    load();
   }, []);
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     setLoading(true);
-    const data = await getAgents();
-    setAgents(Array.isArray(data) ? data : []);
-    setLoading(false);
-  };
+    setError(null);
+    const { data, error: fetchError } = await getAgents(organizationId);
+    if (!isMountedRef.current) return;
 
-  return { agents, loading, refresh };
+    if (fetchError) {
+      setError(fetchError);
+      setAgents([]);
+    } else {
+      setAgents(Array.isArray(data) ? data : []);
+    }
+    setLoading(false);
+  }, [organizationId]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { agents, loading, error, refresh };
 };

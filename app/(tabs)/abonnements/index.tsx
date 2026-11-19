@@ -173,7 +173,15 @@ export default function AbonnementsScreen() {
 
   const handleSubscribe = async () => {
     if (!selectedPlan || !profile) return;
-    
+
+    if (selectedPlan.isMock) {
+      Alert.alert(
+        "Plan indisponible",
+        "Cette organisation n'a pas encore publié ses tarifs officiels en base de données."
+      );
+      return;
+    }
+
     if ((profile.wallet_balance || 0) < selectedPlan.price) {
       Alert.alert("Solde Insuffisant", "Veuillez recharger votre portefeuille.");
       return;
@@ -191,7 +199,7 @@ export default function AbonnementsScreen() {
       );
 
       if (!paymentRes.success) {
-        Alert.alert("Erreur", "Impossible de valider le paiement.");
+        Alert.alert("Erreur", paymentRes.error || "Impossible de valider le paiement.");
         setIsSubmitting(false);
         return;
       }

@@ -12,8 +12,8 @@ export function useUnreadNotifications() {
     const fetchCount = async () => {
       const { count: unreadCount, error } = await supabase
         .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', session.user.id)
+        .select('id', { count: 'exact', head: true })
+        .eq('profile_id', session.user.id)
         .eq('is_read', false);
 
       if (!error) setCount(unreadCount || 0);
@@ -29,7 +29,7 @@ export function useUnreadNotifications() {
           event: 'INSERT', 
           schema: 'public', 
           table: 'notifications',
-          filter: `user_id=eq.${session.user.id}`
+          filter: `profile_id=eq.${session.user.id}`
         },
         () => fetchCount()
       )
@@ -39,7 +39,7 @@ export function useUnreadNotifications() {
           event: 'UPDATE', 
           schema: 'public', 
           table: 'notifications',
-          filter: `user_id=eq.${session.user.id}`
+          filter: `profile_id=eq.${session.user.id}`
         },
         () => fetchCount()
       )

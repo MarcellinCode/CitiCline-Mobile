@@ -55,7 +55,7 @@ export default function MissionsScreen() {
         .from('wastes')
         .select('*, waste_types(*)')
         .eq('assigned_agent_id', profile.id) // Utilisation de la nouvelle colonne d'assignation
-        .in('status', ['reserved', 'published', 'assigned'])
+        .in('status', ['reserved', 'published', 'assigned', 'in_progress'])
         .order('created_at', { ascending: true });
 
       if (wError) throw wError;
@@ -109,7 +109,9 @@ export default function MissionsScreen() {
     );
   }
 
-  const remaining = missions.filter(m => m.status === 'reserved' || m.status === 'published').length;
+  const remaining = missions.filter(m =>
+    m.status === 'reserved' || m.status === 'published' || m.status === 'assigned' || m.status === 'in_progress'
+  ).length;
 
   return (
     <View className="flex-1 bg-white">

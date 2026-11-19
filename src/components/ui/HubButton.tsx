@@ -26,31 +26,31 @@ export function HubButton({
   ...props 
 }: HubButtonProps) {
   const variants = {
-    primary: 'bg-zinc-900',
-    secondary: 'bg-zinc-100',
+    primary: 'bg-slate-900',
+    secondary: 'bg-slate-100',
     accent: 'bg-primary',
-    outline: 'border-2 border-zinc-200 bg-transparent',
+    outline: 'border border-slate-200 bg-white',
   };
 
   const textColors = {
     primary: 'text-white',
-    secondary: 'text-zinc-900',
+    secondary: 'text-slate-900',
     accent: 'text-white',
-    outline: 'text-zinc-900',
+    outline: 'text-slate-900',
   };
 
   const sizes = {
-    sm: 'h-10 px-4 rounded-2xl',
-    md: 'h-14 px-6 rounded-3xl',
-    lg: 'h-20 px-8 rounded-4xl',
-    xl: 'h-24 px-10 rounded-5xl',
+    sm: 'h-10 px-4 rounded-xl',
+    md: 'h-12 px-5 rounded-xl',
+    lg: 'h-13 px-6 rounded-2xl',
+    xl: 'h-14 px-6 rounded-2xl',
   };
 
   const textSizes = {
-    sm: 'text-[10px]',
-    md: 'text-[11px]',
-    lg: 'text-[13px]',
-    xl: 'text-[15px]',
+    sm: 'text-xs',
+    md: 'text-sm',
+    lg: 'text-sm',
+    xl: 'text-base',
   };
 
   return (
@@ -76,7 +76,7 @@ export function HubButton({
             <>
                 <Text 
                 className={cn(
-                    "font-black uppercase italic tracking-[0.1em]",
+                    "font-semibold tracking-normal",
                     textColors[variant],
                     textSizes[size],
                     textClassName

@@ -1,16 +1,16 @@
+import React from 'react';
 import { View, TouchableOpacity, Image as RNImage } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MapPin, Scale } from 'lucide-react-native';
+import { MapPin, Scale, ArrowRight, Recycle } from 'lucide-react-native';
 import { Waste } from '../lib/types';
 import { HubText } from './ui/HubText';
 import { HubCard } from './ui/HubCard';
-import { cn } from '../lib/utils';
 
 interface WasteCardProps {
   waste: Waste;
 }
 
-export function WasteCard({ waste }: WasteCardProps) {
+export const WasteCard = React.memo(function WasteCard({ waste }: WasteCardProps) {
   const router = useRouter();
   const hasImage = waste.images && waste.images.length > 0;
   
@@ -20,9 +20,9 @@ export function WasteCard({ waste }: WasteCardProps) {
       onPress={() => router.push({ pathname: '/(tabs)/marketplace/[id]', params: { id: waste.id } } as any)}
       className="w-[48%] mb-4"
     >
-      <HubCard className="p-0 border-2 border-zinc-50 overflow-hidden h-72 justify-between">
+      <HubCard className="p-0 border border-slate-200/80 overflow-hidden h-72 justify-between">
         <View className="relative">
-            <View className="w-full aspect-square bg-zinc-50 items-center justify-center overflow-hidden">
+            <View className="w-full aspect-square bg-slate-50 items-center justify-center overflow-hidden">
                 {hasImage ? (
                     <RNImage 
                     source={{ uri: waste.images[0] }} 
@@ -30,51 +30,40 @@ export function WasteCard({ waste }: WasteCardProps) {
                     resizeMode="cover"
                     />
                 ) : (
-                    <HubText className="text-4xl">{waste.waste_types?.emoji || '♻️'}</HubText>
+                    <Recycle size={34} color="#94a3b8" strokeWidth={1.75} />
                 )}
             </View>
-            <View className="absolute top-3 right-3 bg-white/90 px-3 py-1.5 rounded-full shadow-sm">
-                <HubText variant="label" className="text-zinc-900 text-[8px] leading-tight">
-                    {waste.waste_types?.price_per_kg || '0'} /KG
+            <View className="absolute top-2.5 right-2.5 bg-white/95 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                <HubText className="text-slate-900 text-xs font-semibold">
+                    {waste.waste_types?.price_per_kg || '0'} F/kg
                 </HubText>
             </View>
         </View>
 
-        <View className="p-4 flex-1 justify-between">
+        <View className="p-3.5 flex-1 justify-between">
             <View>
-                <HubText variant="h3" className="text-zinc-900 text-sm mb-1" numberOfLines={1}>
+                <HubText variant="h3" className="text-slate-900 text-sm mb-1" numberOfLines={1}>
                     {waste.waste_types?.name || 'Recyclables'}
                 </HubText>
                 <View className="flex-row items-center gap-1 mb-2">
-                    <MapPin size={10} color="#94a3b8" />
-                    <HubText variant="caption" className="text-[8px] uppercase tracking-wider" numberOfLines={1}>
+                    <MapPin size={12} color="#64748b" />
+                    <HubText variant="caption" className="text-xs text-slate-500" numberOfLines={1}>
                         {waste.location}
                     </HubText>
                 </View>
             </View>
 
-            <View className="flex-row items-center justify-between border-t border-zinc-50 pt-3">
-                <View className="flex-row items-center gap-1">
-                    <Scale size={12} color="#2A9D8F" />
-                    <HubText variant="h3" className="text-[10px] text-zinc-900">{waste.estimated_weight}T</HubText>
+            <View className="flex-row items-center justify-between border-t border-slate-100 pt-2.5">
+                <View className="flex-row items-center gap-1.5">
+                    <Scale size={13} color="#2A9D8F" />
+                    <HubText className="text-xs font-semibold text-slate-800">{waste.estimated_weight} kg</HubText>
                 </View>
-                <View className="w-6 h-6 rounded-full bg-primary/10 items-center justify-center">
-                    <ArrowSmallRight size={14} color="#2A9D8F" />
+                <View className="w-7 h-7 rounded-full bg-primary/10 items-center justify-center">
+                    <ArrowRight size={14} color="#2A9D8F" />
                 </View>
             </View>
         </View>
       </HubCard>
     </TouchableOpacity>
   );
-}
-
-// Minimal arrow icon for internal card use
-function ArrowSmallRight({ size, color }: { size: number, color: string }) {
-    return (
-        <View style={{ transform: [{ rotate: '-45deg' }] }}>
-          <View style={{ width: size, height: 2, backgroundColor: color, position: 'absolute', top: size/2 }} />
-          <View style={{ width: size/1.5, height: 2, backgroundColor: color, position: 'absolute', top: size/2 - size/4, right: 0, transform: [{ rotate: '45deg' }] }} />
-          <View style={{ width: size/1.5, height: 2, backgroundColor: color, position: 'absolute', top: size/2 + size/4, right: 0, transform: [{ rotate: '-45deg' }] }} />
-        </View>
-    );
-}
+});

@@ -82,7 +82,7 @@ export default function PublishWaste() {
               return;
             }
             let result = await ImagePicker.launchCameraAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              mediaTypes: ['images'],
               allowsEditing: false,
               quality: 0.8,
             });
@@ -100,7 +100,7 @@ export default function PublishWaste() {
               return;
             }
             let result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              mediaTypes: ['images'],
               allowsEditing: false,
               quality: 0.8,
             });

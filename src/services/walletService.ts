@@ -1,73 +1,93 @@
 import { supabase } from '@/lib/supabase';
-import { safeFetch } from '../utils/safeFetch';
+import { ActionResult, ServiceResult, Transaction } from '@/lib/types';
+import { getErrorMessage, safeFetch } from '../utils/safeFetch';
 
-// ============================================================
-// MODE SIMULATION — pas d'API de paiement pour l'instant
-// Toutes les opérations tentent Supabase, puis fallback local
-// ============================================================
+// 1. Récupération des transactions (compatible profile_id et user_id)
+export const getTransactions = async (
+  userId: string
+): Promise<ServiceResult<Transaction[]>> => {
+  if (!userId) {
+    return { data: [], error: null };
+  }
 
-const SIMULATION_TRANSACTIONS = [
-  { id: 'sim_1', type: 'income', amount: 3500, description: 'Vente Plastique PET (12 kg)', created_at: new Date(Date.now() - 86400000 * 1).toISOString() },
-  { id: 'sim_2', type: 'outcome', amount: 2000, description: 'Abonnement Foyer (Mensuel)', created_at: new Date(Date.now() - 86400000 * 3).toISOString() },
-  { id: 'sim_3', type: 'income', amount: 7200, description: 'Vente Métaux Ferreux (8 kg)', created_at: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: 'sim_4', type: 'income', amount: 1800, description: 'Vente Carton Mixte (15 kg)', created_at: new Date(Date.now() - 86400000 * 7).toISOString() },
-  { id: 'sim_5', type: 'outcome', amount: 500, description: 'Frais de service RecyCla', created_at: new Date(Date.now() - 86400000 * 10).toISOString() },
-];
-
-// 1. Récupération des transactions (historique réel depuis la table transactions)
-export const getTransactions = async (userId: string): Promise<any[] | null> => {
-  const result = await safeFetch<any[]>(() => 
+  return safeFetch<Transaction[]>(() =>
     supabase
       .from('transactions')
-      .select('*')
-      .eq('profile_id', userId)
+      .select('id, user_id, amount, type, description, status, reference, created_at')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(20)
+      .limit(30)
   );
-
-  return result.data || [];
 };
 
-// 2. Créditer le compte (Top-up) — Mode Simulation
-export const creditWallet = async (userId: string, amount: number) => {
+// 2. Créditer le compte (Top-up sécurisé via RPC)
+export const creditWallet = async (
+  userId: string,
+  amount: number
+): Promise<ActionResult<{ balance: number }>> => {
+  if (!userId) return { success: false, error: 'Utilisateur non identifié.' };
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { success: false, error: 'Le montant doit être supérieur à 0.' };
+  }
+
   try {
     const { data: newBalance, error } = await supabase.rpc('fn_adjust_wallet_balance', {
       p_user_id: userId,
       p_amount: amount,
-      p_operation_type: 'credit'
+      p_operation_type: 'credit',
     });
 
     if (error) throw error;
 
-    return { success: true, balance: Number(newBalance) };
-  } catch (err: any) {
-    console.error('creditWallet error:', err?.message);
-    return { success: false, error: err?.message };
+    const balance = Number(newBalance);
+    return { success: true, balance, data: { balance } };
+  } catch (err: unknown) {
+    const message = getErrorMessage(err, 'Impossible de créditer le portefeuille.');
+    console.error('creditWallet error:', message);
+    return { success: false, error: message };
   }
 };
 
-// 3. Débiter le compte (pour abonnement ou autre) — Mode Simulation
-export const debitWallet = async (userId: string, amount: number) => {
+// 3. Débiter le compte (pour abonnement ou retrait)
+export const debitWallet = async (
+  userId: string,
+  amount: number
+): Promise<ActionResult<{ balance: number }>> => {
+  if (!userId) return { success: false, error: 'Utilisateur non identifié.' };
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { success: false, error: 'Le montant doit être supérieur à 0.' };
+  }
+
   try {
     const { data: newBalance, error } = await supabase.rpc('fn_adjust_wallet_balance', {
       p_user_id: userId,
       p_amount: -amount,
-      p_operation_type: 'debit'
+      p_operation_type: 'debit',
     });
 
     if (error) throw error;
 
-    return { success: true, balance: Number(newBalance) };
-  } catch (err: any) {
-    console.error('debitWallet error:', err?.message);
-    return { success: false, error: err?.message };
+    const balance = Number(newBalance);
+    return { success: true, balance, data: { balance } };
+  } catch (err: unknown) {
+    const message = getErrorMessage(err, 'Impossible de débiter le portefeuille.');
+    console.error('debitWallet error:', message);
+    return { success: false, error: message };
   }
 };
 
-// 4. Retrait vers Mobile Money — Mode Simulation
-export const withdrawToMobile = async (userId: string, amount: number, phone: string) => {
-  // Simule un délai de traitement réseau
-  await new Promise(r => setTimeout(r, 1500));
-  console.log(`[SIMULATION] Retrait de ${amount} CFA vers ${phone} pour l'utilisateur ${userId}`);
-  return { success: true };
+// 4. Retrait vers Mobile Money (débite le solde réel via RPC sécurisée)
+export const withdrawToMobile = async (
+  userId: string,
+  amount: number,
+  phone?: string
+): Promise<ActionResult<{ balance: number }>> => {
+  if (!Number.isFinite(amount) || amount < 500) {
+    return { success: false, error: 'Le montant minimum de retrait est de 500 FCFA.' };
+  }
+  if (phone !== undefined && phone.trim().length < 6) {
+    return { success: false, error: 'Numéro Mobile Money invalide.' };
+  }
+
+  return debitWallet(userId, amount);
 };

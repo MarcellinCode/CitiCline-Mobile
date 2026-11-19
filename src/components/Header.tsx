@@ -46,10 +46,10 @@ export function Header({ title, subtitle, style, rightAction, onBack }: HeaderPr
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 32, paddingBottom: 24, backgroundColor: 'white', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  container: { paddingHorizontal: 20, paddingBottom: 16, backgroundColor: 'white', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   textContainer: { flex: 1 },
-  titleText: { fontSize: 24, fontWeight: '900', color: '#020617', textTransform: 'uppercase', fontStyle: 'italic', letterSpacing: -1, lineHeight: 26, marginBottom: 2 },
-  subtitleText: { fontSize: 9, fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2 },
-  rightActionContainer: { marginLeft: 16 },
-  backBtn: { width: 44, height: 44, backgroundColor: '#f8fafc', borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 16, borderWidth: 1, borderColor: '#f1f5f9' },
+  titleText: { fontSize: 22, fontWeight: '700', color: '#0f172a', letterSpacing: -0.3, lineHeight: 28, marginBottom: 2 },
+  subtitleText: { fontSize: 12, fontWeight: '500', color: '#64748b' },
+  rightActionContainer: { marginLeft: 12 },
+  backBtn: { width: 40, height: 40, backgroundColor: '#f8fafc', borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 12, borderWidth: 1, borderColor: '#e2e8f0' },
 });

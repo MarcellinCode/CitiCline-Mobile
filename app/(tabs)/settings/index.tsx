@@ -19,6 +19,7 @@ import {
 import { Header } from '@/components/Header';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
+import { supabase } from '@/lib/supabase';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -33,7 +34,10 @@ export default function SettingsScreen() {
         { 
           text: "Déconnexion", 
           style: "destructive",
-          onPress: () => router.replace('/(auth)/login' as any) 
+          onPress: async () => {
+            await supabase.auth.signOut();
+            router.replace('/');
+          }
         }
       ]
     );
@@ -71,7 +75,7 @@ export default function SettingsScreen() {
       <Header 
         title="Paramètres" 
         subtitle="CONFIGURATION & SÉCURITÉ"
-        onBack={() => navigateSafe(router, ROUTES.ESPACE)}
+        onBack={() => (router.canGoBack() ? router.back() : navigateSafe(router, ROUTES.ESPACE))}
       />
 
       <ScrollView 

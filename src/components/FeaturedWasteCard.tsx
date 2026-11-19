@@ -1,3 +1,4 @@
+import React from 'react';
 import { View, TouchableOpacity, Image as RNImage } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Waste } from '../lib/types';
@@ -7,10 +8,9 @@ import { HubCard } from './ui/HubCard';
 
 interface FeaturedWasteCardProps {
   waste: Waste;
-  key?: string | number;
 }
 
-export function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
+export const FeaturedWasteCard = React.memo(function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
   const router = useRouter();
   const imageUrl = waste.images && waste.images.length > 0 ? waste.images[0] : null;
 
@@ -28,7 +28,7 @@ export function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
             <Leaf size={40} color="#cbd5e1" strokeWidth={1} />
           )}
           <View className="absolute top-4 left-4 bg-primary px-3 py-1 rounded-full">
-            <HubText variant="label" className="text-white text-[8px] tracking-[0.2em]">FEATURED</HubText>
+            <HubText variant="label" className="text-white text-[8px] tracking-[0.2em]">À LA UNE</HubText>
           </View>
         </View>
         
@@ -40,7 +40,7 @@ export function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
           <View className="flex-row justify-between items-center mb-4">
               <View>
                 <HubText variant="label" className="text-[8px] mb-0 text-zinc-400">POIDS EST.</HubText>
-                <HubText variant="h3" className="text-zinc-900 text-sm italic">{waste.estimated_weight} Tons</HubText>
+                <HubText variant="h3" className="text-zinc-900 text-sm italic">{waste.estimated_weight} kg</HubText>
               </View>
               <View className="items-end">
                 <HubText variant="label" className="text-[8px] mb-0 text-zinc-400">PRIX/KG</HubText>
@@ -63,4 +63,4 @@ export function FeaturedWasteCard({ waste }: FeaturedWasteCardProps) {
       </HubCard>
     </TouchableOpacity>
   );
-}
+});

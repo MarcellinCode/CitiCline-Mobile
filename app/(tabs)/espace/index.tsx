@@ -58,7 +58,7 @@ export default function EspaceDashboard() {
       fetchStats();
       fetchActiveSub();
     }
-  }, [profile]);
+  }, [profile?.id, profile?.role]);
 
   const fetchActiveSub = async () => {
     try {
@@ -345,7 +345,7 @@ export default function EspaceDashboard() {
           }
         ];
     }
-  }, [profile]);
+  }, [profile?.role, profile?.wallet_balance, activeSub]);
   
   const quickActions = useMemo(() => {
     if (!profile) return [];
@@ -378,7 +378,7 @@ export default function EspaceDashboard() {
       default:
         return baseActions;
     }
-  }, [profile]);
+  }, [profile?.role, profile?.wallet_balance, activeSub]);
 
   if (loading) {
     return (

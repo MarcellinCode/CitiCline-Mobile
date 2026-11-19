@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Profile } from '../lib/types';
@@ -17,37 +17,54 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMountedRef = useRef(true);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadedUserIdRef = useRef<string | null>(null);
+
+  const clearRetryTimer = () => {
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  };
 
   const fetchProfile = async (userId: string, retries = 3) => {
+    clearRetryTimer();
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
-      
+
+      if (!isMountedRef.current) return;
+
       if (data) {
         if (data.role === 'mairie') {
-          Alert.alert(
-            "Accès Refusé 🚫",
-            "L'accès à l'application mobile est réservé aux agents de terrain. Pour le rôle Mairie, veuillez vous connecter sur la plateforme web.",
-            [{ text: "OK", onPress: () => supabase.auth.signOut() }]
-          );
+          await supabase.auth.signOut();
+          if (!isMountedRef.current) return;
+          loadedUserIdRef.current = null;
+          setSession(null);
           setProfile(null);
           setLoading(false);
+          Alert.alert(
+            "Accès refusé",
+            "L'application mobile est réservée aux agents de terrain et usagers. Pour le rôle Mairie, connectez-vous sur la plateforme web."
+          );
           return;
         }
+        loadedUserIdRef.current = userId;
         setProfile(data as Profile);
         setLoading(false);
       } else if (retries > 0) {
-        // Retry after a short delay if no data yet (common during signup)
-        setTimeout(() => fetchProfile(userId, retries - 1), 1000);
+        retryTimerRef.current = setTimeout(() => fetchProfile(userId, retries - 1), 1000);
       } else {
         setLoading(false);
       }
     } catch (err) {
+      if (!isMountedRef.current) return;
       if (retries > 0) {
-        setTimeout(() => fetchProfile(userId, retries - 1), 1000);
+        retryTimerRef.current = setTimeout(() => fetchProfile(userId, retries - 1), 1000);
       } else {
         console.error("fetchProfile error after retries:", err);
         setLoading(false);
@@ -62,11 +79,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // 1. Initial Session Check with error handling
+    isMountedRef.current = true;
+
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!isMountedRef.current) return;
       if (error) {
         console.error("getSession error (possibly stale token):", error.message);
-        // If the refresh token is invalid, we clear the session locally
         if (error.message.includes("Invalid Refresh Token") || error.message.includes("not found")) {
           supabase.auth.signOut();
         }
@@ -82,28 +100,37 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       }
     }).catch(err => {
       console.error("getSession catch-all error:", err);
-      setLoading(false);
+      if (isMountedRef.current) setLoading(false);
     });
 
-    // 2. Auth State Listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      if (session?.user?.id) {
-        setLoading(true);
-        fetchProfile(session.user.id);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      if (!isMountedRef.current) return;
+      setSession(nextSession);
+
+      if (nextSession?.user?.id) {
+        // Avoid unmounting Tabs on background token refresh for the already-loaded user
+        if (loadedUserIdRef.current !== nextSession.user.id) {
+          setLoading(true);
+          fetchProfile(nextSession.user.id);
+        }
       } else {
+        clearRetryTimer();
+        loadedUserIdRef.current = null;
         setProfile(null);
         setLoading(false);
-        
-        // Handle specific event where refresh token might fail
-        if (event === 'TOKEN_REFRESHED' && !session) {
-           console.warn("Auth token refresh failed, signing out...");
-           supabase.auth.signOut();
+
+        if (event === 'TOKEN_REFRESHED' && !nextSession) {
+          console.warn("Auth token refresh failed, signing out...");
+          supabase.auth.signOut();
         }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMountedRef.current = false;
+      clearRetryTimer();
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {

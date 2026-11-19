@@ -85,14 +85,20 @@ export default function MissionDetail() {
     }
 
     try {
-        setLoading(true);
-        // Mettre à jour le statut "en cours" pour la synchronisation Web
-        await supabase.from('wastes').update({ status: 'in_progress' }).eq('id', id);
+        setUpdating(true);
+        // Tentative de mise à jour du statut en cours si autorisé par RLS
+        const { error: statusError } = await supabase
+          .from('wastes')
+          .update({ status: 'in_progress' })
+          .eq('id', id);
+        if (statusError) {
+          console.warn('Start mission status update skipped:', statusError.message);
+        }
         setStep('scan');
     } catch (err) {
         console.error("Start mission error:", err);
     } finally {
-        setLoading(false);
+        setUpdating(false);
     }
   };
 
@@ -110,45 +116,47 @@ export default function MissionDetail() {
         try {
             const photo = await cameraRef.current.takePictureAsync({ quality: 0.5 });
             if (photo) {
-                setLoading(true);
+                setUpdating(true);
                 const publicUrl = await uploadProofImage(photo.uri);
                 
                 if (!photoBefore) {
                     setPhotoBefore(publicUrl);
-                    await supabase.from('wastes').update({ photo_url: publicUrl }).eq('id', id);
                 } else {
                     setPhotoAfter(publicUrl);
                 }
                 
                 setScanned(true);
-                setTimeout(() => {
-                    if (isMarketplace) {
-                        setStep('weight');
-                    } else {
-                        setStep('success');
-                    }
-                }, 1000);
+                if (isMarketplace) {
+                    setStep('weight');
+                } else {
+                    await handleFinalize();
+                }
             }
         } catch (err) {
             console.error("Capture/Upload error:", err);
             Alert.alert("Erreur", "Impossible de capturer ou d'envoyer la photo.");
         } finally {
-            setLoading(false);
+            setUpdating(false);
         }
     }
   };
 
   const handleFinalize = async () => {
-    if (isMarketplace && !weight) {
-      Alert.alert("Erreur", "Veuillez saisir le poids réel du lot.");
+    const parsedWeight = parseFloat(weight);
+    if (isMarketplace && (!weight || !Number.isFinite(parsedWeight) || parsedWeight <= 0)) {
+      Alert.alert("Erreur", "Veuillez saisir un poids réel valide (> 0).");
       return;
     }
-    
+
+    const finalWeight = isMarketplace
+      ? parsedWeight
+      : (Number(mission?.estimated_weight) > 0 ? Number(mission.estimated_weight) : 1);
+
     try {
         setUpdating(true);
         const { data: rpcData, error: rpcError } = await supabase.rpc('fn_finalize_collection', {
             p_waste_id: id,
-            p_final_weight: isMarketplace ? parseFloat(weight) : 0
+            p_final_weight: finalWeight
         });
         
         if (rpcError) throw rpcError;

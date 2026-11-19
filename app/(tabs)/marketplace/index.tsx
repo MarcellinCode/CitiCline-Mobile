@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { View, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, Image as RNImage, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
@@ -58,7 +58,7 @@ export default function Marketplace() {
 
   React.useEffect(() => {
     fetchImpactCounter();
-  }, [profile, profileLoading]);
+  }, [profile?.id]);
 
   const filteredWastes = useMemo(() => {
     let list = wastes;
@@ -77,6 +77,9 @@ export default function Marketplace() {
   }, [wastes]);
 
 
+  const renderWasteItem = useCallback(({ item }: { item: Waste }) => <WasteCard waste={item} />, []);
+  const keyExtractor = useCallback((item: Waste) => item.id, []);
+
   if (loading && !refreshing) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
@@ -85,7 +88,7 @@ export default function Marketplace() {
     );
   }
 
-  const renderHeader = () => (
+  const headerElement = (
     <View className="pb-6 px-6">
       <View className="mb-6 flex-row items-center justify-between">
         <TouchableOpacity 
@@ -233,10 +236,15 @@ export default function Marketplace() {
       
       <FlatList
         data={filteredWastes}
-        ListHeaderComponent={renderHeader}
-        renderItem={({ item }: { item: Waste }) => <WasteCard waste={item} />}
-        keyExtractor={(item) => item.id}
+        ListHeaderComponent={headerElement}
+        renderItem={renderWasteItem}
+        keyExtractor={keyExtractor}
         numColumns={2}
+        removeClippedSubviews={Platform.OS === 'android'}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        keyboardShouldPersistTaps="handled"
         columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 24, paddingBottom: 24 }}
         contentContainerStyle={{ 
           paddingTop: insets.top + (Platform.OS === 'android' ? 20 : 0),

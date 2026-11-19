@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, ScrollView, TouchableOpacity, StyleSheet, LayoutAnimation } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import { Header } from '@/components/Header';
 import { HubText } from '@/components/ui/HubText';
 import { HubCard } from '@/components/ui/HubCard';
 import { CircleHelp, Mail, Phone, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react-native';
-
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 export default function HelpScreen() {
   const router = useRouter();

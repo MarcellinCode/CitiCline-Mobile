@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl, Alert, Image as RNImage } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert, Image as RNImage } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ShieldAlert, MapPin, AlertTriangle, TrendingUp, CheckCircle2, Wifi, WifiOff } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';

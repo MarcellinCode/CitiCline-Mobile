@@ -98,9 +98,9 @@ export default function MesDechetsScreen() {
             <Package size={32} color="#cbd5e1" />
           </View>
           <Text style={styles.emptyText}>{emptyLabel}</Text>
-          {(profile?.role === 'producteur' || profile?.role === 'super_admin') && (
+          {(profile?.role === 'organisation_admin' || profile?.role === 'super_admin') && (
             <TouchableOpacity
-              onPress={() => navigateSafe(router, '/marketplace/publish')}
+              onPress={() => navigateSafe(router, ROUTES.MARKETPLACE_PUBLISH)}
               style={styles.actionBtn}
             >
               <Text style={styles.actionBtnText}>Publier un lot</Text>

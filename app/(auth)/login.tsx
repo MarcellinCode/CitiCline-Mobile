@@ -1,4 +1,4 @@
-import { View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
@@ -19,23 +19,22 @@ export default function Login() {
 
   async function signInWithEmail() {
     if (!email || !password) {
-        alert("Veuillez remplir tous les champs");
+        Alert.alert("Champs requis", "Veuillez remplir tous les champs.");
         return;
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password,
       });
       
       if (error) {
-        alert(error.message);
-      } else if (data.session) {
-        router.replace(ROUTES.MARKETPLACE as any);
+        Alert.alert("Erreur de connexion", error.message);
       }
+      // Role-based redirection is handled centrally by AuthNavigationWrapper once ProfileContext loads
     } catch (err: any) {
-      alert(err.message || "Une erreur est survenue");
+      Alert.alert("Erreur", err.message || "Une erreur est survenue");
     } finally {
       setLoading(false);
     }

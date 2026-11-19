@@ -10,12 +10,12 @@ interface HubTextProps extends TextProps {
 
 export function HubText({ children, className, variant = 'body', ...props }: HubTextProps) {
   const variants = {
-    h1: 'text-4xl font-black uppercase italic tracking-tighter leading-tight',
-    h2: 'text-2xl font-black uppercase italic tracking-tight leading-tight',
-    h3: 'text-xl font-black uppercase italic tracking-tight leading-tight',
-    label: 'text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400',
-    body: 'text-sm font-medium',
-    caption: 'text-xs font-semibold text-zinc-500',
+    h1: 'text-2xl font-bold tracking-tight text-slate-900 leading-8',
+    h2: 'text-xl font-bold tracking-tight text-slate-900 leading-7',
+    h3: 'text-base font-semibold text-slate-900 leading-6',
+    label: 'text-xs font-semibold uppercase tracking-wider text-slate-500',
+    body: 'text-sm font-normal text-slate-700 leading-5',
+    caption: 'text-xs font-medium text-slate-500',
   };
 
   return (
